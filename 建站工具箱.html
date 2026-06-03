@@ -3587,16 +3587,72 @@
 
             // === Forbidden Words Feature ===
 
+            var DEFAULT_FORBIDDEN_WORDS_URL = './forbidden-words.json';
             var forbiddenWords = [];
+
+            function normalizeForbiddenWord(item) {
+                if (!item || item.word === undefined || item.word === null) return null;
+                var word = String(item.word).trim();
+                if (!word) return null;
+                var replacement =
+                    item.replacement === undefined || item.replacement === null
+                        ? ''
+                        : String(item.replacement).trim();
+                return { word: word, replacement: replacement };
+            }
+
+            function appendForbiddenWord(item, dedupeByWord) {
+                var normalized = normalizeForbiddenWord(item);
+                if (!normalized) return false;
+                var exists = forbiddenWords.some(function (existing) {
+                    return dedupeByWord
+                        ? existing.word === normalized.word
+                        : existing.word === normalized.word && existing.replacement === normalized.replacement;
+                });
+                if (exists) return false;
+                forbiddenWords.push(normalized);
+                return true;
+            }
 
             function loadForbiddenWords() {
                 try {
                     var saved = localStorage.getItem('fw_forbidden_words');
-                    if (saved) forbiddenWords = JSON.parse(saved);
+                    if (saved) {
+                        var parsed = JSON.parse(saved);
+                        if (Array.isArray(parsed)) {
+                            forbiddenWords = [];
+                            parsed.forEach(function (item) {
+                                appendForbiddenWord(item, false);
+                            });
+                        }
+                    }
                 } catch (e) {
                     forbiddenWords = [];
                 }
                 updateFwBadge();
+            }
+
+            function loadDefaultForbiddenWords() {
+                if (typeof fetch !== 'function') return;
+                fetch(DEFAULT_FORBIDDEN_WORDS_URL, { cache: 'no-store' })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Default forbidden words not available');
+                        return response.json();
+                    })
+                    .then(function (items) {
+                        if (!Array.isArray(items)) return;
+                        var added = 0;
+                        items.forEach(function (item) {
+                            if (appendForbiddenWord(item, true)) added++;
+                        });
+                        if (added > 0) {
+                            saveForbiddenWords();
+                            renderForbiddenWordList();
+                        }
+                    })
+                    .catch(function () {
+                        // Defaults are optional so local/file usage still works.
+                    });
             }
 
             function saveForbiddenWords() {
@@ -3633,12 +3689,8 @@
                     showToast('请输入禁词', true);
                     return;
                 }
-                if (!replacement) {
-                    showToast('请输入替换词', true);
-                    return;
-                }
 
-                forbiddenWords.push({ word: word, replacement: replacement });
+                appendForbiddenWord({ word: word, replacement: replacement }, false);
                 saveForbiddenWords();
                 renderForbiddenWordList();
                 document.getElementById('fwWordInput').value = '';
@@ -3705,6 +3757,7 @@
 
             // 初始化加载禁词库
             loadForbiddenWords();
+            loadDefaultForbiddenWords();
 
             // === Forbidden Words Import/Export ===
 
@@ -3740,9 +3793,8 @@
                             var arr = JSON.parse(content);
                             if (Array.isArray(arr)) {
                                 arr.forEach(function (item) {
-                                    if (item.word && item.replacement) {
-                                        forbiddenWords.push({ word: item.word, replacement: item.replacement });
-                                        count++;
+                                    if (item.word && item.replacement !== undefined) {
+                                        if (appendForbiddenWord(item, false)) count++;
                                     }
                                 });
                             }
@@ -3756,14 +3808,11 @@
                         lines.forEach(function (line) {
                             line = line.trim();
                             if (!line) return;
-                            var parts = line.split(/[=\t,，]/);
+                            var parts = line.replace(/\uFF0C/g, ',').split(/[=\t,]/);
                             if (parts.length >= 2) {
                                 var word = parts[0].trim();
                                 var replacement = parts[1].trim();
-                                if (word && replacement) {
-                                    forbiddenWords.push({ word: word, replacement: replacement });
-                                    count++;
-                                }
+                                if (appendForbiddenWord({ word: word, replacement: replacement }, false)) count++;
                             }
                         });
                     }
@@ -3802,14 +3851,11 @@
                 lines.forEach(function (line) {
                     line = line.trim();
                     if (!line) return;
-                    var parts = line.split(/[=\t,，]/);
+                    var parts = line.replace(/\uFF0C/g, ',').split(/[=\t,]/);
                     if (parts.length >= 2) {
                         var word = parts[0].trim();
                         var replacement = parts[1].trim();
-                        if (word && replacement) {
-                            forbiddenWords.push({ word: word, replacement: replacement });
-                            count++;
-                        }
+                        if (appendForbiddenWord({ word: word, replacement: replacement }, false)) count++;
                     }
                 });
 
