@@ -1,1 +1,1054 @@
-[]
+[
+  {
+    "word": "必须",
+    "replacement": "建议"
+  },
+  {
+    "word": "一定",
+    "replacement": "一般会"
+  },
+  {
+    "word": "绝对",
+    "replacement": "非常"
+  },
+  {
+    "word": "完全",
+    "replacement": "基本"
+  },
+  {
+    "word": "彻底",
+    "replacement": "有效"
+  },
+  {
+    "word": "永远",
+    "replacement": "长期"
+  },
+  {
+    "word": "始终",
+    "replacement": "一直"
+  },
+  {
+    "word": "全部",
+    "replacement": "大部分"
+  },
+  {
+    "word": "所有",
+    "replacement": "多数"
+  },
+  {
+    "word": "任何",
+    "replacement": "常见"
+  },
+  {
+    "word": "随时",
+    "replacement": "方便"
+  },
+  {
+    "word": "随便",
+    "replacement": "灵活"
+  },
+  {
+    "word": "万无一失",
+    "replacement": "可靠"
+  },
+  {
+    "word": "天衣无缝",
+    "replacement": "精密"
+  },
+  {
+    "word": "完美",
+    "replacement": "良好"
+  },
+  {
+    "word": "完美无缺",
+    "replacement": "品质优良"
+  },
+  {
+    "word": "无懈可击",
+    "replacement": "严谨"
+  },
+  {
+    "word": "滴滴不漏",
+    "replacement": "周全"
+  },
+  {
+    "word": "登峰造极",
+    "replacement": "精湛"
+  },
+  {
+    "word": "出神入化",
+    "replacement": "专业"
+  },
+  {
+    "word": "炉火纯青",
+    "replacement": "成熟"
+  },
+  {
+    "word": "超一流",
+    "replacement": "优秀"
+  },
+  {
+    "word": "超凡",
+    "replacement": "出众"
+  },
+  {
+    "word": "非凡",
+    "replacement": "出色"
+  },
+  {
+    "word": "卓越",
+    "replacement": "优良"
+  },
+  {
+    "word": "优异",
+    "replacement": "良好"
+  },
+  {
+    "word": "极致体验",
+    "replacement": "优质体验"
+  },
+  {
+    "word": "最好",
+    "replacement": "比较好"
+  },
+  {
+    "word": "最佳",
+    "replacement": "比较好"
+  },
+  {
+    "word": "最优",
+    "replacement": "比较好"
+  },
+  {
+    "word": "最优秀",
+    "replacement": "相当优秀"
+  },
+  {
+    "word": "最高",
+    "replacement": "比较高"
+  },
+  {
+    "word": "最高级",
+    "replacement": "前列"
+  },
+  {
+    "word": "最大",
+    "replacement": "比较大"
+  },
+  {
+    "word": "最新",
+    "replacement": "新推出"
+  },
+  {
+    "word": "最低",
+    "replacement": "比较低"
+  },
+  {
+    "word": "最美",
+    "replacement": "漂亮"
+  },
+  {
+    "word": "最便宜",
+    "replacement": "低价"
+  },
+  {
+    "word": "最先进",
+    "replacement": "先进工艺"
+  },
+  {
+    "word": "最时尚",
+    "replacement": "时尚"
+  },
+  {
+    "word": "最流行",
+    "replacement": "当下流行"
+  },
+  {
+    "word": "最畅销",
+    "replacement": "热销"
+  },
+  {
+    "word": "最受信赖",
+    "replacement": "值得信赖"
+  },
+  {
+    "word": "第一",
+    "replacement": "前列"
+  },
+  {
+    "word": "第一品牌",
+    "replacement": "知名品牌"
+  },
+  {
+    "word": "销量第一",
+    "replacement": "销量领先"
+  },
+  {
+    "word": "冠军",
+    "replacement": "优秀"
+  },
+  {
+    "word": "NO.1",
+    "replacement": "前列"
+  },
+  {
+    "word": "首选",
+    "replacement": "优先选择"
+  },
+  {
+    "word": "王牌",
+    "replacement": "主力"
+  },
+  {
+    "word": "领军",
+    "replacement": "深耕"
+  },
+  {
+    "word": "顶级",
+    "replacement": "优质"
+  },
+  {
+    "word": "极致",
+    "replacement": "出色"
+  },
+  {
+    "word": "顶尖",
+    "replacement": "前列"
+  },
+  {
+    "word": "至尊",
+    "replacement": "高端"
+  },
+  {
+    "word": "独家",
+    "replacement": "特色"
+  },
+  {
+    "word": "独创",
+    "replacement": "自主研发"
+  },
+  {
+    "word": "独一无二",
+    "replacement": "特色出众"
+  },
+  {
+    "word": "绝无仅有",
+    "replacement": "稀缺"
+  },
+  {
+    "word": "史无前例",
+    "replacement": "重大突破"
+  },
+  {
+    "word": "无与伦比",
+    "replacement": "出色"
+  },
+  {
+    "word": "举世闻名",
+    "replacement": "享有盛誉"
+  },
+  {
+    "word": "世界级",
+    "replacement": "高水平"
+  },
+  {
+    "word": "国家级",
+    "replacement": "权威"
+  },
+  {
+    "word": "全国领先",
+    "replacement": "行业前列"
+  },
+  {
+    "word": "世界领先",
+    "replacement": "国际水平"
+  },
+  {
+    "word": "领先",
+    "replacement": "前列"
+  },
+  {
+    "word": "权威",
+    "replacement": "专业"
+  },
+  {
+    "word": "专家推荐",
+    "replacement": "广受好评"
+  },
+  {
+    "word": "大师",
+    "replacement": "资深"
+  },
+  {
+    "word": "驰名",
+    "replacement": "知名"
+  },
+  {
+    "word": "著名",
+    "replacement": "知名"
+  },
+  {
+    "word": "知名",
+    "replacement": "（可直接用）"
+  },
+  {
+    "word": "优秀",
+    "replacement": "出色"
+  },
+  {
+    "word": "优质",
+    "replacement": "品质"
+  },
+  {
+    "word": "畅销",
+    "replacement": "热销"
+  },
+  {
+    "word": "万能",
+    "replacement": "多功能"
+  },
+  {
+    "word": "全方位",
+    "replacement": "全面"
+  },
+  {
+    "word": "王者",
+    "replacement": "佼佼者"
+  },
+  {
+    "word": "性价比之王",
+    "replacement": "高性价比"
+  },
+  {
+    "word": "行业标杆",
+    "replacement": "行业代表"
+  },
+  {
+    "word": "之王",
+    "replacement": "（删掉）"
+  },
+  {
+    "word": "纯天然",
+    "replacement": "天然原料"
+  },
+  {
+    "word": "百分百",
+    "replacement": "高品质"
+  },
+  {
+    "word": "零风险",
+    "replacement": "安全可靠"
+  },
+  {
+    "word": "零添加",
+    "replacement": "无额外添加"
+  },
+  {
+    "word": "零投诉",
+    "replacement": "用户满意"
+  },
+  {
+    "word": "零差评",
+    "replacement": "好评率高"
+  },
+  {
+    "word": "无副作用",
+    "replacement": "安全温和"
+  },
+  {
+    "word": "无公害",
+    "replacement": "环保安全"
+  },
+  {
+    "word": "无污染",
+    "replacement": "清洁"
+  },
+  {
+    "word": "特供",
+    "replacement": "专属"
+  },
+  {
+    "word": "专供",
+    "replacement": "专属"
+  },
+  {
+    "word": "限量",
+    "replacement": "精选"
+  },
+  {
+    "word": "限量版",
+    "replacement": "特别版"
+  },
+  {
+    "word": "典藏版",
+    "replacement": "珍藏版"
+  },
+  {
+    "word": "珍藏版",
+    "replacement": "收藏级"
+  },
+  {
+    "word": "绝版",
+    "replacement": "停产"
+  },
+  {
+    "word": "永久",
+    "replacement": "长期"
+  },
+  {
+    "word": "终身",
+    "replacement": "长期"
+  },
+  {
+    "word": "躺赚",
+    "replacement": "稳定收益"
+  },
+  {
+    "word": "稳赚",
+    "replacement": "收益稳定"
+  },
+  {
+    "word": "赚钱",
+    "replacement": "创收"
+  },
+  {
+    "word": "消炎",
+    "replacement": "舒缓"
+  },
+  {
+    "word": "治愈",
+    "replacement": "改善"
+  },
+  {
+    "word": "根治",
+    "replacement": "有效改善"
+  },
+  {
+    "word": "疗效",
+    "replacement": "效果"
+  },
+  {
+    "word": "特效",
+    "replacement": "高效"
+  },
+  {
+    "word": "神效",
+    "replacement": "显著效果"
+  },
+  {
+    "word": "奇效",
+    "replacement": "明显效果"
+  },
+  {
+    "word": "立竿见影",
+    "replacement": "快速起效"
+  },
+  {
+    "word": "一针见效",
+    "replacement": "快速起效"
+  },
+  {
+    "word": "当天见效",
+    "replacement": "短期见效"
+  },
+  {
+    "word": "药到病除",
+    "replacement": "有效改善"
+  },
+  {
+    "word": "祖传",
+    "replacement": "传统工艺"
+  },
+  {
+    "word": "祖传秘方",
+    "replacement": "传统配方"
+  },
+  {
+    "word": "秘方",
+    "replacement": "独特配方"
+  },
+  {
+    "word": "秘制",
+    "replacement": "精心制作"
+  },
+  {
+    "word": "古法",
+    "replacement": "传统工艺"
+  },
+  {
+    "word": "宫廷",
+    "replacement": "经典"
+  },
+  {
+    "word": "御用",
+    "replacement": "精选"
+  },
+  {
+    "word": "高强",
+    "replacement": "高性能"
+  },
+  {
+    "word": "环保",
+    "replacement": "绿色"
+  },
+  {
+    "word": "节能",
+    "replacement": "低碳"
+  },
+  {
+    "word": "正品",
+    "replacement": "品牌直供"
+  },
+  {
+    "word": "官方",
+    "replacement": "品牌授权"
+  },
+  {
+    "word": "首创",
+    "replacement": "创新"
+  },
+  {
+    "word": "领导",
+    "replacement": "专业"
+  },
+  {
+    "word": "全能",
+    "replacement": "综合型"
+  },
+  {
+    "word": "今天",
+    "replacement": "近期"
+  },
+  {
+    "word": "最后一天",
+    "replacement": "限时"
+  },
+  {
+    "word": "仅限",
+    "replacement": "推荐"
+  },
+  {
+    "word": "秒杀",
+    "replacement": "限时优惠"
+  },
+  {
+    "word": "马上涨价",
+    "replacement": "价格调整"
+  },
+  {
+    "word": "即将售罄",
+    "replacement": "库存有限"
+  },
+  {
+    "word": "库存告急",
+    "replacement": "库存紧张"
+  },
+  {
+    "word": "疯抢",
+    "replacement": "热销"
+  },
+  {
+    "word": "跳楼价",
+    "replacement": "特价"
+  },
+  {
+    "word": "骨折价",
+    "replacement": "优惠价"
+  },
+  {
+    "word": "白菜价",
+    "replacement": "实惠"
+  },
+  {
+    "word": "亏本甩卖",
+    "replacement": "清仓特惠"
+  },
+  {
+    "word": "口碑之王",
+    "replacement": "口碑极佳"
+  },
+  {
+    "word": "断货王",
+    "replacement": "热销"
+  },
+  {
+    "word": "回购王",
+    "replacement": "复购率高"
+  },
+  {
+    "word": "爆款",
+    "replacement": "热销款"
+  },
+  {
+    "word": "网红同款",
+    "replacement": "热门款式"
+  },
+  {
+    "word": "最好的",
+    "replacement": "优质的"
+  },
+  {
+    "word": "最便宜",
+    "replacement": "性价比高的"
+  },
+  {
+    "word": "最低价",
+    "replacement": "特惠价"
+  },
+  {
+    "word": "最先进",
+    "replacement": "领先技术"
+  },
+  {
+    "word": "最高端",
+    "replacement": "高端品质"
+  },
+  {
+    "word": "最高级",
+    "replacement": "高级"
+  },
+  {
+    "word": "最优",
+    "replacement": "优选"
+  },
+  {
+    "word": "最佳",
+    "replacement": "优质"
+  },
+  {
+    "word": "最强",
+    "replacement": "强劲"
+  },
+  {
+    "word": "最大",
+    "replacement": "大型"
+  },
+  {
+    "word": "最小",
+    "replacement": "小巧"
+  },
+  {
+    "word": "最快",
+    "replacement": "高效"
+  },
+  {
+    "word": "最新",
+    "replacement": "新一代"
+  },
+  {
+    "word": "最先进",
+    "replacement": "先进技术"
+  },
+  {
+    "word": "第一",
+    "replacement": "领先"
+  },
+  {
+    "word": "销量第一",
+    "replacement": "热销"
+  },
+  {
+    "word": "全球第一",
+    "replacement": "全球领先"
+  },
+  {
+    "word": "行业第一",
+    "replacement": "行业领先"
+  },
+  {
+    "word": "独一无二",
+    "replacement": "独特"
+  },
+  {
+    "word": "绝无仅有",
+    "replacement": "稀有"
+  },
+  {
+    "word": "仅此一家",
+    "replacement": "专注"
+  },
+  {
+    "word": "史无前例",
+    "replacement": "创新"
+  },
+  {
+    "word": "前无古人",
+    "replacement": "开创性"
+  },
+  {
+    "word": "全能",
+    "replacement": "多用途"
+  },
+  {
+    "word": "永久",
+    "replacement": "持久"
+  },
+  {
+    "word": "永久有效",
+    "replacement": "长期有效"
+  },
+  {
+    "word": "百分百",
+    "replacement": "高比例"
+  },
+  {
+    "word": "100%",
+    "replacement": "高比例"
+  },
+  {
+    "word": "纯天然",
+    "replacement": "天然成分"
+  },
+  {
+    "word": "零风险",
+    "replacement": "低风险"
+  },
+  {
+    "word": "零缺陷",
+    "replacement": "高品质"
+  },
+  {
+    "word": "零投诉",
+    "replacement": "好评如潮"
+  },
+  {
+    "word": "无副作用",
+    "replacement": "温和配方"
+  },
+  {
+    "word": "治愈",
+    "replacement": "辅助改善"
+  },
+  {
+    "word": "药到病除",
+    "replacement": "有效缓解"
+  },
+  {
+    "word": "包治",
+    "replacement": "有助于改善"
+  },
+  {
+    "word": "一劳永逸",
+    "replacement": "长效"
+  },
+  {
+    "word": "一夜暴富",
+    "replacement": "财富增长"
+  },
+  {
+    "word": "稳赚不赔",
+    "replacement": "稳健收益"
+  },
+  {
+    "word": "保赚",
+    "replacement": "收益可观"
+  },
+  {
+    "word": "暴利",
+    "replacement": "利润可观"
+  },
+  {
+    "word": "国家级",
+    "replacement": "品质级"
+  },
+  {
+    "word": "世界级",
+    "replacement": "国际品质"
+  },
+  {
+    "word": "顶级",
+    "replacement": "高端"
+  },
+  {
+    "word": "极品",
+    "replacement": "精品"
+  },
+  {
+    "word": "极致",
+    "replacement": "精湛"
+  },
+  {
+    "word": "巅峰",
+    "replacement": "卓越"
+  },
+  {
+    "word": "王牌",
+    "replacement": "优质"
+  },
+  {
+    "word": "殿堂级",
+    "replacement": "专业级"
+  },
+  {
+    "word": "秒杀",
+    "replacement": "优惠"
+  },
+  {
+    "word": "抢购",
+    "replacement": "限时优惠"
+  },
+  {
+    "word": "疯抢",
+    "replacement": "热卖"
+  },
+  {
+    "word": "爆款",
+    "replacement": "畅销款"
+  },
+  {
+    "word": "假一赔十",
+    "replacement": "正品保障"
+  },
+  {
+    "word": "假一罚百",
+    "replacement": "品质承诺"
+  },
+  {
+    "word": "绝对不会",
+    "replacement": "很少出现"
+  },
+  {
+    "word": "肯定",
+    "replacement": "大概率"
+  },
+  {
+    "word": "必然",
+    "replacement": "通常"
+  },
+  {
+    "word": "滴水不漏",
+    "replacement": "周全"
+  },
+  {
+    "word": "极致享受",
+    "replacement": "舒适体验"
+  },
+  {
+    "word": "至尊",
+    "replacement": "尊享"
+  },
+  {
+    "word": "奢华",
+    "replacement": "精致"
+  },
+  {
+    "word": "奢华享受",
+    "replacement": "精致体验"
+  },
+  {
+    "word": "贵族",
+    "replacement": "高端"
+  },
+  {
+    "word": "皇家",
+    "replacement": "经典"
+  },
+  {
+    "word": "帝王",
+    "replacement": "尊贵"
+  },
+  {
+    "word": "史上最",
+    "replacement": "非常"
+  },
+  {
+    "word": "有史以来",
+    "replacement": "一直以来"
+  },
+  {
+    "word": "空前",
+    "replacement": "大幅"
+  },
+  {
+    "word": "绝后",
+    "replacement": "显著"
+  },
+  {
+    "word": "国家级认证",
+    "replacement": "专业认证"
+  },
+  {
+    "word": "国家专利",
+    "replacement": "拥有专利"
+  },
+  {
+    "word": "驰名商标",
+    "replacement": "知名品牌"
+  },
+  {
+    "word": "中国名牌",
+    "replacement": "知名品牌"
+  },
+  {
+    "word": "免检产品",
+    "replacement": "品质产品"
+  },
+  {
+    "word": "获奖产品",
+    "replacement": "荣誉产品"
+  },
+  {
+    "word": "明星代言",
+    "replacement": "品牌合作"
+  },
+  {
+    "word": "央视推荐",
+    "replacement": "媒体关注"
+  },
+  {
+    "word": "权威推荐",
+    "replacement": "专业推荐"
+  },
+  {
+    "word": "专家推荐",
+    "replacement": "行业认可"
+  },
+  {
+    "word": "领导品牌",
+    "replacement": "品牌"
+  },
+  {
+    "word": "首创",
+    "replacement": "创新推出"
+  },
+  {
+    "word": "首发",
+    "replacement": "率先推出"
+  },
+  {
+    "word": "开创",
+    "replacement": "创新"
+  },
+  {
+    "word": "颠覆",
+    "replacement": "革新"
+  },
+  {
+    "word": "革命性",
+    "replacement": "突破性"
+  },
+  {
+    "word": "划时代",
+    "replacement": "里程碑式"
+  },
+  {
+    "word": "里程碑",
+    "replacement": "重要节点"
+  },
+  {
+    "word": "重大突破",
+    "replacement": "技术进步"
+  },
+  {
+    "word": "填补空白",
+    "replacement": "创新研发"
+  },
+  {
+    "word": "打破垄断",
+    "replacement": "自主技术"
+  },
+  {
+    "word": "抗癌",
+    "replacement": "辅助健康"
+  },
+  {
+    "word": "防癌",
+    "replacement": "健康养生"
+  },
+  {
+    "word": "延寿",
+    "replacement": "健康生活"
+  },
+  {
+    "word": "长寿",
+    "replacement": "健康活力"
+  },
+  {
+    "word": "减肥",
+    "replacement": "体重管理"
+  },
+  {
+    "word": "瘦身",
+    "replacement": "塑形"
+  },
+  {
+    "word": "排毒",
+    "replacement": "调理"
+  },
+  {
+    "word": "祛痘",
+    "replacement": "肌肤护理"
+  },
+  {
+    "word": "祛斑",
+    "replacement": "美白护肤"
+  },
+  {
+    "word": "去皱",
+    "replacement": "抗衰护肤"
+  },
+  {
+    "word": "脱敏",
+    "replacement": "温和护肤"
+  },
+  {
+    "word": "壮阳",
+    "replacement": "男性健康"
+  },
+  {
+    "word": "补肾",
+    "replacement": "身体调理"
+  },
+  {
+    "word": "增高",
+    "replacement": "成长辅助"
+  },
+  {
+    "word": "益智",
+    "replacement": "脑力支持"
+  },
+  {
+    "word": "大大",
+    "replacement": "较大"
+  },
+  {
+    "word": "最后",
+    "replacement": "同时"
+  },
+  {
+    "word": "显著",
+    "replacement": "明显"
+  },
+  {
+    "word": "高档",
+    "replacement": "品质"
+  },
+  {
+    "word": "全面",
+    "replacement": "多方面"
+  },
+  {
+    "word": "清除",
+    "replacement": "清理"
+  },
+  {
+    "word": "广泛",
+    "replacement": "宽泛"
+  },
+  {
+    "word": "感染",
+    "replacement": "染上"
+  },
+  {
+    "word": "核心",
+    "replacement": "重心"
+  },
+  {
+    "word": "政府",
+    "replacement": "官方"
+  },
+  {
+    "word": "仅",
+    "replacement": ""
+  }
+]
