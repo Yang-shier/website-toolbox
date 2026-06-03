@@ -1,0 +1,3840 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>建站工具箱</title>
+        <style>
+            :root {
+                --bg-primary: #f5f7fa;
+                --bg-secondary: #ffffff;
+                --bg-card: rgba(0, 0, 0, 0.03);
+                --border: rgba(0, 0, 0, 0.08);
+                --text: #1a1a2e;
+                --text-dim: #888;
+                --accent: #6c63ff;
+                --accent-hover: #7b73ff;
+                --accent-glow: rgba(108, 99, 255, 0.25);
+                --success: #4caf50;
+                --danger: #e74c3c;
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, var(--bg-primary) 0%, #eef1f5 50%, var(--bg-primary) 100%);
+                color: var(--text);
+                height: 100vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* ── Header ── */
+            .header {
+                padding: 10px 24px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                border-bottom: 1px solid var(--border);
+                backdrop-filter: blur(20px);
+                background: rgba(255, 255, 255, 0.85);
+                flex-shrink: 0;
+            }
+            .header h1 {
+                font-size: 18px;
+                font-weight: 600;
+                background: linear-gradient(135deg, #6c63ff, #48c6ef);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                letter-spacing: 1px;
+                white-space: nowrap;
+            }
+            .tab-group {
+                display: flex;
+                gap: 4px;
+                background: var(--bg-card);
+                border-radius: 8px;
+                padding: 3px;
+            }
+            .tab-btn {
+                padding: 5px 16px;
+                border: none;
+                border-radius: 6px;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: transparent;
+                color: var(--text-dim);
+            }
+            .tab-btn.active {
+                background: linear-gradient(135deg, var(--accent), #48c6ef);
+                color: #fff;
+                box-shadow: 0 2px 10px var(--accent-glow);
+            }
+            .tab-btn:not(.active):hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
+
+            /* ── Main layout ── */
+            .main {
+                display: none;
+                flex: 1;
+                min-height: 0;
+            }
+            .main.active {
+                display: flex;
+            }
+
+            /* ── Sidebar ── */
+            .sidebar {
+                width: 380px;
+                flex-shrink: 0;
+                overflow-y: auto;
+                border-right: 1px solid var(--border);
+                background: var(--bg-secondary);
+            }
+            .section {
+                border-bottom: 1px solid var(--border);
+            }
+            .section:last-child {
+                border-bottom: none;
+            }
+            .section-header {
+                padding: 10px 16px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: var(--text-dim);
+                background: rgba(0, 0, 0, 0.02);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                user-select: none;
+                transition: background 0.15s;
+            }
+            .section-header:hover {
+                background: rgba(0, 0, 0, 0.04);
+            }
+            .section-arrow {
+                font-size: 10px;
+                transition: transform 0.2s;
+                display: inline-block;
+                color: #bbb;
+            }
+            .section.collapsed .section-arrow {
+                transform: rotate(-90deg);
+            }
+            .section.collapsed .section-body {
+                display: none;
+            }
+            .section-header .badge {
+                font-size: 11px;
+                padding: 2px 8px;
+                border-radius: 10px;
+                background: var(--accent);
+                color: #fff;
+                letter-spacing: 0;
+                text-transform: none;
+                font-weight: 500;
+                margin-left: auto;
+            }
+            .section-body {
+                padding: 12px 16px;
+            }
+            .section-body--flush {
+                padding: 0;
+            }
+            .section-body textarea {
+                width: 100%;
+                height: 150px;
+                padding: 10px 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #f0f1f3;
+                color: var(--text);
+                font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+                font-size: 12px;
+                line-height: 1.6;
+                resize: vertical;
+                outline: none;
+                display: block;
+            }
+            .section-body textarea:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
+            .section-body textarea::placeholder {
+                color: rgba(0, 0, 0, 0.25);
+            }
+            .section-action {
+                margin-top: 10px;
+            }
+
+            /* ── Nav tree ── */
+            .nav-tree {
+                padding: 12px 16px;
+                flex: 1;
+                overflow-y: auto;
+            }
+            .nav-tree:empty::before {
+                content: '\2190  在左侧粘贴源导航代码，然后点击「提取导航」';
+                color: rgba(0, 0, 0, 0.25);
+                font-size: 13px;
+            }
+            .nav-item {
+                margin-bottom: 8px;
+            }
+            .nav-item-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 10px;
+                border-radius: 8px;
+                background: rgba(108, 99, 255, 0.06);
+                cursor: pointer;
+                transition: background 0.2s;
+                user-select: none;
+            }
+            .nav-item-header:hover {
+                background: rgba(108, 99, 255, 0.12);
+            }
+            .nav-item-header input[type='checkbox'] {
+                accent-color: var(--accent);
+                width: 15px;
+                height: 15px;
+                cursor: pointer;
+            }
+            .nav-item-title {
+                font-weight: 600;
+                font-size: 13px;
+            }
+            .nav-item-link {
+                color: var(--text-dim);
+                font-size: 11px;
+                font-family: 'Consolas', monospace;
+                margin-left: auto;
+            }
+            .nav-children {
+                margin-left: 34px;
+                margin-top: 2px;
+            }
+            .nav-child {
+                padding: 2px 0;
+                font-size: 12px;
+                color: #555;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .nav-child::before {
+                content: '\251C';
+                color: #ccc;
+                font-family: monospace;
+                font-size: 13px;
+            }
+            .nav-child:last-child::before {
+                content: '\2514';
+            }
+            .nav-child input[type='checkbox'] {
+                accent-color: var(--accent);
+                width: 13px;
+                height: 13px;
+                cursor: pointer;
+                margin: 0;
+            }
+            .nav-child-link {
+                color: var(--text-dim);
+                font-size: 10px;
+                font-family: 'Consolas', monospace;
+                margin-left: auto;
+            }
+
+            /* ── Contact fields ── */
+            .contact-list {
+                padding: 12px 16px;
+                flex: 1;
+                overflow-y: auto;
+            }
+            .contact-list:empty::before {
+                content: '\2190  在左侧粘贴联系人信息，然后点击「提取联系人」';
+                color: rgba(0, 0, 0, 0.25);
+                font-size: 13px;
+            }
+            .contact-field {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 8px;
+                padding: 8px 12px;
+                border-radius: 8px;
+                background: rgba(108, 99, 255, 0.06);
+            }
+            .contact-field label {
+                font-weight: 600;
+                font-size: 13px;
+                min-width: 56px;
+                color: var(--text);
+            }
+            .contact-field input {
+                flex: 1;
+                padding: 5px 10px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                font-size: 13px;
+                outline: none;
+                background: #fff;
+                font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            }
+            .contact-field input:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
+
+            /* ── Output panel ── */
+            .output-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+            .output-header {
+                padding: 10px 16px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                color: var(--text-dim);
+                border-bottom: 1px solid var(--border);
+                background: rgba(0, 0, 0, 0.02);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-shrink: 0;
+            }
+            .output-actions {
+                display: flex;
+                gap: 8px;
+            }
+            .output-body {
+                flex: 1;
+                overflow: hidden;
+            }
+            .output-area {
+                width: 100%;
+                height: 100%;
+                padding: 16px;
+                border: none;
+                background: #fff;
+                color: var(--text);
+                font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+                font-size: 12px;
+                line-height: 1.6;
+                resize: none;
+                outline: none;
+            }
+            .output-area::placeholder {
+                color: rgba(0, 0, 0, 0.25);
+            }
+
+            /* ── Buttons ── */
+            .btn {
+                padding: 7px 16px;
+                border: none;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            .btn-sm {
+                padding: 5px 12px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+            .btn-primary {
+                background: linear-gradient(135deg, var(--accent), #48c6ef);
+                color: #fff;
+                box-shadow: 0 3px 12px var(--accent-glow);
+            }
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 5px 20px var(--accent-glow);
+            }
+            .btn-secondary {
+                background: var(--bg-card);
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+            .btn-secondary:hover {
+                background: rgba(0, 0, 0, 0.06);
+            }
+            .btn-success {
+                background: var(--success);
+                color: #fff;
+            }
+            .btn-success:hover {
+                background: #43a047;
+            }
+
+            /* ── Contact layout ── */
+            .contact-row {
+                display: flex;
+                gap: 20px;
+            }
+            .contact-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: var(--bg-secondary);
+                border-radius: 12px;
+                border: 1px solid var(--border);
+                overflow: hidden;
+            }
+            .contact-panel-header {
+                padding: 10px 16px;
+                font-size: 14px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: var(--text-dim);
+                background: rgba(0, 0, 0, 0.02);
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .contact-panel-footer {
+                padding: 10px 16px;
+                border-top: 1px solid var(--border);
+                background: rgba(0, 0, 0, 0.02);
+            }
+            .contact-textarea {
+                width: 100%;
+                min-height: 120px;
+                padding: 12px 16px;
+                border: none;
+                background: #fff;
+                color: var(--text);
+                font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+                font-size: 12px;
+                line-height: 1.6;
+                resize: vertical;
+                outline: none;
+            }
+            .contact-textarea:focus {
+                box-shadow: inset 0 0 0 2px var(--accent-glow);
+            }
+            .contact-textarea::placeholder {
+                color: rgba(0, 0, 0, 0.25);
+            }
+            .contact-actions-bar {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                padding: 12px 20px;
+                background: var(--bg-secondary);
+                border-radius: 12px;
+                border: 1px solid var(--border);
+            }
+
+            /* ── Format tab ── */
+            .fmt-opt {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .fmt-opt label {
+                font-size: 13px;
+                color: var(--text-dim);
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+            }
+            .toggle {
+                position: relative;
+                width: 40px;
+                height: 22px;
+                flex-shrink: 0;
+                cursor: pointer;
+            }
+            .toggle input {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                cursor: pointer;
+                z-index: 2;
+                margin: 0;
+            }
+            .toggle .slider {
+                position: absolute;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.12);
+                border-radius: 11px;
+                cursor: pointer;
+                transition: 0.3s;
+            }
+            .toggle .slider::before {
+                content: '';
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                left: 3px;
+                bottom: 3px;
+                background: #fff;
+                border-radius: 50%;
+                transition: 0.3s;
+            }
+            .toggle input:checked + .slider {
+                background: var(--accent);
+                box-shadow: 0 0 8px var(--accent-glow);
+            }
+            .toggle input:checked + .slider::before {
+                transform: translateX(18px);
+            }
+            .fmt-tab-group {
+                display: flex;
+                gap: 0;
+            }
+            .fmt-tab {
+                padding: 4px 14px;
+                font-size: 11px;
+                letter-spacing: 1px;
+                cursor: pointer;
+                border: 1px solid var(--border);
+                background: transparent;
+                color: var(--text-dim);
+                transition: 0.2s;
+                text-transform: uppercase;
+            }
+            .fmt-tab:first-child {
+                border-radius: 6px 0 0 6px;
+            }
+            .fmt-tab:last-child {
+                border-radius: 0 6px 6px 0;
+            }
+            .fmt-tab.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+            .rich-input {
+                width: 100%;
+                height: 100%;
+                padding: 16px;
+                overflow-y: auto;
+                outline: none;
+                font-size: 14px;
+                line-height: 1.8;
+                color: var(--text);
+                background: #fff;
+            }
+            .rich-input:empty::before {
+                content: '在此粘贴富文本内容（Ctrl+V）...';
+                color: rgba(0, 0, 0, 0.25);
+            }
+            .fmt-preview {
+                width: 100%;
+                height: 100%;
+                padding: 16px;
+                overflow-y: auto;
+                font-size: 14px;
+                line-height: 1.8;
+                background: #fff;
+                outline: none;
+            }
+            .fmt-preview:empty::before {
+                content: '格式化后的内容将在此显示';
+                color: rgba(0, 0, 0, 0.25);
+            }
+            .fmt-preview table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 12px 0;
+            }
+            .fmt-preview td,
+            .fmt-preview th {
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                padding: 8px 12px;
+                text-align: left;
+            }
+            .fmt-preview th {
+                background: rgba(0, 0, 0, 0.04);
+            }
+            .fmt-preview p {
+                margin: 8px 0;
+            }
+            .fmt-preview img {
+                max-width: 100%;
+            }
+            .hidden {
+                display: none !important;
+            }
+
+            /* ── Text Processing tab ── */
+            .textproc-layout {
+                max-width: 1440px;
+                width: 100%;
+                margin: 0 auto;
+                display: grid;
+                grid-template-columns: 300px minmax(0, 1fr);
+                gap: 20px;
+                flex: 1;
+                min-height: 0;
+            }
+            .textproc-tools {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                min-height: 0;
+                overflow-y: auto;
+            }
+            .textproc-tool-section {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+            .textproc-tool-title {
+                padding: 10px 14px;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 1.2px;
+                color: var(--text-dim);
+                background: rgba(0, 0, 0, 0.02);
+                border-bottom: 1px solid var(--border);
+            }
+            .textproc-tool-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                padding: 12px;
+            }
+            .textproc-tool-btn {
+                min-height: 34px;
+                padding: 7px 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #fff;
+                color: var(--text);
+                font-size: 13px;
+                cursor: pointer;
+                transition: 0.2s;
+                text-align: center;
+            }
+            .textproc-tool-btn:hover {
+                border-color: rgba(108, 99, 255, 0.35);
+                background: rgba(108, 99, 255, 0.06);
+            }
+            .textproc-tool-btn.active {
+                border-color: var(--accent);
+                background: linear-gradient(135deg, var(--accent), #48c6ef);
+                color: #fff;
+                box-shadow: 0 3px 12px var(--accent-glow);
+            }
+            .textproc-workspace {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                min-width: 0;
+                min-height: 0;
+            }
+            .textproc-editor-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 20px;
+                flex: 1;
+                min-height: 0;
+            }
+            .textproc-stats {
+                margin-left: auto;
+                display: flex;
+                gap: 10px;
+                color: var(--text-dim);
+                font-size: 11px;
+                font-weight: 500;
+                letter-spacing: 0;
+                text-transform: none;
+            }
+            .textproc-actions {
+                justify-content: flex-end;
+            }
+            @media (max-width: 1100px) {
+                .textproc-layout {
+                    grid-template-columns: 1fr;
+                }
+                .textproc-tools {
+                    max-height: 260px;
+                }
+            }
+            @media (max-width: 760px) {
+                .textproc-editor-grid {
+                    grid-template-columns: 1fr;
+                }
+                .textproc-tool-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* ── Modal ── */
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(4px);
+                z-index: 200;
+                align-items: center;
+                justify-content: center;
+            }
+            .modal-overlay.show {
+                display: flex;
+            }
+            .modal {
+                background: #fff;
+                border-radius: 14px;
+                padding: 28px 32px;
+                width: 380px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            }
+            .modal-title {
+                font-size: 17px;
+                font-weight: 600;
+                margin-bottom: 6px;
+                color: var(--text);
+            }
+            .modal-desc {
+                font-size: 13px;
+                color: var(--text-dim);
+                margin-bottom: 18px;
+            }
+            .modal-presets {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 14px;
+                flex-wrap: wrap;
+            }
+            .preset-btn {
+                padding: 6px 16px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--bg-card);
+                color: var(--text);
+                font-size: 13px;
+                cursor: pointer;
+                transition: 0.2s;
+            }
+            .preset-btn:hover {
+                background: var(--accent);
+                color: #fff;
+                border-color: var(--accent);
+            }
+            .modal-input {
+                width: 100%;
+                padding: 10px 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                outline: none;
+                background: var(--bg-primary);
+                color: var(--text);
+                margin-bottom: 18px;
+            }
+            .modal-input:focus {
+                border-color: var(--accent);
+            }
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            .replace-preview-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+                margin-bottom: 16px;
+            }
+            .replace-preview-table th {
+                text-align: left;
+                padding: 8px 10px;
+                background: rgba(0, 0, 0, 0.03);
+                border-bottom: 2px solid var(--border);
+                font-weight: 600;
+                color: var(--text-dim);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .replace-preview-table td {
+                padding: 8px 10px;
+                border-bottom: 1px solid var(--border);
+                vertical-align: middle;
+            }
+            .replace-preview-table tr:last-child td {
+                border-bottom: none;
+            }
+            .replace-preview-table .original-text {
+                font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+                font-size: 12px;
+                color: #666;
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .replace-preview-table select {
+                padding: 4px 8px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                font-size: 12px;
+                background: #fff;
+                color: var(--text);
+                cursor: pointer;
+                outline: none;
+            }
+            .replace-preview-table select:focus {
+                border-color: var(--accent);
+            }
+            .replace-preview-table .new-value {
+                font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+                font-size: 12px;
+                color: var(--accent);
+                font-weight: 500;
+            }
+
+            /* ── Forbidden Words ── */
+            .fw-add-row {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 16px;
+                align-items: center;
+            }
+            .fw-add-row input {
+                flex: 1;
+                padding: 8px 12px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                font-size: 13px;
+                outline: none;
+                background: var(--bg-primary);
+            }
+            .fw-add-row input:focus {
+                border-color: var(--accent);
+            }
+            .fw-list {
+                max-height: 320px;
+                overflow-y: auto;
+                margin-bottom: 12px;
+            }
+            .fw-list table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+            }
+            .fw-list th {
+                text-align: left;
+                padding: 8px 10px;
+                background: rgba(0, 0, 0, 0.03);
+                border-bottom: 2px solid var(--border);
+                font-weight: 600;
+                color: var(--text-dim);
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .fw-list td {
+                padding: 7px 10px;
+                border-bottom: 1px solid var(--border);
+                vertical-align: middle;
+            }
+            .fw-list tr:last-child td {
+                border-bottom: none;
+            }
+            .fw-list .fw-word {
+                font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+                font-size: 12px;
+                color: #e74c3c;
+            }
+            .fw-list .fw-replacement {
+                font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+                font-size: 12px;
+                color: var(--accent);
+            }
+            .fw-list .fw-del {
+                background: none;
+                border: none;
+                color: #ccc;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 2px 6px;
+                border-radius: 4px;
+                transition: 0.2s;
+            }
+            .fw-list .fw-del:hover {
+                color: var(--danger);
+                background: rgba(231, 76, 60, 0.08);
+            }
+            .fw-empty {
+                text-align: center;
+                padding: 24px;
+                color: var(--text-dim);
+                font-size: 13px;
+            }
+
+            /* ── Toast ── */
+            .toast {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%) translateY(100px);
+                padding: 12px 28px;
+                background: var(--success);
+                color: #fff;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 8px 30px rgba(76, 175, 80, 0.3);
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 999;
+            }
+            .toast.show {
+                transform: translateX(-50%) translateY(0);
+            }
+            .toast.error {
+                background: var(--danger);
+                box-shadow: 0 8px 30px rgba(231, 76, 60, 0.3);
+            }
+
+            /* ── Scrollbar ── */
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.12);
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 0, 0, 0.22);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>建站工具箱</h1>
+            <div class="tab-group">
+                <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>
+                <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
+                <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">联系方式替换</button>
+                <button class="tab-btn" data-tab="textproc" onclick="switchTab('textproc')">文本处理</button>
+            </div>
+        </div>
+
+        <!-- ==================== Nav Tab ==================== -->
+        <div class="main" id="navPage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
+            <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0">
+                <!-- 上半部分：源导航代码 + 提取结果 -->
+                <div class="contact-row" style="max-height: 40vh; min-height: 160px">
+                    <div class="contact-panel" style="min-height: 0">
+                        <div class="contact-panel-header">源导航代码</div>
+                        <textarea
+                            id="sourceInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="粘贴导航 HTML 代码（含 .itemNav / .navchildlist 结构）..."
+                        ></textarea>
+                    </div>
+                    <div class="contact-panel" style="min-height: 0">
+                        <div class="contact-panel-header">
+                            提取结果
+                            <span class="badge" id="navCount" style="display: none">0</span>
+                        </div>
+                        <div class="nav-tree" id="navTree"></div>
+                    </div>
+                </div>
+
+                <!-- 下半部分：目标模板代码 + 生成结果 -->
+                <div class="contact-row" style="flex: 1; min-height: 0">
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">目标模板代码</div>
+                        <textarea
+                            id="templateInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="粘贴目标模板 HTML 代码（含重复块结构，至少 2 个同类块）..."
+                        ></textarea>
+                    </div>
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">生成结果</div>
+                        <textarea id="outputArea" class="contact-textarea" style="flex: 1" placeholder="点击「生成代码」查看结果..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 底部按钮栏 -->
+                <div class="contact-actions-bar">
+                    <button class="btn btn-success" onclick="generateOutput()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14" />
+                            <path d="M5 12h14" />
+                        </svg>
+                        生成代码
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyOutput()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()" style="margin-left: auto">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        清除全部
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Contact Tab ==================== -->
+        <div class="main" id="contactPage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
+            <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0">
+                <!-- 上半部分：联系人输入 + 提取结果 -->
+                <div class="contact-row">
+                    <div class="contact-panel">
+                        <div class="contact-panel-header">联系人信息</div>
+                        <textarea
+                            id="contactInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="粘贴联系人信息文本...&#10;&#10;示例格式：&#10;联系人：夏生&#10;联系电话：13922514971&#10;电子邮箱：13662908226@163.com&#10;公司地址：东莞市樟木头镇圩镇泰安路190号101室"
+                        ></textarea>
+                    </div>
+                    <div class="contact-panel">
+                        <div class="contact-panel-header">
+                            提取结果
+                            <span class="badge" id="contactCount" style="display: none">0</span>
+                        </div>
+                        <div class="contact-list" id="contactList"></div>
+                    </div>
+                </div>
+
+                <!-- 下半部分：HTML代码输入 + 替换结果输出 -->
+                <div class="contact-row" style="flex: 1; min-height: 0">
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">联系方式代码</div>
+                        <textarea
+                            id="contactCodeInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="粘贴包含联系方式的 HTML 代码块..."
+                        ></textarea>
+                    </div>
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">替换结果</div>
+                        <textarea id="contactOutput" class="contact-textarea" style="flex: 1" placeholder="点击「替换」查看结果..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 底部按钮栏 -->
+                <div class="contact-actions-bar">
+                    <button class="btn btn-success" onclick="replaceContact()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 1l4 4-4 4" />
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                            <path d="M7 23l-4-4 4-4" />
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                        </svg>
+                        替换
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyContactOutput()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearContact()" style="margin-left: auto">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        清除全部
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Text Processing Tab ==================== -->
+        <div class="main" id="textprocPage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
+            <div class="textproc-layout">
+                <div class="textproc-tools">
+                    <div class="textproc-tool-section">
+                        <div class="textproc-tool-title">清洗整理</div>
+                        <div class="textproc-tool-grid">
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'trimSpaces')">去首尾空格</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'collapseSpaces')">合并空格</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'removeSpaces')">删除空格</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'trimEmpty')">去空行</button>
+                        </div>
+                    </div>
+                    <div class="textproc-tool-section">
+                        <div class="textproc-tool-title">大小写</div>
+                        <div class="textproc-tool-grid">
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'upper')">全大写</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'lower')">全小写</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'capitalize')">首字母大写</button>
+                        </div>
+                    </div>
+                    <div class="textproc-tool-section">
+                        <div class="textproc-tool-title">标点转换</div>
+                        <div class="textproc-tool-grid">
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'cn2en')">中文转英文</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'en2cn')">英文转中文</button>
+                        </div>
+                    </div>
+                    <div class="textproc-tool-section">
+                        <div class="textproc-tool-title">行处理</div>
+                        <div class="textproc-tool-grid">
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'keepSingleBreak')">单换行</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'removeBreaks')">合并为一行</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'lineUnique')">按行去重</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'lineSort')">按行排序</button>
+                            <button class="textproc-tool-btn" onclick="runTextprocTool(this, 'lineNumber')">每行编号</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="textproc-workspace">
+                    <div class="textproc-editor-grid">
+                        <div class="contact-panel" style="min-height: 0">
+                            <div class="contact-panel-header">
+                                源文本
+                                <div class="textproc-stats" id="textprocInputStats">
+                                    <span>0 字</span>
+                                    <span>0 行</span>
+                                </div>
+                            </div>
+                            <textarea
+                                id="textprocInput"
+                                class="contact-textarea"
+                                style="flex: 1"
+                                placeholder="粘贴需要处理的纯文本..."
+                                oninput="updateTextprocStats()"
+                            ></textarea>
+                        </div>
+                        <div class="contact-panel" style="min-height: 0">
+                            <div class="contact-panel-header">
+                                处理结果
+                                <div class="textproc-stats" id="textprocOutputStats">
+                                    <span>0 字</span>
+                                    <span>0 行</span>
+                                </div>
+                            </div>
+                            <textarea
+                                id="textprocOutput"
+                                class="contact-textarea"
+                                style="flex: 1"
+                                readonly
+                                placeholder="选择左侧工具后，处理结果将在此显示..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div class="contact-actions-bar textproc-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="useTextprocOutputAsInput()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12h18" />
+                                <path d="M10 5l7 7-7 7" />
+                            </svg>
+                            结果回填
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="copyTextprocOutput()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                            复制结果
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearTextproc()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            清空
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Format Tab ==================== -->
+        <div class="main active" id="formatPage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
+            <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0">
+                <!-- 选项栏 -->
+                <div class="contact-actions-bar" style="flex-wrap: wrap; gap: 16px">
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optRemoveStyle" checked />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optRemoveStyle">去除行内样式</label>
+                    </div>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optAutoTitle" checked />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optAutoTitle">自动识别小标题加粗</label>
+                    </div>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optEnMode" />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optEnMode">英文模式</label>
+                    </div>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optIndent" checked />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optIndent">段落首行缩进</label>
+                    </div>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optKeepBold" checked />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optKeepBold">保留原有粗体</label>
+                    </div>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optRemoveImg" />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optRemoveImg">去除图片</label>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="imgWidthBtn" onclick="showImgWidthDialog()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <path d="M21 15l-5-5L5 21" />
+                        </svg>
+                        <span id="imgWidthBtnText">图片宽度：未设置</span>
+                    </button>
+                    <div class="fmt-opt">
+                        <div class="toggle">
+                            <input type="checkbox" id="optForbiddenWords" />
+                            <span class="slider"></span>
+                        </div>
+                        <label for="optForbiddenWords">禁词替换</label>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="showForbiddenWordsModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M4.93 4.93l14.14 14.14" />
+                        </svg>
+                        <span>禁词库</span>
+                        <span class="badge" id="fwBadge" style="display: none; font-size: 10px; padding: 1px 6px">0</span>
+                    </button>
+                </div>
+
+                <!-- 输入 + 输出 左右对照 -->
+                <div class="contact-row" style="flex: 1; min-height: 0">
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">
+                            <span>输入</span>
+                            <div class="fmt-tab-group">
+                                <div class="fmt-tab active" onclick="switchFormatInputTab('rich')">富文本</div>
+                                <div class="fmt-tab" onclick="switchFormatInputTab('code')">源代码</div>
+                            </div>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; position: relative">
+                            <div class="rich-input" id="richInput" contenteditable="true"></div>
+                            <textarea
+                                class="contact-textarea hidden"
+                                id="codeInput"
+                                style="position: absolute; inset: 0; height: 100%"
+                                placeholder="在此粘贴 HTML 源代码..."
+                                spellcheck="false"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">
+                            <span>输出</span>
+                            <div class="fmt-tab-group">
+                                <div class="fmt-tab active" onclick="switchFormatOutputTab('preview')">预览</div>
+                                <div class="fmt-tab" onclick="switchFormatOutputTab('source')">源代码</div>
+                            </div>
+                            <div style="margin-left: auto; display: flex; align-items: center; gap: 4px">
+                                <button
+                                    class="btn btn-secondary btn-sm"
+                                    onclick="toggleFindReplace()"
+                                    title="查找替换"
+                                    style="padding: 3px 8px; font-size: 12px"
+                                >
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="M21 21l-4.35-4.35" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div
+                            id="findReplaceBar"
+                            style="
+                                display: none;
+                                padding: 6px 12px;
+                                border-bottom: 1px solid var(--border);
+                                background: rgba(0, 0, 0, 0.02);
+                                flex-shrink: 0;
+                            "
+                        >
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap">
+                                <input
+                                    id="findInput"
+                                    placeholder="查找..."
+                                    style="
+                                        flex: 1;
+                                        min-width: 120px;
+                                        padding: 4px 8px;
+                                        border: 1px solid var(--border);
+                                        border-radius: 4px;
+                                        font-size: 12px;
+                                        outline: none;
+                                        background: #fff;
+                                    "
+                                />
+                                <input
+                                    id="replaceInput"
+                                    placeholder="替换为..."
+                                    style="
+                                        flex: 1;
+                                        min-width: 120px;
+                                        padding: 4px 8px;
+                                        border: 1px solid var(--border);
+                                        border-radius: 4px;
+                                        font-size: 12px;
+                                        outline: none;
+                                        background: #fff;
+                                    "
+                                />
+                                <span id="findCount" style="font-size: 11px; color: var(--text-dim); white-space: nowrap"></span>
+                                <button class="btn btn-secondary btn-sm" onclick="findNext()" style="padding: 3px 8px; font-size: 11px">
+                                    下一个
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="replaceOne()" style="padding: 3px 8px; font-size: 11px">
+                                    替换
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="replaceAllMatches()" style="padding: 3px 8px; font-size: 11px">
+                                    全部替换
+                                </button>
+                            </div>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; position: relative">
+                            <div class="fmt-preview" id="fmtPreview" contenteditable="true"></div>
+                            <textarea
+                                class="contact-textarea hidden"
+                                id="fmtOutputSource"
+                                style="position: absolute; inset: 0; height: 100%"
+                                spellcheck="false"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部按钮栏 -->
+                <div class="contact-actions-bar">
+                    <button class="btn btn-primary" onclick="formatAll()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                        </svg>
+                        一键格式化
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyFormatResult()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFormat()" style="margin-left: auto">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        清除全部
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图片宽度弹窗 -->
+        <div class="modal-overlay" id="imgWidthModal">
+            <div class="modal">
+                <div class="modal-title">设置图片宽度</div>
+                <div class="modal-desc">输入宽度值，将应用到输出结果中的所有图片</div>
+                <div class="modal-presets">
+                    <button class="preset-btn" onclick="setPreset('50%')">50%</button>
+                    <button class="preset-btn" onclick="setPreset('80%')">80%</button>
+                    <button class="preset-btn" onclick="setPreset('100%')">100%</button>
+                    <button class="preset-btn" onclick="setPreset('500px')">500px</button>
+                    <button class="preset-btn" onclick="setPreset('700px')">700px</button>
+                </div>
+                <input type="text" class="modal-input" id="imgWidthInput" placeholder="输入宽度，如 50% 或 500px" />
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="resetImgWidth()" style="margin-right: auto">重置</button>
+                    <button class="btn btn-secondary" onclick="closeImgWidthDialog()">取消</button>
+                    <button class="btn btn-primary" onclick="applyImgWidth()">应用</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 禁词库管理弹窗 -->
+        <div class="modal-overlay" id="forbiddenWordsModal">
+            <div class="modal" style="width: 520px; max-height: 80vh; display: flex; flex-direction: column">
+                <div class="modal-title">禁词库管理</div>
+                <div class="modal-desc">添加禁词及替换词，格式化时自动替换。数据保存在浏览器本地。</div>
+                <div class="fw-add-row">
+                    <input type="text" id="fwWordInput" placeholder="禁词" />
+                    <span style="color: var(--text-dim); font-size: 16px">→</span>
+                    <input type="text" id="fwReplacementInput" placeholder="替换为" />
+                    <button class="btn btn-primary btn-sm" onclick="addForbiddenWord()">添加</button>
+                </div>
+                <div class="fw-list" id="fwList"></div>
+                <div class="modal-actions" style="flex-wrap: wrap; gap: 8px">
+                    <div style="display: flex; gap: 8px; margin-right: auto">
+                        <button class="btn btn-secondary btn-sm" onclick="exportForbiddenWords()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            导出
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('fwImportFile').click()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            导入
+                        </button>
+                        <input type="file" id="fwImportFile" accept=".txt,.csv,.json" style="display: none" onchange="importForbiddenWords(event)" />
+                        <button class="btn btn-secondary btn-sm" onclick="showFbBatchInput()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14" />
+                                <path d="M5 12h14" />
+                            </svg>
+                            批量添加
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearAllForbiddenWords()" style="color: var(--danger)">清空全部</button>
+                    <button class="btn btn-secondary" onclick="closeForbiddenWordsModal()">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 批量添加禁词弹窗 -->
+        <div class="modal-overlay" id="fwBatchModal">
+            <div class="modal" style="width: 520px">
+                <div class="modal-title">批量添加禁词</div>
+                <div class="modal-desc">每行一条，格式：禁词=替换词（或用 Tab / 逗号分隔）</div>
+                <textarea
+                    id="fwBatchInput"
+                    style="
+                        width: 100%;
+                        height: 200px;
+                        padding: 10px 12px;
+                        border: 1px solid var(--border);
+                        border-radius: 8px;
+                        font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+                        font-size: 12px;
+                        line-height: 1.6;
+                        resize: vertical;
+                        outline: none;
+                        background: var(--bg-primary);
+                    "
+                    placeholder="最好的=优质的&#10;最便宜=性价比高的&#10;第一=领先"
+                ></textarea>
+                <div class="modal-actions" style="margin-top: 14px">
+                    <button class="btn btn-secondary" onclick="closeFbBatchModal()">取消</button>
+                    <button class="btn btn-primary" onclick="confirmBatchImport()">导入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 联系方式替换预览弹窗 -->
+        <div class="modal-overlay" id="replacePreviewModal">
+            <div class="modal" style="width: 680px; max-height: 80vh; display: flex; flex-direction: column">
+                <div class="modal-title">替换预览</div>
+                <div class="modal-desc">系统自动识别了以下字段类型，请确认或修正后点击「执行替换」</div>
+                <div style="flex: 1; overflow-y: auto; margin-bottom: 16px">
+                    <table class="replace-preview-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%">原始内容</th>
+                                <th style="width: 25%">字段类型</th>
+                                <th style="width: 40%">替换为</th>
+                            </tr>
+                        </thead>
+                        <tbody id="replacePreviewBody"></tbody>
+                    </table>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeReplacePreview()">取消</button>
+                    <button class="btn btn-success" onclick="confirmReplace()">执行替换</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <script>
+            let navData = [];
+            let contactData = {};
+
+            function parseNavSource(html) {
+                const wrap = document.createElement('div');
+                wrap.innerHTML = html;
+                const items = [];
+                // 只取第一个导航容器，避免页面中重复导航结构导致重复提取
+                const firstNavbar = wrap.querySelector('.basic_navbar') || wrap;
+                const mainItems = firstNavbar.querySelectorAll('.itemNav');
+                const childLists = firstNavbar.querySelectorAll('.navchildlist');
+
+                mainItems.forEach((item, i) => {
+                    const a = item.querySelector('a[href]');
+                    if (!a) return;
+                    const parentTitle = (a.querySelector('.pageLink, .nav_item_name') || a).textContent.trim();
+                    const parentLink = a.getAttribute('href') || '';
+
+                    if (childLists[i]) {
+                        const children = [];
+                        // 尝试多种选择器提取子菜单项（适配不同平台）
+                        var level2Items = childLists[i].querySelectorAll('.level_2_content.navchildLine');
+                        if (level2Items.length === 0) level2Items = childLists[i].querySelectorAll('.child_content_list > .navchildLine');
+                        if (level2Items.length === 0) level2Items = childLists[i].querySelectorAll('.navchildPart > .navchildLine');
+                        if (level2Items.length === 0) level2Items = childLists[i].querySelectorAll('.navchildLine');
+
+                        level2Items.forEach(function (line) {
+                            const ca = line.querySelector('a[href]');
+                            if (!ca) return;
+                            const ct = (ca.querySelector('.navchildLink, .level_2_title') || ca).textContent.trim();
+                            const cl = ca.getAttribute('href') || '';
+                            if (ct) children.push({ title: ct, link: cl, checked: true });
+                        });
+                        if (children.length > 0) {
+                            items.push({ title: parentTitle, link: parentLink, children, checked: true });
+                        }
+                    }
+                });
+
+                return items;
+            }
+
+            function extractNav() {
+                const html = document.getElementById('sourceInput').value.trim();
+                if (!html) {
+                    showToast('请先粘贴源导航代码', true);
+                    return;
+                }
+
+                navData = parseNavSource(html);
+                if (navData.length === 0) {
+                    showToast('未能提取到导航项，请检查代码结构', true);
+                    return;
+                }
+
+                renderNavTree();
+                const badge = document.getElementById('navCount');
+                badge.textContent = navData.length;
+                badge.style.display = '';
+                showToast('已提取 ' + navData.length + ' 个导航项');
+            }
+
+            function renderNavTree() {
+                const container = document.getElementById('navTree');
+                container.innerHTML = '';
+
+                navData.forEach((item, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'nav-item';
+
+                    let childrenHTML = '';
+                    if (item.children.length > 0) {
+                        childrenHTML =
+                            '<div class="nav-children">' +
+                            item.children
+                                .map(
+                                    (c, childIndex) =>
+                                        '<label class="nav-child">' +
+                                        '<input type="checkbox" ' +
+                                        (c.checked !== false ? 'checked' : '') +
+                                        ' data-idx="' +
+                                        i +
+                                        '" data-child-idx="' +
+                                        childIndex +
+                                        '">' +
+                                        '<span>' +
+                                        esc(c.title) +
+                                        '</span>' +
+                                        '<span class="nav-child-link">' +
+                                        esc(c.link) +
+                                        '</span>' +
+                                        '</label>'
+                                )
+                                .join('') +
+                            '</div>';
+                    }
+
+                    div.innerHTML =
+                        '<label class="nav-item-header">' +
+                        '<input class="nav-parent-check" type="checkbox" ' +
+                        (item.checked ? 'checked' : '') +
+                        ' data-idx="' +
+                        i +
+                        '">' +
+                        '<span class="nav-item-title">' +
+                        esc(item.title) +
+                        '</span>' +
+                        '<span class="nav-item-link">' +
+                        esc(item.link) +
+                        '</span>' +
+                        '</label>' +
+                        childrenHTML;
+
+                    div.querySelector('.nav-parent-check').addEventListener('change', function () {
+                        setNavParentChecked(this.dataset.idx, this.checked);
+                    });
+
+                    div.querySelectorAll('.nav-child input[type="checkbox"]').forEach(function (input) {
+                        input.addEventListener('change', function () {
+                            setNavChildChecked(this.dataset.idx, this.dataset.childIdx, this.checked);
+                        });
+                    });
+
+                    container.appendChild(div);
+                });
+            }
+
+            function setNavParentChecked(index, checked) {
+                const item = navData[index];
+                if (!item) return;
+                item.checked = checked;
+                item.children.forEach(function (child) {
+                    child.checked = checked;
+                });
+                renderNavTree();
+            }
+
+            function setNavChildChecked(parentIndex, childIndex, checked) {
+                const item = navData[parentIndex];
+                if (!item || !item.children[childIndex]) return;
+                item.children[childIndex].checked = checked;
+                item.checked = item.children.some(function (child) {
+                    return child.checked !== false;
+                });
+                renderNavTree();
+            }
+
+            function findRepeatingBlocks(container) {
+                if (!container || !container.children) return null;
+                const groups = {};
+                Array.from(container.children).forEach(child => {
+                    if (child.nodeType !== 1) return;
+                    const key = child.tagName + '|' + (child.className || '').trim();
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(child);
+                });
+
+                let best = [];
+                for (const arr of Object.values(groups)) {
+                    if (arr.length >= 2 && arr.length > best.length) best = arr;
+                }
+
+                if (best.length >= 2) return { blockParent: container, blocks: best };
+
+                for (const child of container.children) {
+                    if (child.nodeType !== 1) continue;
+                    const result = findRepeatingBlocks(child);
+                    if (result) return result;
+                }
+
+                return null;
+            }
+
+            function analyzeBlock(block) {
+                const groups = {};
+                Array.from(block.children).forEach(child => {
+                    if (child.nodeType !== 1) return;
+                    const key = child.tagName + '|' + (child.className || '').trim();
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(child);
+                });
+
+                let childItems = [];
+                for (const arr of Object.values(groups)) {
+                    if (arr.length >= 2 && arr[0].querySelector('a[href]') && arr.length > childItems.length) {
+                        childItems = arr;
+                    }
+                }
+
+                const childSet = new Set(childItems);
+                let titleLink = null;
+                let titleEl = null;
+
+                for (const a of block.querySelectorAll('a[href]')) {
+                    let p = a.parentElement;
+                    let inChild = false;
+                    while (p && p !== block) {
+                        if (childSet.has(p)) {
+                            inChild = true;
+                            break;
+                        }
+                        p = p.parentElement;
+                    }
+                    if (!inChild) {
+                        titleLink = a;
+                        break;
+                    }
+                }
+
+                if (!titleLink) {
+                    for (const el of block.children) {
+                        if (el.nodeType !== 1 || childSet.has(el)) continue;
+                        var txt = el.textContent.trim();
+                        if (txt) {
+                            titleEl = el;
+                            break;
+                        }
+                    }
+                }
+
+                return {
+                    titleLink,
+                    titleEl,
+                    childTemplate: childItems.length > 0 ? childItems[0] : null,
+                    childItems,
+                };
+            }
+
+            function setLinkContent(a, href, text) {
+                a.setAttribute('href', href);
+                const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT);
+                let node;
+                while ((node = walker.nextNode())) {
+                    if (node.textContent.trim()) {
+                        node.textContent = text;
+                        return;
+                    }
+                }
+                a.textContent = text;
+            }
+
+            function setElementText(el, text) {
+                const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+                let node;
+                while ((node = walker.nextNode())) {
+                    if (node.textContent.trim()) {
+                        node.textContent = text;
+                        return;
+                    }
+                }
+                el.textContent = text;
+            }
+
+            function getMoreLabel(parentTitle) {
+                var suffixes = ['中心', '展示', '资讯', '列表', '分类', '大全', '推荐', '项目', '栏目', '频道', '专区'];
+                var core = parentTitle;
+                for (var i = 0; i < suffixes.length; i++) {
+                    if (core.endsWith(suffixes[i]) && core.length > suffixes[i].length) {
+                        core = core.substring(0, core.length - suffixes[i].length);
+                        break;
+                    }
+                }
+                return '更多' + core;
+            }
+
+            function getSelectedChildren(navItem) {
+                return navItem.children.filter(function (child) {
+                    return child.checked !== false;
+                });
+            }
+
+            function buildFlatNavItems(checkedItems) {
+                const flatItems = [];
+                checkedItems.forEach(function (navItem) {
+                    const selectedChildren = getSelectedChildren(navItem);
+                    if (selectedChildren.length > 0) {
+                        selectedChildren.forEach(function (child) {
+                            flatItems.push({ title: child.title, link: child.link, children: [] });
+                        });
+                    } else {
+                        flatItems.push({ title: navItem.title, link: navItem.link, children: [] });
+                    }
+                });
+                return flatItems;
+            }
+
+            function generateOutput() {
+                const templateHTML = document.getElementById('templateInput').value.trim();
+                if (!templateHTML) {
+                    showToast('请先粘贴目标模板代码', true);
+                    return;
+                }
+
+                const checked = navData.filter(n => n.checked);
+                if (checked.length === 0) {
+                    showToast('请先提取导航并勾选需要填充的项目', true);
+                    return;
+                }
+
+                const wrap = document.createElement('div');
+                wrap.innerHTML = templateHTML;
+
+                const found = findRepeatingBlocks(wrap);
+                if (!found) {
+                    showToast('未识别到重复块结构（需要至少 2 个同类块元素）', true);
+                    return;
+                }
+
+                const { blockParent, blocks } = found;
+                const templateBlock = blocks[0].cloneNode(true);
+                const templateAnalysis = analyzeBlock(templateBlock.cloneNode(true));
+                const itemsToRender = templateAnalysis.childTemplate ? checked : buildFlatNavItems(checked);
+
+                blocks.forEach(b => b.parentNode.removeChild(b));
+
+                itemsToRender.forEach(navItem => {
+                    const newBlock = templateBlock.cloneNode(true);
+                    const ba = analyzeBlock(newBlock);
+
+                    if (ba.titleLink) {
+                        setLinkContent(ba.titleLink, navItem.link, navItem.title);
+                    } else if (ba.titleEl) {
+                        setElementText(ba.titleEl, navItem.title);
+                    }
+
+                    if (ba.childTemplate && ba.childItems.length > 0) {
+                        const parent = ba.childItems[0].parentNode;
+                        const tpl = ba.childTemplate.cloneNode(true);
+                        ba.childItems.forEach(ci => parent.removeChild(ci));
+
+                        var childrenToUse = getSelectedChildren(navItem);
+                        if (childrenToUse.length > 5) {
+                            childrenToUse = childrenToUse.slice(0, 4);
+                            childrenToUse.push({ title: getMoreLabel(navItem.title), link: navItem.link });
+                        }
+
+                        childrenToUse.forEach(child => {
+                            const nc = tpl.cloneNode(true);
+                            const link = nc.querySelector('a[href]');
+                            if (link) setLinkContent(link, child.link, child.title);
+                            parent.appendChild(nc);
+                        });
+                    }
+
+                    blockParent.appendChild(newBlock);
+                });
+
+                document.getElementById('outputArea').value = formatOutput(wrap.innerHTML);
+                showToast('已生成 ' + itemsToRender.length + ' 个模块');
+            }
+
+            function formatOutput(html) {
+                var result = html.replace(/>\s+</g, '><');
+                var indent = 0;
+                var parts = result.split(/(?<=>)(?=<)/);
+                var lines = [];
+
+                parts.forEach(function (part) {
+                    part = part.trim();
+                    if (!part) return;
+
+                    var isClose = /^<\//.test(part);
+                    var isOpen = /^<[a-zA-Z]/.test(part);
+                    var isSelfClose = /\/>$/.test(part);
+                    var hasMatchingClose = false;
+
+                    if (isOpen) {
+                        var tagMatch = part.match(/^<([a-zA-Z][a-zA-Z0-9]*)/);
+                        if (tagMatch) {
+                            var re = new RegExp('</' + tagMatch[1] + '\\s*>$', 'i');
+                            hasMatchingClose = re.test(part);
+                        }
+                    }
+
+                    if (isClose) indent = Math.max(0, indent - 1);
+                    lines.push('\t'.repeat(indent) + part);
+                    if (isOpen && !isSelfClose && !hasMatchingClose) indent++;
+                });
+
+                return lines.join('\n');
+            }
+
+            function copyOutput() {
+                const output = document.getElementById('outputArea').value;
+                if (!output) {
+                    showToast('没有可复制的内容', true);
+                    return;
+                }
+                navigator.clipboard.writeText(output).then(() => showToast('已复制到剪贴板'));
+            }
+
+            function clearAll() {
+                document.getElementById('sourceInput').value = '';
+                document.getElementById('templateInput').value = '';
+                document.getElementById('navTree').innerHTML = '';
+                document.getElementById('outputArea').value = '';
+                document.getElementById('navCount').style.display = 'none';
+                navData = [];
+                showToast('已清除');
+            }
+
+            function esc(s) {
+                var d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
+
+            function showToast(msg, isError) {
+                var toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.className = 'toast show' + (isError ? ' error' : '');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(function () {
+                    toast.className = 'toast';
+                }, 2500);
+            }
+
+            // === Contact Replacement Feature ===
+
+            var CONTACT_LABELS = {
+                联系人: 'name',
+                姓名: 'name',
+                站内业务联系人: 'name',
+                业务联系人: 'name',
+                负责人: 'name',
+                联系电话: 'phone',
+                电话: 'phone',
+                手机: 'phone',
+                手机号: 'phone',
+                手机号码: 'phone',
+                站内业务联系人手机号码: 'phone',
+                业务联系人手机号码: 'phone',
+                座机号码: 'landline',
+                座机: 'landline',
+                座机号: 'landline',
+                '400电话': 'landline',
+                '400电话优先选择': 'landline',
+                电子邮箱: 'email',
+                邮箱: 'email',
+                邮箱地址: 'email',
+                公司名称: 'company',
+                公司名: 'company',
+                企业名称: 'company',
+                公司地址: 'address',
+                联系地址: 'address',
+                详细地址: 'address',
+                地址: 'address',
+                传真: 'fax',
+                传真号: 'fax',
+                传真号码: 'fax',
+                邮编: 'zip',
+                邮政编码: 'zip',
+                QQ: 'qq',
+                QQ号码: 'qq',
+                QQ号: 'qq',
+                微信: 'wechat',
+                微信号: 'wechat',
+                网站: 'website',
+                网址: 'website',
+                官网: 'website',
+            };
+
+            var CONTACT_DISPLAY = {
+                company: '公司',
+                name: '联系人',
+                phone: '手机',
+                landline: '座机',
+                email: '邮箱',
+                address: '地址',
+                fax: '传真',
+                zip: '邮编',
+                qq: 'QQ',
+                wechat: '微信',
+                website: '网站',
+            };
+
+            var SORTED_LABELS = Object.entries(CONTACT_LABELS).sort(function (a, b) {
+                return b[0].length - a[0].length;
+            });
+
+            function parseContactText(text) {
+                var result = {};
+                var lines = text
+                    .split(/\n/)
+                    .map(function (l) {
+                        return l.trim();
+                    })
+                    .filter(function (l) {
+                        return l;
+                    });
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var matched = false;
+
+                    // 尝试用 Tab 分隔
+                    var tabParts = line.split(/\t+/);
+                    if (tabParts.length >= 2) {
+                        var label = tabParts[0].replace(/\s+/g, '');
+                        var value = tabParts[1].trim();
+                        for (var j = 0; j < SORTED_LABELS.length; j++) {
+                            if (label.includes(SORTED_LABELS[j][0]) || SORTED_LABELS[j][0].includes(label)) {
+                                if (value) {
+                                    var key = SORTED_LABELS[j][1];
+                                    if (!result[key]) result[key] = [];
+                                    result[key].push(value);
+                                }
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (matched) continue;
+                    }
+
+                    var normalized = line.replace(/\s+/g, '');
+
+                    for (var j = 0; j < SORTED_LABELS.length; j++) {
+                        var label = SORTED_LABELS[j][0];
+                        var key = SORTED_LABELS[j][1];
+                        if (!normalized.includes(label)) continue;
+
+                        var colonIdx = line.search(/[：:]/);
+                        var value = '';
+                        if (colonIdx !== -1) {
+                            var afterColon = line.substring(colonIdx + 1).trim();
+                            if (afterColon) {
+                                value = afterColon;
+                            } else if (i + 1 < lines.length) {
+                                value = lines[i + 1];
+                                i++;
+                            }
+                        } else if (i + 1 < lines.length) {
+                            value = lines[i + 1];
+                            i++;
+                        }
+
+                        if (value) {
+                            if (!result[key]) result[key] = [];
+                            result[key].push(value);
+                        }
+                        matched = true;
+                        break;
+                    }
+
+                    if (!matched && line.length <= 10 && !/\d{5,}/.test(line) && !/[省市区县镇路街号]/.test(line) && !/[@.]/.test(line)) {
+                        if (i + 1 < lines.length) {
+                            var nextNorm = lines[i + 1].replace(/\s+/g, '');
+                            var isNextPhone = false;
+                            for (var k = 0; k < SORTED_LABELS.length; k++) {
+                                if (
+                                    nextNorm.includes(SORTED_LABELS[k][0]) &&
+                                    (SORTED_LABELS[k][1] === 'phone' || SORTED_LABELS[k][1] === 'landline')
+                                ) {
+                                    isNextPhone = true;
+                                    break;
+                                }
+                            }
+                            if (isNextPhone) {
+                                if (!result.name) result.name = [];
+                                result.name.push(line);
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            function extractContact() {
+                var text = document.getElementById('contactInput').value.trim();
+                if (!text) {
+                    showToast('请先粘贴联系人信息', true);
+                    return;
+                }
+
+                contactData = parseContactText(text);
+                var keys = Object.keys(contactData);
+                if (keys.length === 0) {
+                    showToast('未能提取到联系信息，请检查文本格式', true);
+                    return;
+                }
+
+                renderContactList();
+                var totalValues = 0;
+                keys.forEach(function (k) {
+                    totalValues += contactData[k].length;
+                });
+                var badge = document.getElementById('contactCount');
+                badge.textContent = totalValues;
+                badge.style.display = '';
+                showToast('已提取 ' + totalValues + ' 项联系信息');
+            }
+
+            function renderContactList() {
+                var container = document.getElementById('contactList');
+                container.innerHTML = '';
+
+                var entries = Object.entries(contactData);
+                for (var i = 0; i < entries.length; i++) {
+                    var key = entries[i][0];
+                    var values = entries[i][1];
+
+                    for (var vi = 0; vi < values.length; vi++) {
+                        var div = document.createElement('div');
+                        div.className = 'contact-field';
+
+                        var lbl = document.createElement('label');
+                        lbl.textContent = (CONTACT_DISPLAY[key] || key) + (values.length > 1 ? vi + 1 : '');
+
+                        var input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = values[vi];
+                        input.dataset.key = key;
+                        input.dataset.idx = vi;
+                        input.addEventListener('input', function () {
+                            contactData[this.dataset.key][parseInt(this.dataset.idx)] = this.value;
+                        });
+
+                        div.appendChild(lbl);
+                        div.appendChild(input);
+                        container.appendChild(div);
+                    }
+                }
+            }
+
+            // 图标class → 字段类型映射
+            var ICON_MAP = {
+                'fa-user': 'name',
+                'fa-users': 'name',
+                'fa-address-card': 'name',
+                'fa-phone': 'phone',
+                'fa-mobile': 'phone',
+                'fa-phone-square': 'phone',
+                'fa-envelope': 'email',
+                'fa-envelope-o': 'email',
+                'fa-at': 'email',
+                'fa-map': 'address',
+                'fa-map-marker': 'address',
+                'fa-location-arrow': 'address',
+                'fa-home': 'address',
+                'fa-fax': 'fax',
+                'fa-qq': 'qq',
+                'fa-weixin': 'wechat',
+                'fa-wechat': 'wechat',
+            };
+
+            function detectBlockType(block) {
+                var html = block.innerHTML || '';
+                var text = block.textContent.replace(/\s+/g, '');
+
+                // 方法1：图标class识别
+                var icons = block.querySelectorAll('i[class*="fa-"]');
+                for (var i = 0; i < icons.length; i++) {
+                    var cls = icons[i].className;
+                    for (var iconKey in ICON_MAP) {
+                        if (cls.indexOf(iconKey) !== -1) return ICON_MAP[iconKey];
+                    }
+                }
+
+                // 方法2：href模式识别
+                if (html.indexOf('mailto:') !== -1) return 'email';
+                if (/[Tt]el:/.test(html)) return 'phone';
+
+                // 方法3：中文标签关键词识别
+                for (var j = 0; j < SORTED_LABELS.length; j++) {
+                    if (text.includes(SORTED_LABELS[j][0])) return SORTED_LABELS[j][1];
+                }
+
+                // 方法4：值的格式识别
+                if (/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(text)) return 'email';
+                if (/^400[\-\s]?\d{3,4}[\-\s]?\d{3,4}$/.test(text.replace(/\s/g, ''))) return 'landline';
+                if (/^0\d{2,3}[\-\s]?\d{7,8}$/.test(text.replace(/\s/g, ''))) return 'landline';
+                if (/^[\d\-+\s]{7,}$/.test(text)) return 'phone';
+
+                return null;
+            }
+
+            function replaceBlockValue(block, newValue, fieldType) {
+                // 替换 href
+                var links = block.querySelectorAll('a[href]');
+                for (var i = 0; i < links.length; i++) {
+                    var href = links[i].getAttribute('href') || '';
+                    if (/^[Tt]el:/.test(href)) {
+                        links[i].setAttribute('href', 'Tel:' + newValue);
+                    } else if (/^mailto:/i.test(href)) {
+                        links[i].setAttribute('href', 'mailto:' + newValue);
+                    }
+                }
+
+                // 找到包含实际值的文本节点并替换
+                // 策略：找到最深层的、包含非空文本的叶子元素
+                var valueNode = findValueNode(block, fieldType);
+                if (valueNode) {
+                    if (valueNode.nodeType === 3) {
+                        valueNode.textContent = newValue;
+                    } else {
+                        // 保留子元素结构，只替换文本内容
+                        var textNodes = getTextNodes(valueNode);
+                        if (textNodes.length > 0) {
+                            textNodes[0].textContent = newValue;
+                            for (var t = 1; t < textNodes.length; t++) {
+                                textNodes[t].textContent = '';
+                            }
+                        } else {
+                            valueNode.textContent = newValue;
+                        }
+                    }
+                }
+            }
+
+            function findValueNode(block, fieldType) {
+                // 对于有链接的（phone/email），找 <a> 标签内的文本
+                var links = block.querySelectorAll('a');
+                if (links.length > 0) {
+                    for (var i = 0; i < links.length; i++) {
+                        var href = links[i].getAttribute('href') || '';
+                        if (fieldType === 'phone' && /^[Tt]el:/.test(href)) return links[i];
+                        if (fieldType === 'email' && /^mailto:/i.test(href)) return links[i];
+                    }
+                    return links[0];
+                }
+
+                // 排除图标容器，找到值所在的叶子元素
+                var candidates = [];
+                var allDivs = block.querySelectorAll('div, span, p, dd, td');
+                for (var j = 0; j < allDivs.length; j++) {
+                    var el = allDivs[j];
+                    // 跳过包含图标的容器
+                    if (el.querySelector('i[class*="fa-"]')) continue;
+                    // 跳过只有子块元素的容器
+                    if (el.querySelector('div, span, p')) continue;
+                    var txt = el.textContent.trim();
+                    if (txt && txt.length > 0) candidates.push(el);
+                }
+
+                // 如果有多个候选，返回最后一个（通常值在右边/下面）
+                if (candidates.length > 0) return candidates[candidates.length - 1];
+
+                // 降级：直接找文本节点
+                var textNodes = getTextNodes(block);
+                var longest = null;
+                textNodes.forEach(function (tn) {
+                    if (tn.textContent.trim() && (!longest || tn.textContent.trim().length > longest.textContent.trim().length)) {
+                        longest = tn;
+                    }
+                });
+                return longest;
+            }
+
+            function getTextNodes(el) {
+                var nodes = [];
+                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                while (walker.nextNode()) {
+                    if (walker.currentNode.textContent.trim()) nodes.push(walker.currentNode);
+                }
+                return nodes;
+            }
+
+            function replaceContact() {
+                var html = document.getElementById('contactCodeInput').value.trim();
+                if (!html) {
+                    showToast('请先粘贴联系方式代码', true);
+                    return;
+                }
+                if (Object.keys(contactData).length === 0) {
+                    showToast('请先提取联系人信息', true);
+                    return;
+                }
+
+                var wrap = document.createElement('div');
+                wrap.innerHTML = html;
+
+                // 尝试识别卡片结构（含 icon + label + value 的嵌套项）
+                var cardItems = detectCardItems(wrap);
+                if (cardItems) {
+                    var typedRows = [];
+                    cardItems.forEach(function (item) {
+                        var type = detectCardItemType(item);
+                        typedRows.push({ el: item, type: type || '', isCard: true });
+                    });
+
+                    window._replaceData = { wrap: wrap, typedRows: typedRows };
+                    showReplacePreview(typedRows);
+                    return;
+                }
+
+                // 通用行结构
+                var container = wrap.firstElementChild || wrap;
+                var rows = Array.from(container.children).filter(function (child) {
+                    return child.nodeType === 1;
+                });
+
+                if (rows.length <= 1) {
+                    rows = Array.from(wrap.querySelectorAll('p, li, dd, tr, div > div'));
+                    rows = rows.filter(function (r) {
+                        return !r.querySelector('p, li, dd, tr');
+                    });
+                }
+
+                var typedRows = [];
+                rows.forEach(function (row) {
+                    var type = detectBlockType(row);
+                    typedRows.push({ el: row, type: type || '' });
+                });
+
+                if (typedRows.length === 0) {
+                    showToast('未匹配到联系方式字段，请检查代码结构', true);
+                    return;
+                }
+
+                window._replaceData = { wrap: wrap, typedRows: typedRows };
+                showReplacePreview(typedRows);
+            }
+
+            // 检测卡片结构：每个子元素内含 icon 区域 + label/value 区域
+            function detectCardItems(wrap) {
+                var candidates = wrap.querySelectorAll('[class*="contact-item"], [class*="info-item"], [class*="contact-row"]');
+                if (candidates.length >= 2) return Array.from(candidates);
+
+                var container = wrap.querySelector('[class*="info-grid"], [class*="contact-list"], [class*="contact-grid"]');
+                if (!container) container = wrap.firstElementChild || wrap;
+                if (!container.children || container.children.length < 2) return null;
+
+                var items = Array.from(container.children).filter(function (c) {
+                    return c.nodeType === 1;
+                });
+
+                var withIcon = items.filter(function (item) {
+                    return item.querySelector('i[class*="fa"]');
+                });
+
+                if (withIcon.length >= 2) return withIcon;
+                return null;
+            }
+
+            function detectCardItemType(item) {
+                var detail = item.querySelector('[class*="detail"], [class*="content"], [class*="info"]');
+                var icons = item.querySelectorAll('i[class*="fa"]');
+
+                // 从 icon class 识别
+                for (var i = 0; i < icons.length; i++) {
+                    var cls = icons[i].className;
+                    if (/fa-user|fa-address-card/.test(cls)) return 'name';
+                    if (/fa-mobile/.test(cls)) return 'phone';
+                    if (/fa-phone(?!-)/.test(cls)) {
+                        // fa-phone 但不带 -square 等后缀：可能是座机
+                        var valEl = detail ? detail.querySelector('[class*="value"]') || detail.querySelector(':scope > *:last-child') : null;
+                        var valText = valEl ? valEl.textContent.replace(/\s/g, '') : '';
+                        if (/^400|^0\d{2,3}/.test(valText)) return 'landline';
+                        return 'phone';
+                    }
+                    if (/fa-phone-square/.test(cls)) return 'landline';
+                    if (/fa-envelope|fa-at/.test(cls)) return 'email';
+                    if (/fa-map|fa-location|fa-home/.test(cls)) return 'address';
+                    if (/fa-fax/.test(cls)) return 'fax';
+                    if (/fa-qq/.test(cls)) return 'qq';
+                    if (/fa-weixin|fa-wechat/.test(cls)) return 'wechat';
+                    if (/fa-globe|fa-link/.test(cls)) return 'website';
+                }
+
+                // 从 label 文字识别
+                if (detail) {
+                    var children = detail.children;
+                    for (var j = 0; j < children.length; j++) {
+                        var text = children[j].textContent.replace(/\s/g, '');
+                        for (var k = 0; k < SORTED_LABELS.length; k++) {
+                            if (text.includes(SORTED_LABELS[k][0])) return SORTED_LABELS[k][1];
+                        }
+                    }
+                    // 无 label 子元素时，看整体文本
+                    var allText = detail.textContent.replace(/\s/g, '');
+                    for (var k = 0; k < SORTED_LABELS.length; k++) {
+                        if (allText.includes(SORTED_LABELS[k][0])) return SORTED_LABELS[k][1];
+                    }
+                }
+
+                // 从 href 识别
+                var html = item.innerHTML;
+                if (/mailto:/i.test(html)) return 'email';
+                if (/[Tt]el:/.test(html)) return 'phone';
+
+                // 从值的格式识别
+                var fullText = item.textContent.replace(/\s/g, '');
+                if (/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(fullText)) return 'email';
+                if (/^400[\-\s]?\d{3,4}[\-\s]?\d{3,4}$/.test(fullText)) return 'landline';
+                if (/^0\d{2,3}[\-\s]?\d{7,8}$/.test(fullText)) return 'landline';
+                if (/^1[3-9]\d{9}$/.test(fullText)) return 'phone';
+
+                return null;
+            }
+
+            function replaceCardItem(item, newValue, fieldType) {
+                // 更新 href
+                var links = item.querySelectorAll('a[href]');
+                for (var i = 0; i < links.length; i++) {
+                    var href = links[i].getAttribute('href') || '';
+                    if (fieldType === 'phone' && /^[Tt]el:/.test(href)) links[i].setAttribute('href', 'tel:' + newValue);
+                    else if (fieldType === 'landline' && /^[Tt]el:/.test(href)) links[i].setAttribute('href', 'tel:' + newValue);
+                    else if (fieldType === 'email' && /^mailto:/i.test(href)) links[i].setAttribute('href', 'mailto:' + newValue);
+                }
+
+                // 找 value 元素替换文本
+                var detail = item.querySelector('[class*="detail"], [class*="content"], [class*="info"]');
+                var valueEl = null;
+
+                if (detail) {
+                    valueEl = detail.querySelector('[class*="value"]');
+                    if (!valueEl) {
+                        // 取最后一个子元素（跳过 label）
+                        var children = Array.from(detail.children);
+                        for (var i = children.length - 1; i >= 0; i--) {
+                            if (!children[i].className.match(/label|icon|title/)) {
+                                valueEl = children[i];
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!valueEl) {
+                    // 降级：跳过 icon 容器，取最后一个子元素
+                    var allChildren = Array.from(item.children);
+                    for (var i = allChildren.length - 1; i >= 0; i--) {
+                        if (!allChildren[i].querySelector('i[class*="fa"]')) {
+                            valueEl = allChildren[i];
+                            break;
+                        }
+                    }
+                }
+
+                if (valueEl) {
+                    // 如果 value 元素内有链接，替换链接文本
+                    var link = valueEl.querySelector('a[href]');
+                    if (link && (fieldType === 'phone' || fieldType === 'landline' || fieldType === 'email')) {
+                        link.textContent = newValue;
+                    } else {
+                        // 保留内部结构，只替换文本
+                        var textNodes = getTextNodes(valueEl);
+                        if (textNodes.length > 0) {
+                            textNodes[0].textContent = newValue;
+                            for (var t = 1; t < textNodes.length; t++) textNodes[t].textContent = '';
+                        } else {
+                            valueEl.textContent = newValue;
+                        }
+                    }
+                }
+            }
+
+            var FIELD_TYPE_OPTIONS = [
+                { value: '', label: '— 不替换 —' },
+                { value: 'company', label: '公司' },
+                { value: 'name', label: '联系人' },
+                { value: 'phone', label: '手机' },
+                { value: 'landline', label: '座机' },
+                { value: 'email', label: '邮箱' },
+                { value: 'address', label: '地址' },
+                { value: 'fax', label: '传真' },
+                { value: 'zip', label: '邮编' },
+                { value: 'qq', label: 'QQ' },
+                { value: 'wechat', label: '微信' },
+                { value: 'website', label: '网站' },
+            ];
+
+            function showReplacePreview(typedRows) {
+                var tbody = document.getElementById('replacePreviewBody');
+                tbody.innerHTML = '';
+
+                typedRows.forEach(function (item, idx) {
+                    var tr = document.createElement('tr');
+
+                    var tdOriginal = document.createElement('td');
+                    var originalText = item.el.textContent.replace(/\s+/g, ' ').trim();
+                    if (originalText.length > 60) originalText = originalText.substring(0, 60) + '...';
+                    tdOriginal.innerHTML =
+                        '<span class="original-text" title="' + esc(item.el.textContent.trim()) + '">' + esc(originalText) + '</span>';
+                    tr.appendChild(tdOriginal);
+
+                    var tdType = document.createElement('td');
+                    var select = document.createElement('select');
+                    select.dataset.idx = idx;
+                    FIELD_TYPE_OPTIONS.forEach(function (opt) {
+                        var option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.label;
+                        if (opt.value === item.type) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.addEventListener('change', function () {
+                        window._replaceData.typedRows[idx].type = this.value;
+                        updateReplacePreviewValues();
+                    });
+                    tdType.appendChild(select);
+                    tr.appendChild(tdType);
+
+                    var tdValue = document.createElement('td');
+                    var value = item.type && contactData[item.type] ? contactData[item.type][0] : '\u2014';
+                    tdValue.innerHTML = '<span class="new-value">' + esc(value) + '</span>';
+                    tdValue.id = 'replaceVal_' + idx;
+                    tr.appendChild(tdValue);
+
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('replacePreviewModal').classList.add('show');
+            }
+
+            function updateReplacePreviewValues() {
+                var typedRows = window._replaceData.typedRows;
+                typedRows.forEach(function (item, idx) {
+                    var tdValue = document.getElementById('replaceVal_' + idx);
+                    if (!tdValue) return;
+                    var value = item.type && contactData[item.type] ? contactData[item.type][0] : '\u2014';
+                    tdValue.innerHTML = '<span class="new-value">' + esc(value) + '</span>';
+                });
+            }
+
+            function confirmReplace() {
+                var data = window._replaceData;
+                if (!data) return;
+
+                var wrap = data.wrap;
+                var typedRows = data.typedRows;
+                var replacedCount = 0;
+                var addedCount = 0;
+                var deletedCount = 0;
+                var skippedCount = 0;
+
+                typedRows.forEach(function (item) {
+                    var type = item.type;
+                    var el = item.el;
+
+                    if (!type) {
+                        skippedCount++;
+                        return;
+                    }
+
+                    var values = contactData[type];
+                    if (!values || values.length === 0) {
+                        el.parentNode.removeChild(el);
+                        deletedCount++;
+                        return;
+                    }
+
+                    if (item.isCard) {
+                        replaceCardItem(el, values[0], type);
+                    } else {
+                        replaceBlockValue(el, values[0], type);
+                    }
+                    replacedCount++;
+
+                    for (var vi = 1; vi < values.length; vi++) {
+                        var clone = el.cloneNode(true);
+                        if (item.isCard) {
+                            replaceCardItem(clone, values[vi], type);
+                        } else {
+                            replaceBlockValue(clone, values[vi], type);
+                        }
+                        el.parentNode.insertBefore(clone, el.nextSibling);
+                        addedCount++;
+                        el = clone;
+                    }
+                });
+
+                document.getElementById('contactOutput').value = formatOutput(wrap.innerHTML);
+                closeReplacePreview();
+
+                var parts = [];
+                if (replacedCount > 0) parts.push('替换 ' + replacedCount + ' 项');
+                if (addedCount > 0) parts.push('新增 ' + addedCount + ' 项');
+                if (deletedCount > 0) parts.push('删除 ' + deletedCount + ' 项');
+                if (skippedCount > 0) parts.push('跳过 ' + skippedCount + ' 项');
+                showToast(parts.join('，'));
+            }
+
+            function closeReplacePreview() {
+                document.getElementById('replacePreviewModal').classList.remove('show');
+                window._replaceData = null;
+            }
+
+            // === UI Functions ===
+
+            function switchTab(tabName) {
+                document.querySelectorAll('.tab-btn').forEach(function (btn) {
+                    btn.classList.toggle('active', btn.dataset.tab === tabName);
+                });
+                document.querySelectorAll('.main').forEach(function (page) {
+                    page.classList.remove('active');
+                });
+                document.getElementById(tabName + 'Page').classList.add('active');
+            }
+
+            function toggleSection(header) {
+                header.closest('.section').classList.toggle('collapsed');
+            }
+
+            function copyContactOutput() {
+                var output = document.getElementById('contactOutput').value;
+                if (!output) {
+                    showToast('没有可复制的内容', true);
+                    return;
+                }
+                navigator.clipboard.writeText(output).then(function () {
+                    showToast('已复制到剪贴板');
+                });
+            }
+
+            function clearContact() {
+                document.getElementById('contactInput').value = '';
+                document.getElementById('contactCodeInput').value = '';
+                document.getElementById('contactList').innerHTML = '';
+                document.getElementById('contactOutput').value = '';
+                document.getElementById('contactCount').style.display = 'none';
+                contactData = {};
+                showToast('已清除');
+            }
+
+            // === HTML Format Feature ===
+
+            var currentFormatInputTab = 'rich';
+            var currentFormatOutputTab = 'preview';
+            var lastImgWidth = '';
+
+            function switchFormatInputTab(tab) {
+                currentFormatInputTab = tab;
+                var tabs = document.querySelectorAll('#formatPage .contact-panel:first-child .fmt-tab');
+                tabs.forEach(function (t) {
+                    t.classList.remove('active');
+                });
+                tabs[tab === 'rich' ? 0 : 1].classList.add('active');
+
+                var rich = document.getElementById('richInput');
+                var code = document.getElementById('codeInput');
+
+                if (tab === 'rich') {
+                    if (code.value.trim()) rich.innerHTML = code.value;
+                    rich.classList.remove('hidden');
+                    code.classList.add('hidden');
+                } else {
+                    if (rich.innerHTML.trim()) code.value = rich.innerHTML;
+                    code.classList.remove('hidden');
+                    rich.classList.add('hidden');
+                }
+            }
+
+            function switchFormatOutputTab(tab) {
+                currentFormatOutputTab = tab;
+                var tabs = document.querySelectorAll('#formatPage .contact-panel:last-child .fmt-tab');
+                tabs.forEach(function (t) {
+                    t.classList.remove('active');
+                });
+                tabs[tab === 'preview' ? 0 : 1].classList.add('active');
+
+                var preview = document.getElementById('fmtPreview');
+                var source = document.getElementById('fmtOutputSource');
+
+                if (tab === 'preview') {
+                    preview.classList.remove('hidden');
+                    source.classList.add('hidden');
+                } else {
+                    source.classList.remove('hidden');
+                    preview.classList.add('hidden');
+                }
+            }
+
+            // === Find & Replace ===
+
+            function toggleFindReplace() {
+                var bar = document.getElementById('findReplaceBar');
+                bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+                if (bar.style.display === 'block') document.getElementById('findInput').focus();
+            }
+
+            function getActiveOutputEl() {
+                var preview = document.getElementById('fmtPreview');
+                return preview.classList.contains('hidden') ? document.getElementById('fmtOutputSource') : preview;
+            }
+
+            function isPreviewMode() {
+                return !document.getElementById('fmtPreview').classList.contains('hidden');
+            }
+
+            function findNext() {
+                var query = document.getElementById('findInput').value;
+                if (!query) return;
+                var el = getActiveOutputEl();
+                var count = 0;
+
+                if (isPreviewMode()) {
+                    // contenteditable div: use TreeWalker + Selection
+                    var sel = window.getSelection();
+                    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                    var startNode = null,
+                        startOffset = 0;
+                    // If there's a current selection inside the preview, start after it
+                    if (sel.rangeCount > 0 && el.contains(sel.anchorNode)) {
+                        startNode = sel.anchorNode;
+                        startOffset = sel.anchorOffset;
+                    }
+                    var found = false;
+                    var firstMatch = null;
+                    var node;
+                    // First pass: count all matches
+                    walker.currentNode = el;
+                    while ((node = walker.nextNode())) {
+                        var idx = node.textContent.indexOf(query);
+                        while (idx !== -1) {
+                            count++;
+                            if (!firstMatch) firstMatch = { node: node, offset: idx };
+                            idx = node.textContent.indexOf(query, idx + 1);
+                        }
+                    }
+                    // Second pass: find match after current selection
+                    walker.currentNode = el;
+                    var pastCurrent = !startNode;
+                    while ((node = walker.nextNode())) {
+                        if (!pastCurrent) {
+                            if (node === startNode) pastCurrent = true;
+                            else continue;
+                        }
+                        var idx = node.textContent.indexOf(query);
+                        while (idx !== -1) {
+                            if (pastCurrent && (node !== startNode || idx >= startOffset)) {
+                                var range = document.createRange();
+                                range.setStart(node, idx);
+                                range.setEnd(node, idx + query.length);
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                                el.focus();
+                                document.getElementById('findCount').textContent = '1 / ' + count;
+                                found = true;
+                                break;
+                            }
+                            idx = node.textContent.indexOf(query, idx + 1);
+                        }
+                        if (found) break;
+                    }
+                    // Wrap around
+                    if (!found && firstMatch) {
+                        var range = document.createRange();
+                        range.setStart(firstMatch.node, firstMatch.offset);
+                        range.setEnd(firstMatch.node, firstMatch.offset + query.length);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        el.focus();
+                        document.getElementById('findCount').textContent = '1 / ' + count;
+                    }
+                    if (count === 0) document.getElementById('findCount').textContent = '无匹配';
+                } else {
+                    // textarea mode
+                    var text = el.value;
+                    var searchStart = el.selectionEnd;
+                    var idx = text.indexOf(query, searchStart);
+                    if (idx === -1) idx = text.indexOf(query, 0); // wrap
+                    if (idx !== -1) {
+                        el.focus();
+                        el.setSelectionRange(idx, idx + query.length);
+                        // Count all
+                        var c = 0,
+                            pos = 0;
+                        while ((pos = text.indexOf(query, pos)) !== -1) {
+                            c++;
+                            pos += query.length;
+                        }
+                        document.getElementById('findCount').textContent = '1 / ' + c;
+                    } else {
+                        document.getElementById('findCount').textContent = '无匹配';
+                    }
+                }
+            }
+
+            function replaceOne() {
+                var query = document.getElementById('findInput').value;
+                var repl = document.getElementById('replaceInput').value;
+                if (!query) return;
+                var el = getActiveOutputEl();
+
+                if (isPreviewMode()) {
+                    var sel = window.getSelection();
+                    if (sel.rangeCount > 0 && sel.toString() === query) {
+                        var range = sel.getRangeAt(0);
+                        range.deleteContents();
+                        range.insertNode(document.createTextNode(repl));
+                        sel.collapseToEnd();
+                    }
+                    findNext();
+                } else {
+                    var text = el.value;
+                    var start = el.selectionStart;
+                    var end = el.selectionEnd;
+                    if (text.substring(start, end) === query) {
+                        el.value = text.substring(0, start) + repl + text.substring(end);
+                        el.setSelectionRange(start + repl.length, start + repl.length);
+                    }
+                    findNext();
+                }
+            }
+
+            function replaceAllMatches() {
+                var query = document.getElementById('findInput').value;
+                var repl = document.getElementById('replaceInput').value;
+                if (!query) return;
+                var el = getActiveOutputEl();
+
+                if (isPreviewMode()) {
+                    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                    var nodes = [];
+                    var node;
+                    while ((node = walker.nextNode())) {
+                        if (node.textContent.indexOf(query) !== -1) nodes.push(node);
+                    }
+                    var count = 0;
+                    nodes.forEach(function (n) {
+                        var text = n.textContent;
+                        var idx;
+                        while ((idx = text.indexOf(query)) !== -1) {
+                            count++;
+                            text = text.substring(0, idx) + repl + text.substring(idx + query.length);
+                        }
+                        n.textContent = text;
+                    });
+                    document.getElementById('findCount').textContent = count > 0 ? '已替换 ' + count + ' 处' : '无匹配';
+                } else {
+                    var text = el.value;
+                    var count = 0;
+                    while (text.indexOf(query) !== -1) {
+                        count++;
+                        text = text.replace(query, repl);
+                    }
+                    el.value = text;
+                    document.getElementById('findCount').textContent = count > 0 ? '已替换 ' + count + ' 处' : '无匹配';
+                }
+                showToast('替换完成');
+            }
+
+            function getFormatInputHTML() {
+                if (currentFormatInputTab === 'rich') {
+                    return document.getElementById('richInput').innerHTML;
+                }
+                return document.getElementById('codeInput').value;
+            }
+
+            function formatAll() {
+                var html = getFormatInputHTML();
+                if (!html.trim()) {
+                    showToast('请先输入内容', true);
+                    return;
+                }
+
+                var optRemoveStyle = document.getElementById('optRemoveStyle').checked;
+                var optAutoTitle = document.getElementById('optAutoTitle').checked;
+                var optIndent = document.getElementById('optIndent').checked;
+                var optKeepBold = document.getElementById('optKeepBold').checked;
+                var optRemoveImg = document.getElementById('optRemoveImg').checked;
+
+                var container = document.createElement('div');
+                container.innerHTML = html;
+
+                if (optRemoveImg) removeImages(container);
+                normalizeBlockStructure(container);
+                splitHeadingContent(container);
+                cleanupStructure(container);
+                flattenNestedParagraphs(container);
+                convertHeadingsToParagraphs(container);
+
+                if (!optKeepBold) removeBold(container);
+                if (optRemoveStyle) removeInlineStyles(container);
+                if (optAutoTitle) {
+                    var enMode = document.getElementById('optEnMode').checked;
+                    autoDetectTitles(container, enMode);
+                }
+
+                normalizeTextWhitespace(container);
+                removeLeadingSpaces(container);
+                cleanupImageParagraphWhitespace(container);
+                removeEmptyParagraphs(container);
+                if (optIndent) addParagraphIndent(container);
+                centerImageParagraphs(container);
+
+                var result = container.innerHTML;
+                if (document.getElementById('optForbiddenWords').checked) {
+                    result = applyForbiddenWords(result);
+                }
+                var preview = document.getElementById('fmtPreview');
+                preview.innerHTML = result;
+
+                if (lastImgWidth) {
+                    preview.querySelectorAll('img').forEach(function (img) {
+                        img.setAttribute('width', lastImgWidth);
+                        img.removeAttribute('height');
+                    });
+                }
+
+                document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
+                showToast('格式化完成');
+            }
+
+            function splitHeadingContent(el) {
+                el.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(function (h) {
+                    if (!h.querySelector('br')) return;
+                    var segments = [];
+                    var current = [];
+                    Array.from(h.childNodes).forEach(function (node) {
+                        if (node.nodeType === 1 && node.tagName && node.tagName.toLowerCase() === 'br') {
+                            if (current.length > 0) {
+                                segments.push(current);
+                                current = [];
+                            }
+                        } else {
+                            current.push(node);
+                        }
+                    });
+                    if (current.length > 0) segments.push(current);
+                    if (segments.length <= 1) return;
+                    var parent = h.parentNode;
+                    segments.forEach(function (nodes) {
+                        var p = document.createElement('p');
+                        nodes.forEach(function (n) {
+                            p.appendChild(n);
+                        });
+                        if (!p.textContent.trim()) return;
+                        parent.insertBefore(p, h);
+                    });
+                    parent.removeChild(h);
+                });
+            }
+
+            function normalizeBlockStructure(el) {
+                if (el.querySelector('p')) return;
+                var topDivs = el.querySelectorAll('div, section');
+                if (topDivs.length > 0) {
+                    while (true) {
+                        var targets = el.querySelectorAll('div, section');
+                        var converted = false;
+                        for (var i = targets.length - 1; i >= 0; i--) {
+                            var div = targets[i];
+                            if (div.querySelector('table, ul, ol, blockquote, p')) continue;
+                            if (div.querySelector(':scope > div, :scope > section')) continue;
+                            if (div.closest('p')) continue;
+                            var p = document.createElement('p');
+                            p.innerHTML = div.innerHTML;
+                            div.parentNode.replaceChild(p, div);
+                            converted = true;
+                            break;
+                        }
+                        if (!converted) break;
+                    }
+                    el.querySelectorAll('div, section').forEach(function (div) {
+                        if (div.closest('p')) return;
+                        if (!div.textContent.trim() && !div.querySelector('img, table')) {
+                            div.parentNode.removeChild(div);
+                        }
+                    });
+                    return;
+                }
+                var html = el.innerHTML;
+                if (!/<br[^>]*>\s*<br[^>]*>/i.test(html)) return;
+                var segments = html.split(/<br[^>]*>\s*<br[^>]*>/gi);
+                var result = '';
+                segments.forEach(function (seg, idx) {
+                    var text = seg.replace(/<br[^>]*>/gi, '').trim();
+                    if (text) {
+                        if (idx > 0) result += '<p><br></p>';
+                        result += '<p>' + text + '</p>';
+                    }
+                });
+                el.innerHTML = result;
+            }
+
+            function cleanupStructure(el) {
+                el.innerHTML = el.innerHTML
+                    .replace(/<\/?[a-z]+:[^>]*>/gi, '')
+                    .replace(/<!--\[if[\s\S]*?endif\]-->/gi, '')
+                    .replace(/<!--[\s\S]*?-->/g, '');
+
+                el.innerHTML = el.innerHTML
+                    .replace(/&nbsp;/gi, ' ')
+                    .replace(/[\r\t]/g, '')
+                    .replace(/ {2,}/g, ' ');
+
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (!p.querySelector('br')) return;
+                    var html = p.innerHTML;
+                    var parts = html.split(/<br[^>]*>/gi);
+                    if (parts.length <= 1) return;
+                    var parent = p.parentNode;
+                    parts.forEach(function (part) {
+                        var text = part.replace(/<[^>]*>/g, '').trim();
+                        if (!text) return;
+                        var newP = document.createElement('p');
+                        newP.innerHTML = part.trim();
+                        parent.insertBefore(newP, p);
+                    });
+                    parent.removeChild(p);
+                });
+                el.querySelectorAll('br').forEach(function (br) {
+                    br.parentNode.removeChild(br);
+                });
+
+                el.querySelectorAll('b').forEach(function (b) {
+                    var strong = document.createElement('strong');
+                    while (b.firstChild) strong.appendChild(b.firstChild);
+                    b.parentNode.replaceChild(strong, b);
+                });
+
+                el.querySelectorAll('li').forEach(function (li) {
+                    if (li.querySelector('p')) {
+                        while (li.firstChild) li.parentNode.insertBefore(li.firstChild, li);
+                        li.parentNode.removeChild(li);
+                    } else {
+                        var p = document.createElement('p');
+                        p.innerHTML = li.innerHTML;
+                        li.parentNode.replaceChild(p, li);
+                    }
+                });
+                el.querySelectorAll('ul, ol').forEach(function (list) {
+                    while (list.firstChild) list.parentNode.insertBefore(list.firstChild, list);
+                    list.parentNode.removeChild(list);
+                });
+                el.querySelectorAll('a').forEach(function (a) {
+                    var text = document.createTextNode(a.textContent);
+                    a.parentNode.replaceChild(text, a);
+                });
+
+                var unwrapTags = [
+                    'figure',
+                    'figcaption',
+                    'div',
+                    'section',
+                    'article',
+                    'span',
+                    'font',
+                    'blockquote',
+                    'pre',
+                    'code',
+                    'i',
+                    'em',
+                    'u',
+                    's',
+                    'strike',
+                    'del',
+                    'ins',
+                    'sub',
+                    'sup',
+                    'mark',
+                    'small',
+                    'big',
+                    'center',
+                ];
+                unwrapTags.forEach(function (tag) {
+                    el.querySelectorAll(tag).forEach(function (node) {
+                        while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
+                        node.parentNode.removeChild(node);
+                    });
+                });
+            }
+
+            function flattenNestedParagraphs(el) {
+                el.querySelectorAll('p p').forEach(function (inner) {
+                    var outer = inner.parentNode;
+                    if (outer.tagName !== 'P') return;
+                    outer.parentNode.insertBefore(inner, outer);
+                });
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (!p.textContent.trim() && !p.querySelector('img, table')) p.parentNode.removeChild(p);
+                });
+            }
+
+            function normalizeTextWhitespace(el) {
+                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                var nodes = [];
+                var node;
+                while ((node = walker.nextNode())) nodes.push(node);
+
+                nodes.forEach(function (textNode) {
+                    if (textNode.parentNode && textNode.parentNode.closest && textNode.parentNode.closest('table, td, th')) return;
+                    var text = textNode.textContent
+                        .replace(/[\u200b-\u200f\u202a-\u202e\u2060\ufeff]/g, '')
+                        .replace(/[\u00a0\u1680\u180e\u2000-\u200a\u202f\u205f\u3000]/g, ' ')
+                        .replace(/[\r\n\t\f\v]+/g, ' ')
+                        .replace(/ {2,}/g, ' ');
+                    text = removeCJKSpacing(text);
+                    textNode.textContent = text;
+                });
+
+                normalizeInlineBoundarySpaces(el);
+            }
+
+            function isCJKChar(ch) {
+                return /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/.test(ch || '');
+            }
+
+            function isCJKPunctuation(ch) {
+                return /[，。！？；：、“”‘’（）《》【】〔〕·…—]/.test(ch || '');
+            }
+
+            function removeCJKSpacing(text) {
+                return text
+                    .replace(
+                        /([\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]) +(?=[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff，。！？；：、“”‘’（）《》【】〔〕·…—])/g,
+                        '$1'
+                    )
+                    .replace(/([，。！？；：、“”‘’（）《》【】〔〕·…—]) +(?=[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff])/g, '$1');
+            }
+
+            function getEdgeTextNode(node, fromEnd) {
+                var current = node;
+                while (current) {
+                    if (current.nodeType === 3) return current;
+                    if (current.nodeType !== 1) return null;
+                    current = fromEnd ? current.lastChild : current.firstChild;
+                }
+                return null;
+            }
+
+            function normalizeInlineBoundarySpaces(el) {
+                el.querySelectorAll('p, strong, b, a').forEach(function (parent) {
+                    var children = Array.from(parent.childNodes);
+                    for (var i = 0; i < children.length - 1; i++) {
+                        var left = getEdgeTextNode(children[i], true);
+                        var right = getEdgeTextNode(children[i + 1], false);
+                        if (!left || !right) continue;
+                        var leftText = left.textContent;
+                        var rightText = right.textContent;
+                        if (!leftText || !rightText) continue;
+                        var leftTrimmed = leftText.replace(/ +$/, '');
+                        var rightTrimmed = rightText.replace(/^ +/, '');
+                        var leftChar = leftTrimmed.charAt(leftTrimmed.length - 1);
+                        var rightChar = rightTrimmed.charAt(0);
+                        if ((isCJKChar(leftChar) || isCJKPunctuation(leftChar)) && (isCJKChar(rightChar) || isCJKPunctuation(rightChar))) {
+                            left.textContent = leftTrimmed;
+                            right.textContent = rightText.replace(/^ +/, '');
+                        }
+                    }
+                });
+            }
+
+            function stripLeadingInlineSpaces(node) {
+                while (node.firstChild) {
+                    var first = node.firstChild;
+                    if (first.nodeType === 3) {
+                        var cleaned = first.textContent.replace(/^[\s\u00a0\u3000]+/, '');
+                        if (cleaned.length === 0) {
+                            node.removeChild(first);
+                            continue;
+                        }
+                        first.textContent = cleaned;
+                        return;
+                    }
+                    if (first.nodeType !== 1) return;
+                    var tag = first.tagName.toLowerCase();
+                    if (['strong', 'b', 'span', 'font', 'i', 'em', 'u', 's', 'small', 'big', 'a'].indexOf(tag) === -1) return;
+                    stripLeadingInlineSpaces(first);
+                    if (!first.textContent.trim() && !first.querySelector('img, table')) {
+                        node.removeChild(first);
+                        continue;
+                    }
+                    return;
+                }
+            }
+
+            function removeLeadingSpaces(el) {
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (p.closest('table, td, th')) return;
+                    stripLeadingInlineSpaces(p);
+                });
+            }
+
+            function cleanupImageParagraphWhitespace(el) {
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (!p.querySelector('img')) return;
+                    Array.from(p.childNodes).forEach(function (node) {
+                        if (node.nodeType === 3 && !node.textContent.replace(/[\s\u00a0\u3000]/g, '')) {
+                            p.removeChild(node);
+                        }
+                    });
+                });
+            }
+
+            function removeEmptyParagraphs(el) {
+                el.querySelectorAll('p').forEach(function (p) {
+                    var text = p.textContent.replace(/[\s\u00a0\u3000]/g, '');
+                    if (!text && !p.querySelector('img, table')) p.parentNode.removeChild(p);
+                });
+            }
+
+            function removeImages(el) {
+                el.querySelectorAll('img').forEach(function (img) {
+                    img.parentNode.removeChild(img);
+                });
+            }
+
+            function convertHeadingsToParagraphs(el) {
+                el.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(function (h) {
+                    var p = document.createElement('p');
+                    var strong = document.createElement('strong');
+                    while (h.firstChild) strong.appendChild(h.firstChild);
+                    p.appendChild(strong);
+                    h.parentNode.replaceChild(p, h);
+                });
+            }
+
+            function removeInlineStyles(el) {
+                el.querySelectorAll('*').forEach(function (node) {
+                    var tag = node.tagName.toLowerCase();
+                    var attrs = Array.from(node.attributes);
+                    attrs.forEach(function (attr) {
+                        if (tag === 'img' && ['src', 'alt', 'width', 'height'].indexOf(attr.name) !== -1) return;
+                        if ((tag === 'td' || tag === 'th') && ['colspan', 'rowspan'].indexOf(attr.name) !== -1) return;
+                        node.removeAttribute(attr.name);
+                    });
+                });
+            }
+
+            function removeBold(el) {
+                el.querySelectorAll('b, strong').forEach(function (node) {
+                    while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
+                    node.parentNode.removeChild(node);
+                });
+            }
+
+            function autoDetectTitles(el, enMode) {
+                var blocks = el.querySelectorAll('p, div');
+                var endPunctuation = /[。，！？；、,.!?;:]$/;
+                var cjkRe = /[一-鿿㐀-䶿]/;
+                var bulletRe = /^[\s　]*(●|·|•|◆|■|▪|★|※|►|▶|➤|○|◇|□|△|▷|⊙|⊕|→|»|›|[-*·‣⁃])\s*/;
+                var indentRe = /^[　 \t]{2,}/;
+
+                blocks.forEach(function (block) {
+                    if (block.closest('table, td, th')) return;
+                    if (block.querySelector('p, div, table, ul, ol')) return;
+                    if (block.querySelector('strong, b')) return;
+
+                    var rawText = block.textContent;
+                    var text = rawText.trim();
+                    if (!text) return;
+                    if (endPunctuation.test(text)) return;
+                    if (bulletRe.test(text)) return;
+                    if (indentRe.test(rawText)) return;
+
+                    var isCJK = cjkRe.test(text);
+                    if (enMode) {
+                        if (isCJK && text.length > 20) return;
+                    } else {
+                        if (isCJK) {
+                            if (text.length > 20) return;
+                        } else {
+                            if (text.length > 80) return;
+                            if (text.split(/\s+/).length > 10) return;
+                        }
+                    }
+
+                    var children = block.childNodes;
+                    var onlyInline = true;
+                    for (var i = 0; i < children.length; i++) {
+                        var c = children[i];
+                        if (c.nodeType === 1) {
+                            var tag = c.tagName.toLowerCase();
+                            if (['div', 'p', 'table', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(tag) !== -1) {
+                                onlyInline = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!onlyInline) return;
+
+                    var strong = document.createElement('strong');
+                    while (block.firstChild) strong.appendChild(block.firstChild);
+                    block.appendChild(strong);
+                });
+            }
+
+            function addParagraphIndent(el) {
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (p.closest('table, td, th')) return;
+                    if (!p.textContent.trim()) return;
+                    p.style.textIndent = '2em';
+                });
+            }
+
+            function centerImageParagraphs(el) {
+                el.querySelectorAll('p').forEach(function (p) {
+                    if (p.querySelector('img')) {
+                        p.style.textAlign = 'center';
+                        p.style.textIndent = '0';
+                    }
+                });
+            }
+
+            function formatHTMLSource(html) {
+                return html
+                    .replace(/>\s+</g, '><')
+                    .replace(/(<\/(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])>)/gi, '$1\n')
+                    .replace(/(<(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])[\s>])/gi, '\n$1')
+                    .replace(/^\n+/, '')
+                    .replace(/\n{3,}/g, '\n\n');
+            }
+
+            function copyFormatResult() {
+                var preview = document.getElementById('fmtPreview');
+                if (!preview.innerHTML.trim()) {
+                    showToast('没有可复制的内容', true);
+                    return;
+                }
+
+                if (currentFormatOutputTab === 'source') {
+                    var source = document.getElementById('fmtOutputSource').value;
+                    navigator.clipboard.writeText(source).then(function () {
+                        showToast('源代码已复制');
+                    });
+                } else {
+                    var cleanHTML = preview.innerHTML;
+                    var blob = new Blob([cleanHTML], { type: 'text/html' });
+                    var textBlob = new Blob([preview.textContent], { type: 'text/plain' });
+                    navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })]).then(function () {
+                        showToast('已复制纯净富文本');
+                    });
+                }
+            }
+
+            function clearFormat() {
+                document.getElementById('richInput').innerHTML = '';
+                document.getElementById('codeInput').value = '';
+                document.getElementById('fmtPreview').innerHTML = '';
+                document.getElementById('fmtOutputSource').value = '';
+                showToast('已清除');
+            }
+
+            function showImgWidthDialog() {
+                document.getElementById('imgWidthModal').classList.add('show');
+                document.getElementById('imgWidthInput').value = lastImgWidth;
+                document.getElementById('imgWidthInput').focus();
+            }
+
+            function closeImgWidthDialog() {
+                document.getElementById('imgWidthModal').classList.remove('show');
+            }
+
+            function setPreset(val) {
+                document.getElementById('imgWidthInput').value = val;
+            }
+
+            function applyImgWidth() {
+                var val = document.getElementById('imgWidthInput').value.trim();
+                if (!val) {
+                    showToast('请输入宽度值', true);
+                    return;
+                }
+
+                lastImgWidth = val;
+                updateImgWidthBtn();
+
+                var preview = document.getElementById('fmtPreview');
+                if (preview.innerHTML.trim()) {
+                    var imgs = preview.querySelectorAll('img');
+                    imgs.forEach(function (img) {
+                        img.setAttribute('width', val);
+                        img.removeAttribute('height');
+                    });
+                    document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
+                    showToast('已设置图片宽度 ' + val + (imgs.length ? '，已应用到 ' + imgs.length + ' 张图片' : ''));
+                } else {
+                    showToast('图片宽度已设为 ' + val + '，格式化时自动应用');
+                }
+                closeImgWidthDialog();
+            }
+
+            function resetImgWidth() {
+                lastImgWidth = '';
+                updateImgWidthBtn();
+                var preview = document.getElementById('fmtPreview');
+                if (preview.innerHTML.trim()) {
+                    preview.querySelectorAll('img').forEach(function (img) {
+                        img.removeAttribute('width');
+                    });
+                    document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
+                }
+                closeImgWidthDialog();
+                showToast('图片宽度已重置');
+            }
+
+            function updateImgWidthBtn() {
+                document.getElementById('imgWidthBtnText').textContent = lastImgWidth ? '图片宽度：' + lastImgWidth : '图片宽度：未设置';
+            }
+
+            // 输出区粘贴/编辑时自动给新图片加宽度
+            document.getElementById('fmtPreview').addEventListener('input', function () {
+                if (!lastImgWidth) return;
+                this.querySelectorAll('img:not([width])').forEach(function (img) {
+                    img.setAttribute('width', lastImgWidth);
+                    img.removeAttribute('height');
+                });
+            });
+
+            // 源导航代码粘贴后自动提取
+            document.getElementById('sourceInput').addEventListener('input', function () {
+                if (this.value.trim()) extractNav();
+            });
+
+            // 联系人信息粘贴后自动提取
+            document.getElementById('contactInput').addEventListener('input', function () {
+                if (this.value.trim()) extractContact();
+            });
+
+            // === Text Processing Feature ===
+
+            var CN_PUNCT = '，。！？、；：“”‘’【】（）《》—…·';
+            var EN_PUNCT = ',.!?;:\'""[]()<>—...*';
+
+            function fmtTabClick(el, type) {
+                var siblings = el.parentNode.querySelectorAll('.fmt-tab');
+                for (var i = 0; i < siblings.length; i++) siblings[i].classList.remove('active');
+                el.classList.add('active');
+                processText(type);
+            }
+
+            function runTextprocTool(btn, type) {
+                var ok = processText(type);
+                if (!ok) return;
+                document.querySelectorAll('#textprocPage .textproc-tool-btn').forEach(function (item) {
+                    item.classList.remove('active');
+                });
+                if (btn) btn.classList.add('active');
+            }
+
+            function processText(type) {
+                var input = document.getElementById('textprocInput').value;
+                if (!input) {
+                    showToast('请先输入文本', true);
+                    return false;
+                }
+
+                var result = input;
+
+                switch (type) {
+                    case 'upper':
+                        result = input.toUpperCase();
+                        break;
+                    case 'lower':
+                        result = input.toLowerCase();
+                        break;
+                    case 'capitalize':
+                        result = input.toLowerCase().replace(/(^|[\s。！？；.!?;]+)(\S)/g, function (m, sep, ch) {
+                            return sep + ch.toUpperCase();
+                        });
+                        break;
+                    case 'trimSpaces':
+                        result = input
+                            .split(/\r?\n/)
+                            .map(function (line) {
+                                return line.trim();
+                            })
+                            .join('\n');
+                        break;
+                    case 'collapseSpaces':
+                        result = input.replace(/[\t\u00a0\u3000 ]+/g, ' ');
+                        break;
+                    case 'removeSpaces':
+                        result = input.replace(/[\t\u00a0\u3000 ]+/g, '');
+                        break;
+                    case 'cn2en':
+                        for (var i = 0; i < CN_PUNCT.length; i++) {
+                            result = result.split(CN_PUNCT[i]).join(EN_PUNCT[i] || '');
+                        }
+                        break;
+                    case 'en2cn':
+                        for (var i = 0; i < EN_PUNCT.length; i++) {
+                            if (EN_PUNCT[i]) result = result.split(EN_PUNCT[i]).join(CN_PUNCT[i] || '');
+                        }
+                        break;
+                    case 'trimEmpty':
+                        result = input.replace(/\n[ \t]*\n/g, '\n');
+                        break;
+                    case 'removeBreaks':
+                        result = input.replace(/[\r\n]+/g, '');
+                        break;
+                    case 'keepSingleBreak':
+                        result = input.replace(/\n{2,}/g, '\n').replace(/\r{2,}/g, '\r');
+                        break;
+                    case 'lineUnique':
+                        var seen = {};
+                        result = input
+                            .split(/\r?\n/)
+                            .filter(function (line) {
+                                var key = line.trim();
+                                if (!key) return false;
+                                if (seen[key]) return false;
+                                seen[key] = true;
+                                return true;
+                            })
+                            .join('\n');
+                        break;
+                    case 'lineSort':
+                        result = input
+                            .split(/\r?\n/)
+                            .filter(function (line) {
+                                return line.trim();
+                            })
+                            .sort(function (a, b) {
+                                return a.localeCompare(b, 'zh-CN');
+                            })
+                            .join('\n');
+                        break;
+                    case 'lineNumber':
+                        result = input
+                            .split(/\r?\n/)
+                            .filter(function (line) {
+                                return line.trim();
+                            })
+                            .map(function (line, idx) {
+                                return idx + 1 + '. ' + line.trim();
+                            })
+                            .join('\n');
+                        break;
+                }
+
+                document.getElementById('textprocOutput').value = result;
+                updateTextprocStats();
+                showToast('处理完成');
+                return true;
+            }
+
+            function getTextprocStats(text) {
+                var chars = text.length;
+                var lines = text ? text.split(/\r?\n/).length : 0;
+                return { chars: chars, lines: lines };
+            }
+
+            function renderTextprocStats(id, text) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                var stat = getTextprocStats(text);
+                el.innerHTML = '<span>' + stat.chars + ' 字</span><span>' + stat.lines + ' 行</span>';
+            }
+
+            function updateTextprocStats() {
+                renderTextprocStats('textprocInputStats', document.getElementById('textprocInput').value);
+                renderTextprocStats('textprocOutputStats', document.getElementById('textprocOutput').value);
+            }
+
+            function useTextprocOutputAsInput() {
+                var output = document.getElementById('textprocOutput').value;
+                if (!output) {
+                    showToast('没有可回填的结果', true);
+                    return;
+                }
+                document.getElementById('textprocInput').value = output;
+                document.getElementById('textprocOutput').value = '';
+                updateTextprocStats();
+                showToast('结果已回填到源文本');
+            }
+
+            function copyTextprocOutput() {
+                var output = document.getElementById('textprocOutput').value;
+                if (!output) {
+                    showToast('没有可复制的内容', true);
+                    return;
+                }
+                navigator.clipboard.writeText(output).then(function () {
+                    showToast('已复制到剪贴板');
+                });
+            }
+
+            function clearTextproc() {
+                document.getElementById('textprocInput').value = '';
+                document.getElementById('textprocOutput').value = '';
+                document.querySelectorAll('#textprocPage .textproc-tool-btn').forEach(function (item) {
+                    item.classList.remove('active');
+                });
+                updateTextprocStats();
+                showToast('已清除');
+            }
+
+            // === Forbidden Words Feature ===
+
+            var forbiddenWords = [];
+
+            function loadForbiddenWords() {
+                try {
+                    var saved = localStorage.getItem('fw_forbidden_words');
+                    if (saved) forbiddenWords = JSON.parse(saved);
+                } catch (e) {
+                    forbiddenWords = [];
+                }
+                updateFwBadge();
+            }
+
+            function saveForbiddenWords() {
+                localStorage.setItem('fw_forbidden_words', JSON.stringify(forbiddenWords));
+                updateFwBadge();
+            }
+
+            function updateFwBadge() {
+                var badge = document.getElementById('fwBadge');
+                if (forbiddenWords.length > 0) {
+                    badge.textContent = forbiddenWords.length;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+
+            function showForbiddenWordsModal() {
+                renderForbiddenWordList();
+                document.getElementById('forbiddenWordsModal').classList.add('show');
+                document.getElementById('fwWordInput').value = '';
+                document.getElementById('fwReplacementInput').value = '';
+                document.getElementById('fwWordInput').focus();
+            }
+
+            function closeForbiddenWordsModal() {
+                document.getElementById('forbiddenWordsModal').classList.remove('show');
+            }
+
+            function addForbiddenWord() {
+                var word = document.getElementById('fwWordInput').value.trim();
+                var replacement = document.getElementById('fwReplacementInput').value.trim();
+                if (!word) {
+                    showToast('请输入禁词', true);
+                    return;
+                }
+                if (!replacement) {
+                    showToast('请输入替换词', true);
+                    return;
+                }
+
+                forbiddenWords.push({ word: word, replacement: replacement });
+                saveForbiddenWords();
+                renderForbiddenWordList();
+                document.getElementById('fwWordInput').value = '';
+                document.getElementById('fwReplacementInput').value = '';
+                document.getElementById('fwWordInput').focus();
+                showToast('已添加禁词：' + word);
+            }
+
+            function removeForbiddenWord(idx) {
+                forbiddenWords.splice(idx, 1);
+                saveForbiddenWords();
+                renderForbiddenWordList();
+            }
+
+            function clearAllForbiddenWords() {
+                if (forbiddenWords.length === 0) return;
+                if (!confirm('确定清空全部禁词？')) return;
+                forbiddenWords = [];
+                saveForbiddenWords();
+                renderForbiddenWordList();
+                showToast('已清空禁词库');
+            }
+
+            function renderForbiddenWordList() {
+                var container = document.getElementById('fwList');
+                if (forbiddenWords.length === 0) {
+                    container.innerHTML = '<div class="fw-empty">暂无禁词，请在上方添加</div>';
+                    return;
+                }
+                var html =
+                    '<table><thead><tr><th style="width:35%;">禁词</th><th style="width:35%;">替换为</th><th style="width:10%;"></th></tr></thead><tbody>';
+                forbiddenWords.forEach(function (item, idx) {
+                    html +=
+                        '<tr><td class="fw-word">' +
+                        esc(item.word) +
+                        '</td><td class="fw-replacement">' +
+                        esc(item.replacement) +
+                        '</td>' +
+                        '<td><button class="fw-del" onclick="removeForbiddenWord(' +
+                        idx +
+                        ')" title="删除">×</button></td></tr>';
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            }
+
+            function applyForbiddenWords(text) {
+                if (forbiddenWords.length === 0) return text;
+                forbiddenWords.forEach(function (item) {
+                    if (text.indexOf(item.word) !== -1) {
+                        text = text.split(item.word).join(item.replacement);
+                    }
+                });
+                return text;
+            }
+
+            // 禁词输入框回车添加
+            document.getElementById('fwWordInput').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') document.getElementById('fwReplacementInput').focus();
+            });
+            document.getElementById('fwReplacementInput').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') addForbiddenWord();
+            });
+
+            // 初始化加载禁词库
+            loadForbiddenWords();
+
+            // === Forbidden Words Import/Export ===
+
+            function exportForbiddenWords() {
+                if (forbiddenWords.length === 0) {
+                    showToast('禁词库为空', true);
+                    return;
+                }
+                var lines = forbiddenWords.map(function (item) {
+                    return item.word + '=' + item.replacement;
+                });
+                var text = lines.join('\n');
+                var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = '禁词库.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('已导出 ' + forbiddenWords.length + ' 条禁词');
+            }
+
+            function importForbiddenWords(event) {
+                var file = event.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var content = e.target.result;
+                    var count = 0;
+
+                    if (file.name.endsWith('.json')) {
+                        try {
+                            var arr = JSON.parse(content);
+                            if (Array.isArray(arr)) {
+                                arr.forEach(function (item) {
+                                    if (item.word && item.replacement) {
+                                        forbiddenWords.push({ word: item.word, replacement: item.replacement });
+                                        count++;
+                                    }
+                                });
+                            }
+                        } catch (err) {
+                            showToast('JSON 解析失败', true);
+                            return;
+                        }
+                    } else {
+                        // txt/csv: 每行一条，支持 = , \t 分隔
+                        var lines = content.split(/\r?\n/);
+                        lines.forEach(function (line) {
+                            line = line.trim();
+                            if (!line) return;
+                            var parts = line.split(/[=\t,，]/);
+                            if (parts.length >= 2) {
+                                var word = parts[0].trim();
+                                var replacement = parts[1].trim();
+                                if (word && replacement) {
+                                    forbiddenWords.push({ word: word, replacement: replacement });
+                                    count++;
+                                }
+                            }
+                        });
+                    }
+
+                    if (count > 0) {
+                        saveForbiddenWords();
+                        renderForbiddenWordList();
+                        showToast('已导入 ' + count + ' 条禁词');
+                    } else {
+                        showToast('未解析到有效禁词', true);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+                event.target.value = '';
+            }
+
+            function showFbBatchInput() {
+                document.getElementById('fwBatchModal').classList.add('show');
+                document.getElementById('fwBatchInput').value = '';
+                document.getElementById('fwBatchInput').focus();
+            }
+
+            function closeFbBatchModal() {
+                document.getElementById('fwBatchModal').classList.remove('show');
+            }
+
+            function confirmBatchImport() {
+                var text = document.getElementById('fwBatchInput').value.trim();
+                if (!text) {
+                    showToast('请输入禁词内容', true);
+                    return;
+                }
+
+                var count = 0;
+                var lines = text.split(/\r?\n/);
+                lines.forEach(function (line) {
+                    line = line.trim();
+                    if (!line) return;
+                    var parts = line.split(/[=\t,，]/);
+                    if (parts.length >= 2) {
+                        var word = parts[0].trim();
+                        var replacement = parts[1].trim();
+                        if (word && replacement) {
+                            forbiddenWords.push({ word: word, replacement: replacement });
+                            count++;
+                        }
+                    }
+                });
+
+                if (count > 0) {
+                    saveForbiddenWords();
+                    renderForbiddenWordList();
+                    closeFbBatchModal();
+                    showToast('已批量添加 ' + count + ' 条禁词');
+                } else {
+                    showToast('未解析到有效禁词，请检查格式', true);
+                }
+            }
+
+            // 拦截输出区 Ctrl+C，写入纯净 HTML
+            document.getElementById('fmtPreview').addEventListener('copy', function (e) {
+                var sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                var range = sel.getRangeAt(0);
+                var frag = range.cloneContents();
+                var tmp = document.createElement('div');
+                tmp.appendChild(frag);
+                e.clipboardData.setData('text/html', tmp.innerHTML);
+                e.clipboardData.setData('text/plain', tmp.textContent);
+                e.preventDefault();
+            });
+        </script>
+    </body>
+</html>
