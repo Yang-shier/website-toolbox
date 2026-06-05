@@ -462,6 +462,57 @@
                 user-select: none;
                 white-space: nowrap;
             }
+            .fmt-title-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding-right: 4px;
+            }
+            .fmt-segment-wrap {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 12px;
+                color: var(--text-dim);
+                white-space: nowrap;
+            }
+            .fmt-segment {
+                display: inline-flex;
+                align-items: center;
+                padding: 2px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                background: rgba(0, 0, 0, 0.03);
+                transition: opacity 0.18s ease, background 0.18s ease;
+            }
+            .fmt-segment-btn {
+                height: 28px;
+                padding: 0 10px;
+                border: 0;
+                border-radius: 5px;
+                background: transparent;
+                color: var(--text-dim);
+                font-size: 12px;
+                outline: none;
+                cursor: pointer;
+                transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+            }
+            .fmt-segment-btn:hover {
+                color: var(--text);
+                background: rgba(108, 99, 255, 0.08);
+            }
+            .fmt-segment-btn.active {
+                color: #fff;
+                background: var(--accent);
+                box-shadow: 0 2px 8px rgba(108, 99, 255, 0.22);
+            }
+            .fmt-title-group.disabled .fmt-segment {
+                opacity: 0.45;
+            }
+            .fmt-title-group.disabled .fmt-segment-btn {
+                cursor: not-allowed;
+                pointer-events: none;
+            }
             .toggle {
                 position: relative;
                 width: 40px;
@@ -1198,19 +1249,30 @@
                         </div>
                         <label for="optRemoveStyle">去除行内样式</label>
                     </div>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optAutoTitle" checked />
-                            <span class="slider"></span>
+                    <div class="fmt-title-group">
+                        <div class="fmt-opt">
+                            <div class="toggle">
+                                <input type="checkbox" id="optAutoTitle" checked onchange="syncTitleOptions()" />
+                                <span class="slider"></span>
+                            </div>
+                            <label for="optAutoTitle">小标题识别</label>
                         </div>
-                        <label for="optAutoTitle">自动识别小标题加粗</label>
-                    </div>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optEnMode" />
-                            <span class="slider"></span>
+                        <div class="fmt-segment-wrap">
+                            <span>规则</span>
+                            <div class="fmt-segment" data-title-group="rule">
+                                <button class="fmt-segment-btn active" type="button" data-value="general" onclick="setTitleOption('rule', 'general')">通用</button>
+                                <button class="fmt-segment-btn" type="button" data-value="english" onclick="setTitleOption('rule', 'english')">英文</button>
+                            </div>
+                            <input type="hidden" id="titleDetectRule" value="general" />
                         </div>
-                        <label for="optEnMode">英文模式</label>
+                        <div class="fmt-segment-wrap">
+                            <span>输出</span>
+                            <div class="fmt-segment" data-title-group="output">
+                                <button class="fmt-segment-btn active" type="button" data-value="bold" onclick="setTitleOption('output', 'bold')">加粗</button>
+                                <button class="fmt-segment-btn" type="button" data-value="h3" onclick="setTitleOption('output', 'h3')">H3</button>
+                            </div>
+                            <input type="hidden" id="titleOutputMode" value="bold" />
+                        </div>
                     </div>
                     <div class="fmt-opt">
                         <div class="toggle">
@@ -2635,6 +2697,20 @@
             var currentFormatOutputTab = 'preview';
             var lastImgWidth = '';
 
+            function setTitleOption(group, value) {
+                var inputId = group === 'rule' ? 'titleDetectRule' : 'titleOutputMode';
+                document.getElementById(inputId).value = value;
+                document.querySelectorAll('[data-title-group="' + group + '"] .fmt-segment-btn').forEach(function (btn) {
+                    btn.classList.toggle('active', btn.dataset.value === value);
+                });
+            }
+
+            function syncTitleOptions() {
+                var enabled = document.getElementById('optAutoTitle').checked;
+                var group = document.querySelector('.fmt-title-group');
+                if (group) group.classList.toggle('disabled', !enabled);
+            }
+
             function switchFormatInputTab(tab) {
                 currentFormatInputTab = tab;
                 var tabs = document.querySelectorAll('#formatPage .contact-panel:first-child .fmt-tab');
@@ -2880,8 +2956,9 @@
                 if (!optKeepBold) removeBold(container);
                 if (optRemoveStyle) removeInlineStyles(container);
                 if (optAutoTitle) {
-                    var enMode = document.getElementById('optEnMode').checked;
-                    autoDetectTitles(container, enMode);
+                    var titleRule = document.getElementById('titleDetectRule').value;
+                    var titleOutputMode = document.getElementById('titleOutputMode').value;
+                    autoDetectTitles(container, titleRule, titleOutputMode);
                 }
 
                 normalizeTextWhitespace(container);
@@ -3233,7 +3310,7 @@
                 });
             }
 
-            function autoDetectTitles(el, enMode) {
+            function autoDetectTitles(el, titleRule, titleOutputMode) {
                 var blocks = el.querySelectorAll('p, div');
                 var endPunctuation = /[。，！？；、,.!?;:]$/;
                 var cjkRe = /[一-鿿㐀-䶿]/;
@@ -3241,28 +3318,10 @@
                 var indentRe = /^[　 \t]{2,}/;
 
                 blocks.forEach(function (block) {
-                    if (block.closest('table, td, th')) return;
-                    if (block.querySelector('p, div, table, ul, ol')) return;
-                    if (block.querySelector('strong, b')) return;
-
                     var rawText = block.textContent;
                     var text = rawText.trim();
-                    if (!text) return;
-                    if (endPunctuation.test(text)) return;
-                    if (bulletRe.test(text)) return;
-                    if (indentRe.test(rawText)) return;
-
-                    var isCJK = cjkRe.test(text);
-                    if (enMode) {
-                        if (isCJK && text.length > 20) return;
-                    } else {
-                        if (isCJK) {
-                            if (text.length > 20) return;
-                        } else {
-                            if (text.length > 80) return;
-                            if (text.split(/\s+/).length > 10) return;
-                        }
-                    }
+                    if (!isTitleCandidateBlock(block, rawText, text, bulletRe, indentRe)) return;
+                    if (scoreTitleCandidate(block, text, titleRule, endPunctuation, cjkRe) < 5) return;
 
                     var children = block.childNodes;
                     var onlyInline = true;
@@ -3278,10 +3337,85 @@
                     }
                     if (!onlyInline) return;
 
+                    if (titleOutputMode === 'h3') {
+                        var h3 = document.createElement('h3');
+                        while (block.firstChild) h3.appendChild(block.firstChild);
+                        block.parentNode.replaceChild(h3, block);
+                        return;
+                    }
+
                     var strong = document.createElement('strong');
                     while (block.firstChild) strong.appendChild(block.firstChild);
                     block.appendChild(strong);
                 });
+            }
+
+            function isTitleCandidateBlock(block, rawText, text, bulletRe, indentRe) {
+                if (block.closest('table, td, th')) return false;
+                if (block.querySelector('p, div, table, ul, ol')) return false;
+                if (block.querySelector('strong, b')) return false;
+                if (!text) return false;
+                if (text.length < 2) return false;
+                if (bulletRe.test(text)) return false;
+                if (indentRe.test(rawText)) return false;
+                if (/[。！？!?]$/.test(text)) return false;
+                if (/^(https?:\/\/|www\.)/i.test(text)) return false;
+                return true;
+            }
+
+            function scoreTitleCandidate(block, text, titleRule, endPunctuation, cjkRe) {
+                var score = 0;
+                var isCJK = cjkRe.test(text);
+                var normalized = text.replace(/\s+/g, ' ');
+                var wordCount = normalized.split(' ').filter(Boolean).length;
+                var nextText = getNeighborBlockText(block, 1);
+                var prevText = getNeighborBlockText(block, -1);
+                var hasTitlePattern = /^(第?[一二三四五六七八九十\d]+[、.．)]|[（(]?[一二三四五六七八九十\d]+[）)]|[A-Z]?\d{1,2}[.．]\s*)/.test(text);
+                var hasEnglishTitleWords = /\b(features?|advantages?|benefits?|applications?|specifications?|parameters?|details?|overview|installation|usage|maintenance|faq|why choose|about us|product|service|solution|case|packing|shipping|payment|warranty)\b/i.test(text);
+                var hasCjkTitleWords = /(特点|优势|功能|参数|规格|应用|用途|详情|介绍|说明|步骤|流程|服务|案例|包装|运输|付款|质保|售后|常见问题|为什么选择)/.test(text);
+                var commaCount = (text.match(/[，,、]/g) || []).length;
+
+                if (isCJK) {
+                    if (text.length <= 12) score += 3;
+                    else if (text.length <= 20) score += 2;
+                    else if (text.length <= 26) score += 1;
+                    else score -= 4;
+                } else {
+                    if (wordCount <= 5) score += 3;
+                    else if (wordCount <= 9) score += 2;
+                    else if (wordCount <= 12) score += 1;
+                    else score -= 4;
+                    if (text.length > 90) score -= 3;
+                }
+
+                if (!endPunctuation.test(text)) score += 2;
+                else score -= 3;
+
+                if (hasTitlePattern) score += 3;
+                if (hasEnglishTitleWords || hasCjkTitleWords) score += 3;
+                if (nextText && nextText.length >= text.length * 1.8) score += 2;
+                if (prevText && prevText.length >= text.length * 1.8) score += 1;
+                if (titleRule === 'english' && !isCJK && /^[A-Z0-9][A-Za-z0-9 &+/\-()]+$/.test(text)) score += 1;
+
+                if (commaCount >= 2) score -= 2;
+                if (/^(因为|所以|但是|如果|同时|另外|我们|这|该|其|The|This|It|We|Our)\b/i.test(text)) score -= 2;
+                if (titleRule !== 'english' && !isCJK && wordCount > 10) score -= 2;
+                if (titleRule === 'english' && isCJK && text.length > 20) score -= 3;
+
+                return score;
+            }
+
+            function getNeighborBlockText(block, direction) {
+                var node = direction > 0 ? block.nextElementSibling : block.previousElementSibling;
+                while (node) {
+                    var tag = node.tagName ? node.tagName.toLowerCase() : '';
+                    if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].indexOf(tag) !== -1) {
+                        var text = node.textContent.trim();
+                        if (text) return text;
+                    }
+                    node = direction > 0 ? node.nextElementSibling : node.previousElementSibling;
+                }
+                return '';
             }
 
             function addParagraphIndent(el) {
