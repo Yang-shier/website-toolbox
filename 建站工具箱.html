@@ -2005,6 +2005,11 @@
                 手机: 'phone',
                 手机号: 'phone',
                 手机号码: 'phone',
+                服务热线: 'phone',
+                咨询热线: 'phone',
+                客服热线: 'phone',
+                联系热线: 'phone',
+                联系方式: 'phone',
                 站内业务联系人手机号码: 'phone',
                 业务联系人手机号码: 'phone',
                 座机号码: 'landline',
@@ -2021,6 +2026,8 @@
                 公司地址: 'address',
                 联系地址: 'address',
                 详细地址: 'address',
+                办公地址: 'address',
+                厂家地址: 'address',
                 地址: 'address',
                 传真: 'fax',
                 传真号: 'fax',
@@ -2221,107 +2228,300 @@
                 'fa-wechat': 'wechat',
             };
 
-            function detectBlockType(block) {
-                var html = block.innerHTML || '';
-                var text = block.textContent.replace(/\s+/g, '');
+            var CONTACT_CLASS_KEYWORDS = [
+                { type: 'name', re: /(contact|user|person|name|xingming|lianxiren|lianxi|负责人|联系人|姓名)/i },
+                { type: 'phone', re: /(phone|tel|mobile|hotline|service|dianhua|shouji|服务热线|电话|手机|热线)/i },
+                { type: 'email', re: /(email|mail|envelope|youxiang|邮箱|邮件)/i },
+                { type: 'address', re: /(address|addr|map|location|dizhi|地址|地图)/i },
+                { type: 'fax', re: /(fax|chuanzhen|传真)/i },
+                { type: 'website', re: /(website|site|url|link|wangzhi|guanwang|网址|网站|官网)/i },
+            ];
 
-                // 方法1：图标class识别
-                var icons = block.querySelectorAll('i[class*="fa-"]');
-                for (var i = 0; i < icons.length; i++) {
-                    var cls = icons[i].className;
-                    for (var iconKey in ICON_MAP) {
-                        if (cls.indexOf(iconKey) !== -1) return ICON_MAP[iconKey];
-                    }
+            function normalizeContactText(text) {
+                return (text || '').replace(/\s+/g, '');
+            }
+
+            function getContactMeta(el) {
+                var parts = [];
+                if (!el || !el.getAttribute) return '';
+                ['class', 'id', 'title', 'alt', 'aria-label', 'href', 'src'].forEach(function (attr) {
+                    var value = el.getAttribute(attr);
+                    if (value) parts.push(value);
+                });
+                return parts.join(' ');
+            }
+
+            function detectTypeFromMeta(meta) {
+                for (var i = 0; i < CONTACT_CLASS_KEYWORDS.length; i++) {
+                    if (CONTACT_CLASS_KEYWORDS[i].re.test(meta)) return CONTACT_CLASS_KEYWORDS[i].type;
                 }
-
-                // 方法2：href模式识别
-                if (html.indexOf('mailto:') !== -1) return 'email';
-                if (/[Tt]el:/.test(html)) return 'phone';
-
-                // 方法3：中文标签关键词识别
-                for (var j = 0; j < SORTED_LABELS.length; j++) {
-                    if (text.includes(SORTED_LABELS[j][0])) return SORTED_LABELS[j][1];
-                }
-
-                // 方法4：值的格式识别
-                if (/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(text)) return 'email';
-                if (/^400[\-\s]?\d{3,4}[\-\s]?\d{3,4}$/.test(text.replace(/\s/g, ''))) return 'landline';
-                if (/^0\d{2,3}[\-\s]?\d{7,8}$/.test(text.replace(/\s/g, ''))) return 'landline';
-                if (/^[\d\-+\s]{7,}$/.test(text)) return 'phone';
-
                 return null;
             }
 
-            function replaceBlockValue(block, newValue, fieldType) {
-                // 替换 href
-                var links = block.querySelectorAll('a[href]');
-                for (var i = 0; i < links.length; i++) {
-                    var href = links[i].getAttribute('href') || '';
-                    if (/^[Tt]el:/.test(href)) {
-                        links[i].setAttribute('href', 'Tel:' + newValue);
-                    } else if (/^mailto:/i.test(href)) {
-                        links[i].setAttribute('href', 'mailto:' + newValue);
+            function detectTypeFromIcon(block) {
+                var iconLike = block.querySelectorAll('i[class*="fa"], svg, img');
+                for (var i = 0; i < iconLike.length; i++) {
+                    var icon = iconLike[i];
+                    var cls = icon.className && typeof icon.className === 'string' ? icon.className : getContactMeta(icon);
+                    for (var iconKey in ICON_MAP) {
+                        if (cls.indexOf(iconKey) !== -1) return ICON_MAP[iconKey];
+                    }
+                    var metaType = detectTypeFromMeta(getContactMeta(icon));
+                    if (metaType) return metaType;
+                }
+                return null;
+            }
+
+            function detectTypeFromLabelText(text) {
+                var normalized = normalizeContactText(text);
+                for (var j = 0; j < SORTED_LABELS.length; j++) {
+                    if (normalized.includes(SORTED_LABELS[j][0])) return SORTED_LABELS[j][1];
+                }
+                return null;
+            }
+
+            function detectTypeFromValueText(text) {
+                var compact = normalizeContactText(text);
+                if (/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(compact)) return 'email';
+                if (/^400[\-\s]?\d{3,4}[\-\s]?\d{3,4}$/.test(compact)) return 'landline';
+                if (/^0\d{2,3}[\-\s]?\d{7,8}$/.test(compact)) return 'landline';
+                if (/^1[3-9]\d{9}$/.test(compact)) return 'phone';
+                if (/^[+]?[\d\-\s()]{7,}$/.test(text.trim())) return 'phone';
+                if (/[省市区县镇乡村路街道号栋楼室大厦园区工业区]/.test(compact) && compact.length >= 6) return 'address';
+                return null;
+            }
+
+            function scoreBlockType(block) {
+                var html = block.innerHTML || '';
+                var text = block.textContent || '';
+                var scores = {};
+
+                function add(type, score) {
+                    if (!type) return;
+                    scores[type] = (scores[type] || 0) + score;
+                }
+
+                if (/mailto:/i.test(html)) add('email', 90);
+                if (/[Tt]el:/.test(html)) add('phone', 90);
+
+                add(detectTypeFromLabelText(text), 70);
+                add(detectTypeFromIcon(block), 45);
+                add(detectTypeFromMeta(getContactMeta(block)), 25);
+                add(detectTypeFromValueText(text), 35);
+
+                var labelEls = block.querySelectorAll('strong, b, label, dt, th, [class*="title"], [class*="label"], [class*="biaoti"]');
+                for (var i = 0; i < labelEls.length; i++) {
+                    add(detectTypeFromLabelText(labelEls[i].textContent), 80);
+                    add(detectTypeFromMeta(getContactMeta(labelEls[i])), 25);
+                }
+
+                var bestType = null;
+                var bestScore = 0;
+                for (var type in scores) {
+                    if (scores[type] > bestScore) {
+                        bestType = type;
+                        bestScore = scores[type];
                     }
                 }
 
-                // 找到包含实际值的文本节点并替换
-                // 策略：找到最深层的、包含非空文本的叶子元素
+                return { type: bestType, score: bestScore };
+            }
+
+            function detectBlockType(block) {
+                return scoreBlockType(block).type;
+            }
+
+            function replaceBlockValue(block, newValue, fieldType) {
+                updateContactLinks(block, newValue, fieldType);
+
                 var valueNode = findValueNode(block, fieldType);
                 if (valueNode) {
-                    if (valueNode.nodeType === 3) {
-                        valueNode.textContent = newValue;
-                    } else {
-                        // 保留子元素结构，只替换文本内容
-                        var textNodes = getTextNodes(valueNode);
-                        if (textNodes.length > 0) {
-                            textNodes[0].textContent = newValue;
-                            for (var t = 1; t < textNodes.length; t++) {
-                                textNodes[t].textContent = '';
-                            }
-                        } else {
-                            valueNode.textContent = newValue;
-                        }
+                    replaceValueNodeText(valueNode, newValue, fieldType);
+                }
+            }
+
+            function updateContactLinks(block, newValue, fieldType) {
+                var links = block.querySelectorAll('a[href]');
+                for (var i = 0; i < links.length; i++) {
+                    var href = links[i].getAttribute('href') || '';
+                    if ((fieldType === 'phone' || fieldType === 'landline') && /^[Tt]el:/i.test(href)) {
+                        links[i].setAttribute('href', 'tel:' + newValue);
+                    } else if (fieldType === 'email' && /^mailto:/i.test(href)) {
+                        links[i].setAttribute('href', 'mailto:' + newValue);
                     }
                 }
             }
 
             function findValueNode(block, fieldType) {
-                // 对于有链接的（phone/email），找 <a> 标签内的文本
                 var links = block.querySelectorAll('a');
                 if (links.length > 0) {
                     for (var i = 0; i < links.length; i++) {
                         var href = links[i].getAttribute('href') || '';
-                        if (fieldType === 'phone' && /^[Tt]el:/.test(href)) return links[i];
+                        if ((fieldType === 'phone' || fieldType === 'landline') && /^[Tt]el:/i.test(href)) return links[i];
                         if (fieldType === 'email' && /^mailto:/i.test(href)) return links[i];
                     }
-                    return links[0];
                 }
 
-                // 排除图标容器，找到值所在的叶子元素
-                var candidates = [];
-                var allDivs = block.querySelectorAll('div, span, p, dd, td');
-                for (var j = 0; j < allDivs.length; j++) {
-                    var el = allDivs[j];
-                    // 跳过包含图标的容器
-                    if (el.querySelector('i[class*="fa-"]')) continue;
-                    // 跳过只有子块元素的容器
-                    if (el.querySelector('div, span, p')) continue;
-                    var txt = el.textContent.trim();
-                    if (txt && txt.length > 0) candidates.push(el);
-                }
+                var tableValue = findTableValueNode(block, fieldType);
+                if (tableValue) return tableValue;
 
-                // 如果有多个候选，返回最后一个（通常值在右边/下面）
+                var classValue = findClassValueNode(block);
+                if (classValue) return classValue;
+
+                var siblingValue = findSiblingValueNode(block, fieldType);
+                if (siblingValue) return siblingValue;
+
+                var colonNode = findColonTextNode(block, fieldType);
+                if (colonNode) return colonNode;
+
+                var candidates = getLeafValueElements(block);
                 if (candidates.length > 0) return candidates[candidates.length - 1];
 
-                // 降级：直接找文本节点
                 var textNodes = getTextNodes(block);
-                var longest = null;
+                var best = null;
+                var bestScore = -1;
                 textNodes.forEach(function (tn) {
-                    if (tn.textContent.trim() && (!longest || tn.textContent.trim().length > longest.textContent.trim().length)) {
-                        longest = tn;
+                    var txt = tn.textContent.trim();
+                    if (!txt) return;
+                    var score = txt.length;
+                    if (detectTypeFromValueText(txt) === fieldType) score += 80;
+                    if (detectTypeFromLabelText(txt) === fieldType) score += 40;
+                    if (score > bestScore) {
+                        best = tn;
+                        bestScore = score;
                     }
                 });
-                return longest;
+                return best;
+            }
+
+            function findTableValueNode(block, fieldType) {
+                if (!/^tr$/i.test(block.tagName || '')) return null;
+                var cells = Array.from(block.children).filter(function (el) {
+                    return /^(td|th)$/i.test(el.tagName);
+                });
+                for (var i = 0; i < cells.length; i++) {
+                    if (detectTypeFromLabelText(cells[i].textContent) === fieldType && cells[i + 1]) {
+                        return cells[i + 1];
+                    }
+                }
+                return cells.length > 1 ? cells[cells.length - 1] : null;
+            }
+
+            function findClassValueNode(block) {
+                var valueEls = block.querySelectorAll(
+                    '[class*="value"], [class*="val"], [class*="neirong"], [class*="content"], [class*="text"], [class*="desc"]'
+                );
+                for (var i = valueEls.length - 1; i >= 0; i--) {
+                    var el = valueEls[i];
+                    var meta = getContactMeta(el);
+                    if (/label|title|biaoti|icon|img|pic/i.test(meta)) continue;
+                    if (el.textContent.trim()) return el;
+                }
+                return null;
+            }
+
+            function findSiblingValueNode(block, fieldType) {
+                var labelEls = block.querySelectorAll('strong, b, label, dt, th, [class*="title"], [class*="label"], [class*="biaoti"]');
+                for (var i = 0; i < labelEls.length; i++) {
+                    if (detectTypeFromLabelText(labelEls[i].textContent) !== fieldType) continue;
+                    var next = labelEls[i].nextElementSibling;
+                    while (next) {
+                        if (next.textContent.trim() && !isIconOnlyElement(next)) return next;
+                        next = next.nextElementSibling;
+                    }
+                    var parent = labelEls[i].parentElement;
+                    if (parent && parent !== block) {
+                        var children = Array.from(parent.children);
+                        for (var j = children.indexOf(labelEls[i]) + 1; j < children.length; j++) {
+                            if (children[j].textContent.trim() && !isIconOnlyElement(children[j])) return children[j];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function findColonTextNode(block, fieldType) {
+                var textNodes = getTextNodes(block);
+                for (var i = 0; i < textNodes.length; i++) {
+                    var text = textNodes[i].textContent;
+                    if (/[：:]/.test(text) && detectTypeFromLabelText(text) === fieldType) {
+                        return textNodes[i];
+                    }
+                }
+                return null;
+            }
+
+            function getLeafValueElements(block) {
+                var candidates = [];
+                var els = block.querySelectorAll('div, span, p, dd, td, li');
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    if (isIconOnlyElement(el)) continue;
+                    if (el.querySelector('div, p, li, dd, td')) continue;
+                    var txt = el.textContent.trim();
+                    if (!txt) continue;
+                    var meta = getContactMeta(el);
+                    if (/label|title|biaoti|icon|img|pic/i.test(meta) && !/[：:]/.test(txt)) continue;
+                    candidates.push(el);
+                }
+                return candidates;
+            }
+
+            function isIconOnlyElement(el) {
+                if (!el) return false;
+                var text = el.textContent.replace(/\s+/g, '');
+                return !text && !!el.querySelector('i[class*="fa"], svg, img');
+            }
+
+            function replaceValueNodeText(valueNode, newValue, fieldType) {
+                if (valueNode.nodeType === 3) {
+                    valueNode.textContent = replaceTextPreservingLabel(valueNode.textContent, newValue, fieldType);
+                    return;
+                }
+
+                if (/^a$/i.test(valueNode.tagName || '')) {
+                    var linkTextNodes = getTextNodes(valueNode);
+                    if (linkTextNodes.length > 0) {
+                        linkTextNodes[linkTextNodes.length - 1].textContent = newValue;
+                        for (var lt = 0; lt < linkTextNodes.length - 1; lt++) linkTextNodes[lt].textContent = '';
+                    } else {
+                        valueNode.textContent = newValue;
+                    }
+                    return;
+                }
+
+                var textNodes = getTextNodes(valueNode);
+                var colonNode = null;
+                textNodes.forEach(function (tn) {
+                    if (!colonNode && /[：:]/.test(tn.textContent) && detectTypeFromLabelText(tn.textContent) === fieldType) colonNode = tn;
+                });
+                if (colonNode) {
+                    colonNode.textContent = replaceTextPreservingLabel(colonNode.textContent, newValue, fieldType);
+                    return;
+                }
+
+                if (textNodes.length > 0) {
+                    textNodes[textNodes.length - 1].textContent = newValue;
+                    for (var t = 0; t < textNodes.length - 1; t++) {
+                        if (!detectTypeFromLabelText(textNodes[t].textContent)) textNodes[t].textContent = '';
+                    }
+                } else {
+                    valueNode.textContent = newValue;
+                }
+            }
+
+            function replaceTextPreservingLabel(text, newValue, fieldType) {
+                var colonIdx = Math.max(text.lastIndexOf('：'), text.lastIndexOf(':'));
+                if (colonIdx !== -1 && detectTypeFromLabelText(text.substring(0, colonIdx + 1)) === fieldType) {
+                    return text.substring(0, colonIdx + 1) + newValue;
+                }
+                var patterns = {
+                    email: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/,
+                    phone: /(?:\+?\d[\d\-\s()]{6,}\d)/,
+                    landline: /(?:\+?\d[\d\-\s()]{6,}\d)/,
+                };
+                if (patterns[fieldType] && patterns[fieldType].test(text)) return text.replace(patterns[fieldType], newValue);
+                return newValue;
             }
 
             function getTextNodes(el) {
@@ -2347,37 +2547,13 @@
                 var wrap = document.createElement('div');
                 wrap.innerHTML = html;
 
-                // 尝试识别卡片结构（含 icon + label + value 的嵌套项）
-                var cardItems = detectCardItems(wrap);
-                if (cardItems) {
-                    var typedRows = [];
-                    cardItems.forEach(function (item) {
-                        var type = detectCardItemType(item);
-                        typedRows.push({ el: item, type: type || '', isCard: true });
-                    });
-
-                    window._replaceData = { wrap: wrap, typedRows: typedRows };
-                    showReplacePreview(typedRows);
-                    return;
-                }
-
-                // 通用行结构
-                var container = wrap.firstElementChild || wrap;
-                var rows = Array.from(container.children).filter(function (child) {
-                    return child.nodeType === 1;
-                });
-
-                if (rows.length <= 1) {
-                    rows = Array.from(wrap.querySelectorAll('p, li, dd, tr, div > div'));
-                    rows = rows.filter(function (r) {
-                        return !r.querySelector('p, li, dd, tr');
-                    });
-                }
-
                 var typedRows = [];
+                var rows = detectContactCandidates(wrap);
                 rows.forEach(function (row) {
-                    var type = detectBlockType(row);
-                    typedRows.push({ el: row, type: type || '' });
+                    var detected = scoreBlockType(row.el);
+                    if (detected.score >= 25) {
+                        typedRows.push({ el: row.el, type: detected.type || '', isCard: row.isCard, score: detected.score });
+                    }
                 });
 
                 if (typedRows.length === 0) {
@@ -2389,12 +2565,60 @@
                 showReplacePreview(typedRows);
             }
 
+            function detectContactCandidates(wrap) {
+                var candidates = [];
+
+                function addAll(nodes, isCard) {
+                    Array.from(nodes).forEach(function (el) {
+                        if (!el || el.nodeType !== 1 || !el.textContent.trim()) return;
+                        candidates.push({ el: el, isCard: !!isCard });
+                    });
+                }
+
+                addAll(detectCardItems(wrap) || [], true);
+                addAll(wrap.querySelectorAll('tr, li, dd'), false);
+                addAll(wrap.querySelectorAll('p'), false);
+                addAll(wrap.querySelectorAll('div'), false);
+
+                var seen = [];
+                var filtered = [];
+                candidates.forEach(function (item) {
+                    if (seen.indexOf(item.el) !== -1) return;
+                    seen.push(item.el);
+                    if (isTooBroadContactCandidate(item.el, wrap)) return;
+                    if (hasContactCandidateAncestor(item.el, filtered)) return;
+                    filtered.push(item);
+                });
+
+                return filtered;
+            }
+
+            function hasContactCandidateAncestor(el, existing) {
+                for (var i = 0; i < existing.length; i++) {
+                    if (existing[i].el.contains(el)) return true;
+                }
+                return false;
+            }
+
+            function isTooBroadContactCandidate(el, wrap) {
+                if (el === wrap) return true;
+                var childCount = Array.from(el.children || []).filter(function (c) {
+                    return c.nodeType === 1 && c.textContent.trim();
+                }).length;
+                if (childCount >= 3 && !/^tr$/i.test(el.tagName || '') && !/box_lianxi|contact-item|info-item|contact-row/i.test(getContactMeta(el))) {
+                    return true;
+                }
+                return false;
+            }
+
             // 检测卡片结构：每个子元素内含 icon 区域 + label/value 区域
             function detectCardItems(wrap) {
-                var candidates = wrap.querySelectorAll('[class*="contact-item"], [class*="info-item"], [class*="contact-row"]');
+                var candidates = wrap.querySelectorAll(
+                    '[class*="contact-item"], [class*="info-item"], [class*="contact-row"], [class*="box_lianxi"], [class*="lianxi"]'
+                );
                 if (candidates.length >= 2) return Array.from(candidates);
 
-                var container = wrap.querySelector('[class*="info-grid"], [class*="contact-list"], [class*="contact-grid"]');
+                var container = wrap.querySelector('[class*="info-grid"], [class*="contact-list"], [class*="contact-grid"], [class*="lianxi"]');
                 if (!container) container = wrap.firstElementChild || wrap;
                 if (!container.children || container.children.length < 2) return null;
 
@@ -2403,7 +2627,7 @@
                 });
 
                 var withIcon = items.filter(function (item) {
-                    return item.querySelector('i[class*="fa"]');
+                    return item.querySelector('i[class*="fa"], img, svg') && scoreBlockType(item).score >= 25;
                 });
 
                 if (withIcon.length >= 2) return withIcon;
@@ -2411,116 +2635,11 @@
             }
 
             function detectCardItemType(item) {
-                var detail = item.querySelector('[class*="detail"], [class*="content"], [class*="info"]');
-                var icons = item.querySelectorAll('i[class*="fa"]');
-
-                // 从 icon class 识别
-                for (var i = 0; i < icons.length; i++) {
-                    var cls = icons[i].className;
-                    if (/fa-user|fa-address-card/.test(cls)) return 'name';
-                    if (/fa-mobile/.test(cls)) return 'phone';
-                    if (/fa-phone(?!-)/.test(cls)) {
-                        // fa-phone 但不带 -square 等后缀：可能是座机
-                        var valEl = detail ? detail.querySelector('[class*="value"]') || detail.querySelector(':scope > *:last-child') : null;
-                        var valText = valEl ? valEl.textContent.replace(/\s/g, '') : '';
-                        if (/^400|^0\d{2,3}/.test(valText)) return 'landline';
-                        return 'phone';
-                    }
-                    if (/fa-phone-square/.test(cls)) return 'landline';
-                    if (/fa-envelope|fa-at/.test(cls)) return 'email';
-                    if (/fa-map|fa-location|fa-home/.test(cls)) return 'address';
-                    if (/fa-fax/.test(cls)) return 'fax';
-                    if (/fa-qq/.test(cls)) return 'qq';
-                    if (/fa-weixin|fa-wechat/.test(cls)) return 'wechat';
-                    if (/fa-globe|fa-link/.test(cls)) return 'website';
-                }
-
-                // 从 label 文字识别
-                if (detail) {
-                    var children = detail.children;
-                    for (var j = 0; j < children.length; j++) {
-                        var text = children[j].textContent.replace(/\s/g, '');
-                        for (var k = 0; k < SORTED_LABELS.length; k++) {
-                            if (text.includes(SORTED_LABELS[k][0])) return SORTED_LABELS[k][1];
-                        }
-                    }
-                    // 无 label 子元素时，看整体文本
-                    var allText = detail.textContent.replace(/\s/g, '');
-                    for (var k = 0; k < SORTED_LABELS.length; k++) {
-                        if (allText.includes(SORTED_LABELS[k][0])) return SORTED_LABELS[k][1];
-                    }
-                }
-
-                // 从 href 识别
-                var html = item.innerHTML;
-                if (/mailto:/i.test(html)) return 'email';
-                if (/[Tt]el:/.test(html)) return 'phone';
-
-                // 从值的格式识别
-                var fullText = item.textContent.replace(/\s/g, '');
-                if (/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test(fullText)) return 'email';
-                if (/^400[\-\s]?\d{3,4}[\-\s]?\d{3,4}$/.test(fullText)) return 'landline';
-                if (/^0\d{2,3}[\-\s]?\d{7,8}$/.test(fullText)) return 'landline';
-                if (/^1[3-9]\d{9}$/.test(fullText)) return 'phone';
-
-                return null;
+                return detectBlockType(item);
             }
 
             function replaceCardItem(item, newValue, fieldType) {
-                // 更新 href
-                var links = item.querySelectorAll('a[href]');
-                for (var i = 0; i < links.length; i++) {
-                    var href = links[i].getAttribute('href') || '';
-                    if (fieldType === 'phone' && /^[Tt]el:/.test(href)) links[i].setAttribute('href', 'tel:' + newValue);
-                    else if (fieldType === 'landline' && /^[Tt]el:/.test(href)) links[i].setAttribute('href', 'tel:' + newValue);
-                    else if (fieldType === 'email' && /^mailto:/i.test(href)) links[i].setAttribute('href', 'mailto:' + newValue);
-                }
-
-                // 找 value 元素替换文本
-                var detail = item.querySelector('[class*="detail"], [class*="content"], [class*="info"]');
-                var valueEl = null;
-
-                if (detail) {
-                    valueEl = detail.querySelector('[class*="value"]');
-                    if (!valueEl) {
-                        // 取最后一个子元素（跳过 label）
-                        var children = Array.from(detail.children);
-                        for (var i = children.length - 1; i >= 0; i--) {
-                            if (!children[i].className.match(/label|icon|title/)) {
-                                valueEl = children[i];
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!valueEl) {
-                    // 降级：跳过 icon 容器，取最后一个子元素
-                    var allChildren = Array.from(item.children);
-                    for (var i = allChildren.length - 1; i >= 0; i--) {
-                        if (!allChildren[i].querySelector('i[class*="fa"]')) {
-                            valueEl = allChildren[i];
-                            break;
-                        }
-                    }
-                }
-
-                if (valueEl) {
-                    // 如果 value 元素内有链接，替换链接文本
-                    var link = valueEl.querySelector('a[href]');
-                    if (link && (fieldType === 'phone' || fieldType === 'landline' || fieldType === 'email')) {
-                        link.textContent = newValue;
-                    } else {
-                        // 保留内部结构，只替换文本
-                        var textNodes = getTextNodes(valueEl);
-                        if (textNodes.length > 0) {
-                            textNodes[0].textContent = newValue;
-                            for (var t = 1; t < textNodes.length; t++) textNodes[t].textContent = '';
-                        } else {
-                            valueEl.textContent = newValue;
-                        }
-                    }
-                }
+                replaceBlockValue(item, newValue, fieldType);
             }
 
             var FIELD_TYPE_OPTIONS = [
@@ -2570,7 +2689,8 @@
                     tr.appendChild(tdType);
 
                     var tdValue = document.createElement('td');
-                    var value = item.type && contactData[item.type] ? contactData[item.type][0] : '\u2014';
+                    var values = getContactReplacementValues(item.type);
+                    var value = values && values.length > 0 ? values[0] : '\u2014';
                     tdValue.innerHTML = '<span class="new-value">' + esc(value) + '</span>';
                     tdValue.id = 'replaceVal_' + idx;
                     tr.appendChild(tdValue);
@@ -2586,9 +2706,18 @@
                 typedRows.forEach(function (item, idx) {
                     var tdValue = document.getElementById('replaceVal_' + idx);
                     if (!tdValue) return;
-                    var value = item.type && contactData[item.type] ? contactData[item.type][0] : '\u2014';
+                    var values = getContactReplacementValues(item.type);
+                    var value = values && values.length > 0 ? values[0] : '\u2014';
                     tdValue.innerHTML = '<span class="new-value">' + esc(value) + '</span>';
                 });
+            }
+
+            function getContactReplacementValues(type) {
+                if (!type) return null;
+                if (contactData[type] && contactData[type].length > 0) return contactData[type];
+                if (type === 'phone' && contactData.landline && contactData.landline.length > 0) return contactData.landline;
+                if (type === 'landline' && contactData.phone && contactData.phone.length > 0) return contactData.phone;
+                return null;
             }
 
             function confirmReplace() {
@@ -2611,7 +2740,7 @@
                         return;
                     }
 
-                    var values = contactData[type];
+                    var values = getContactReplacementValues(type);
                     if (!values || values.length === 0) {
                         el.parentNode.removeChild(el);
                         deletedCount++;
