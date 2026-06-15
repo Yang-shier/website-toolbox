@@ -402,6 +402,11 @@
                 border: 1px solid var(--border);
                 overflow: hidden;
             }
+            .nav-source-panel {
+                overflow: visible;
+                position: relative;
+                z-index: 5;
+            }
             .contact-panel-header {
                 padding: 10px 16px;
                 font-size: 14px;
@@ -447,6 +452,86 @@
                 background: var(--bg-secondary);
                 border-radius: 12px;
                 border: 1px solid var(--border);
+            }
+            .nav-example {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 18px;
+                height: 18px;
+                border: 1px solid var(--border);
+                border-radius: 50%;
+                background: #fff;
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0;
+                text-transform: none;
+                cursor: help;
+            }
+            .nav-example-popover {
+                position: absolute;
+                left: 0;
+                top: calc(100% + 8px);
+                z-index: 20;
+                display: none;
+                width: min(460px, 72vw);
+                padding: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #fff;
+                color: var(--text);
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
+                letter-spacing: 0;
+                text-transform: none;
+            }
+            .nav-example:hover .nav-example-popover,
+            .nav-example:focus-within .nav-example-popover {
+                display: block;
+            }
+            .nav-example-popover strong {
+                display: block;
+                margin-bottom: 8px;
+                color: var(--text);
+                font-size: 12px;
+            }
+            .nav-example-popover pre {
+                margin: 0;
+                padding: 10px;
+                max-height: 280px;
+                overflow: auto;
+                border-radius: 6px;
+                background: #f0f1f3;
+                color: #333;
+                font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+                font-size: 11px;
+                line-height: 1.55;
+                white-space: pre-wrap;
+            }
+            .nav-limit-control {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: 8px;
+                color: var(--text-dim);
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .nav-limit-control input {
+                width: 64px;
+                height: 32px;
+                padding: 4px 8px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #fff;
+                color: var(--text);
+                font-size: 13px;
+                outline: none;
+            }
+            .nav-limit-control input:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
             }
 
             /* ── Format tab ── */
@@ -1000,8 +1085,31 @@
             <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0">
                 <!-- 上半部分：源导航代码 + 提取结果 -->
                 <div class="contact-row" style="max-height: 40vh; min-height: 160px">
-                    <div class="contact-panel" style="min-height: 0">
-                        <div class="contact-panel-header">源导航代码</div>
+                    <div class="contact-panel nav-source-panel" style="min-height: 0">
+                        <div class="contact-panel-header">
+                            源导航代码
+                            <span class="nav-example" id="navExampleTrigger" tabindex="0" aria-label="查看源导航代码复制示例">
+                                ?
+                                <span class="nav-example-popover">
+                                    <strong>建议从整块 .basic_navbar 元素开始复制</strong>
+                                    <pre>&lt;div class=&quot;basic_navbar pcPart pc_iframe_preview basic_navbar_width&quot;&gt;
+  &lt;div class=&quot;barLine&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;navContent&quot;&gt;
+    &lt;div class=&quot;itemNav&quot;&gt;
+      &lt;a href=&quot;/products.html&quot;&gt;&lt;span class=&quot;pageLink&quot;&gt;产品中心&lt;/span&gt;&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;childrenData childContent type_0&quot;&gt;
+    &lt;div class=&quot;navchildlist&quot;&gt;
+      &lt;div class=&quot;navchildLine&quot;&gt;
+        &lt;a href=&quot;/product-a.html&quot;&gt;&lt;span class=&quot;navchildLink&quot;&gt;产品A&lt;/span&gt;&lt;/a&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+                                </span>
+                            </span>
+                        </div>
                         <textarea
                             id="sourceInput"
                             class="contact-textarea"
@@ -1051,6 +1159,10 @@
                         </svg>
                         复制结果
                     </button>
+                    <label class="nav-limit-control">
+                        子产品显示数量
+                        <input id="childProductLimit" type="number" min="1" value="4" inputmode="numeric" />
+                    </label>
                     <button class="btn btn-secondary" onclick="clearAll()" style="margin-left: auto">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18" />
@@ -1861,6 +1973,12 @@
                 return flatItems;
             }
 
+            function getChildProductLimit() {
+                const input = document.getElementById('childProductLimit');
+                const value = input ? parseInt(input.value, 10) : 4;
+                return Number.isFinite(value) && value >= 1 ? value : 4;
+            }
+
             function generateOutput() {
                 const templateHTML = document.getElementById('templateInput').value.trim();
                 if (!templateHTML) {
@@ -1887,6 +2005,7 @@
                 const templateBlock = blocks[0].cloneNode(true);
                 const templateAnalysis = analyzeBlock(templateBlock.cloneNode(true));
                 const itemsToRender = templateAnalysis.childTemplate ? checked : buildFlatNavItems(checked);
+                const childLimit = getChildProductLimit();
 
                 blocks.forEach(b => b.parentNode.removeChild(b));
 
@@ -1906,8 +2025,8 @@
                         ba.childItems.forEach(ci => parent.removeChild(ci));
 
                         var childrenToUse = getSelectedChildren(navItem);
-                        if (childrenToUse.length > 5) {
-                            childrenToUse = childrenToUse.slice(0, 4);
+                        if (childrenToUse.length > childLimit + 1) {
+                            childrenToUse = childrenToUse.slice(0, childLimit);
                             childrenToUse.push({ title: getMoreLabel(navItem.title), link: navItem.link });
                         }
 
