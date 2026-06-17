@@ -1736,6 +1736,7 @@
 
         <script src="./src/toolbox-core.js"></script>
         <script src="./src/toolbox-examples.js"></script>
+        <script src="./src/toolbox-storage.js"></script>
         <script>
             let navData = [];
             let contactData = {};
@@ -2210,6 +2211,9 @@
             }
 
             function loadDrafts() {
+                if (window.SiteToolboxStorage && window.SiteToolboxStorage.loadDrafts) {
+                    return window.SiteToolboxStorage.loadDrafts(TOOLBOX_DRAFT_KEY);
+                }
                 try {
                     return JSON.parse(localStorage.getItem(TOOLBOX_DRAFT_KEY) || '{}') || {};
                 } catch (e) {
@@ -2218,6 +2222,10 @@
             }
 
             function saveDraftField(id, value) {
+                if (window.SiteToolboxStorage && window.SiteToolboxStorage.saveDraftField) {
+                    window.SiteToolboxStorage.saveDraftField(TOOLBOX_DRAFT_KEY, id, value);
+                    return;
+                }
                 try {
                     var drafts = loadDrafts();
                     if (value) drafts[id] = value;
@@ -2250,6 +2258,10 @@
             }
 
             function clearDraftFields(ids) {
+                if (window.SiteToolboxStorage && window.SiteToolboxStorage.clearDraftFields) {
+                    window.SiteToolboxStorage.clearDraftFields(TOOLBOX_DRAFT_KEY, ids);
+                    return;
+                }
                 try {
                     var drafts = loadDrafts();
                     ids.forEach(function (id) {
@@ -2262,6 +2274,11 @@
             }
 
             function collectWorkspaceDrafts() {
+                if (window.SiteToolboxStorage && window.SiteToolboxStorage.collectWorkspaceDrafts) {
+                    return window.SiteToolboxStorage.collectWorkspaceDrafts(getDraftFields(), function (id) {
+                        return document.getElementById(id);
+                    });
+                }
                 var fields = {};
                 getDraftFields().forEach(function (field) {
                     var el = document.getElementById(field.id);
@@ -2277,6 +2294,18 @@
             }
 
             function applyWorkspaceDrafts(workspace) {
+                if (window.SiteToolboxStorage && window.SiteToolboxStorage.applyWorkspaceDrafts) {
+                    var applied = window.SiteToolboxStorage.applyWorkspaceDrafts(
+                        workspace,
+                        getDraftFields(),
+                        function (id) {
+                            return document.getElementById(id);
+                        },
+                        saveDraftField
+                    );
+                    if (applied) updateTextprocStats();
+                    return applied;
+                }
                 if (!workspace || !workspace.fields) return false;
                 getDraftFields().forEach(function (field) {
                     if (workspace.fields[field.id] === undefined) return;
