@@ -35,14 +35,30 @@
 
             /* ── Header ── */
             .header {
-                padding: 10px 24px;
+                padding: 10px 18px;
                 display: flex;
+                flex-wrap: wrap;
                 align-items: center;
-                gap: 20px;
+                justify-content: space-between;
+                gap: 10px 18px;
                 border-bottom: 1px solid var(--border);
                 backdrop-filter: blur(20px);
                 background: rgba(255, 255, 255, 0.85);
                 flex-shrink: 0;
+            }
+            .header-main,
+            .header-meta {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 0;
+            }
+            .header-main {
+                flex: 1 1 620px;
+            }
+            .header-meta {
+                justify-content: flex-end;
+                flex: 1 1 420px;
             }
             .header h1 {
                 font-size: 18px;
@@ -68,11 +84,13 @@
                 white-space: nowrap;
             }
             .update-summary {
-                margin-left: auto;
-                max-width: 420px;
+                max-width: 360px;
                 color: var(--text-dim);
                 font-size: 12px;
                 line-height: 1.45;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .update-summary strong {
                 color: var(--text);
@@ -94,6 +112,12 @@
                 background: var(--bg-card);
                 border-radius: 8px;
                 padding: 3px;
+                overflow-x: auto;
+                scrollbar-width: none;
+                min-width: 0;
+            }
+            .tab-group::-webkit-scrollbar {
+                display: none;
             }
             .tab-btn {
                 padding: 5px 16px;
@@ -105,6 +129,7 @@
                 transition: all 0.2s;
                 background: transparent;
                 color: var(--text-dim);
+                white-space: nowrap;
             }
             .tab-btn.active {
                 background: linear-gradient(135deg, var(--accent), #48c6ef);
@@ -488,6 +513,9 @@
                 border-radius: 12px;
                 border: 1px solid var(--border);
             }
+            .contact-actions-bar .btn {
+                white-space: nowrap;
+            }
             .nav-example {
                 position: relative;
                 display: inline-flex;
@@ -843,6 +871,12 @@
                 justify-content: flex-end;
             }
             @media (max-width: 1100px) {
+                .header-meta {
+                    justify-content: flex-start;
+                }
+                .update-summary {
+                    max-width: 100%;
+                }
                 .textproc-layout {
                     grid-template-columns: 1fr;
                 }
@@ -851,11 +885,40 @@
                 }
             }
             @media (max-width: 760px) {
+                .header {
+                    padding: 8px 12px;
+                }
+                .header-main,
+                .header-meta {
+                    width: 100%;
+                    flex: 1 1 100%;
+                }
+                .header h1 {
+                    font-size: 17px;
+                }
+                .version-badge {
+                    height: 22px;
+                    font-size: 11px;
+                }
+                .main {
+                    padding: 18px 24px !important;
+                }
+                .contact-actions-bar {
+                    padding: 12px 16px !important;
+                }
                 .textproc-editor-grid {
                     grid-template-columns: 1fr;
                 }
                 .textproc-tool-grid {
                     grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 520px) {
+                .main {
+                    padding: 12px 16px !important;
+                }
+                .update-summary {
+                    white-space: normal;
                 }
             }
 
@@ -1106,21 +1169,25 @@
     </head>
     <body>
         <div class="header">
-            <h1>建站工具箱</h1>
-            <span class="version-badge">v0.6</span>
-            <div class="tab-group">
-                <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>
-                <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
-                <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">联系方式替换</button>
-                <button class="tab-btn" data-tab="textproc" onclick="switchTab('textproc')">文本处理</button>
+            <div class="header-main">
+                <h1>建站工具箱</h1>
+                <span class="version-badge">v0.6</span>
+                <div class="tab-group">
+                    <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>
+                    <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
+                    <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">联系方式替换</button>
+                    <button class="tab-btn" data-tab="textproc" onclick="switchTab('textproc')">文本处理</button>
+                </div>
             </div>
-            <div class="update-summary">
-                <strong>最近更新：</strong>新增工作区备份、防误清空、自动保存、示例数据和安全清理。
-            </div>
-            <div class="header-tools">
-                <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('workspaceImportFile').click()">导入工作区</button>
-                <input type="file" id="workspaceImportFile" accept=".json" style="display: none" onchange="importWorkspaceDrafts(event)" />
+            <div class="header-meta">
+                <div class="update-summary">
+                    <strong>最近更新：</strong>新增工作区备份、防误清空、自动保存、示例数据和安全清理。
+                </div>
+                <div class="header-tools">
+                    <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('workspaceImportFile').click()">导入工作区</button>
+                    <input type="file" id="workspaceImportFile" accept=".json" style="display: none" onchange="importWorkspaceDrafts(event)" />
+                </div>
             </div>
         </div>
 
