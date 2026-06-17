@@ -404,8 +404,45 @@
       .replace(/\s+(href|src)\s*=\s*javascript:[^\s>]+/gi, '');
   }
 
+  function splitImageTextParagraphHTML(html) {
+    return String(html || '').replace(/<p\b([^>]*)>([\s\S]*?)<\/p>/gi, function (full, attrs, content) {
+      if (!/<img\b/i.test(content)) return full;
+      if (!/(?:<img\b[^>]*\/?>\s*[^<\s]|[^<\s][\s\S]*?<img\b)/i.test(content)) return full;
+
+      var parts = content.match(/<img\b[^>]*\/?>|<(?!img\b)[^>]+>|[^<]+/gi) || [];
+      var groups = [];
+      var current = '';
+      var currentKind = '';
+
+      function kindOf(part) {
+        if (/^<img\b/i.test(part)) return 'image';
+        if (/^\s*$/.test(part)) return currentKind || 'text';
+        return 'text';
+      }
+
+      function pushCurrent() {
+        if (current.trim()) groups.push(current.trim());
+        current = '';
+        currentKind = '';
+      }
+
+      parts.forEach(function (part) {
+        var kind = kindOf(part);
+        if (current && kind !== currentKind && part.trim()) pushCurrent();
+        current += part;
+        currentKind = kind;
+      });
+      pushCurrent();
+
+      if (groups.length < 2) return full;
+      return groups.map(function (group) {
+        return '<p' + attrs + '>' + group + '</p>';
+      }).join('\n');
+    });
+  }
+
   function formatHTMLSource(html) {
-    return String(html || '')
+    return splitImageTextParagraphHTML(html)
       .replace(/>\s+</g, '><')
       .replace(/(<\/(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])>)/gi, '$1\n')
       .replace(/(<(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])[\s>])/gi, '\n$1')
@@ -510,6 +547,7 @@
     sanitizeElement: sanitizeElement,
     sanitizeHTMLString: sanitizeHTMLString,
     formatHTMLSource: formatHTMLSource,
+    splitImageTextParagraphHTML: splitImageTextParagraphHTML,
     extractImageReplacementLinks: extractImageReplacementLinks,
     replaceImageLinksInCode: replaceImageLinksInCode,
   };

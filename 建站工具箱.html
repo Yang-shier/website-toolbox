@@ -3873,6 +3873,7 @@ Hello World`;
                 if (document.getElementById('optForbiddenWords').checked) {
                     result = applyForbiddenWords(result);
                 }
+                result = splitImageTextParagraphHTML(result);
                 var preview = document.getElementById('fmtPreview');
                 preview.innerHTML = result;
 
@@ -4373,6 +4374,13 @@ Hello World`;
                     .replace(/(<(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])[\s>])/gi, '\n$1')
                     .replace(/^\n+/, '')
                     .replace(/\n{3,}/g, '\n\n');
+            }
+
+            function splitImageTextParagraphHTML(html) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.splitImageTextParagraphHTML) {
+                    return window.SiteToolboxCore.splitImageTextParagraphHTML(html);
+                }
+                return formatHTMLSource(html).replace(/\n/g, '');
             }
 
             function copyFormatResult() {

@@ -26,4 +26,16 @@ assert.strictEqual(
   'formatHTMLSource should place block tags on readable lines'
 );
 
+assert.strictEqual(
+  core.formatHTMLSource('<p><img src="a.jpg"/>主卧转角衣柜</p>').trim(),
+  '<p><img src="a.jpg"/></p>\n<p>主卧转角衣柜</p>',
+  'formatHTMLSource should move text after an image into its own paragraph'
+);
+
+assert.strictEqual(
+  core.splitImageTextParagraphHTML('<p style="text-align:center"><img src="a.jpg"/>洞洞板</p>').trim(),
+  '<p style="text-align:center"><img src="a.jpg"/></p>\n<p style="text-align:center">洞洞板</p>',
+  'splitImageTextParagraphHTML should split preview HTML before image width changes'
+);
+
 console.log('format behavior checks passed');

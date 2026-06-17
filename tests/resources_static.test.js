@@ -28,6 +28,7 @@ assert.strictEqual(typeof core.transformText, 'function', 'core should export tr
 assert.strictEqual(typeof core.sanitizeElement, 'function', 'core should export sanitizeElement');
 assert.strictEqual(typeof core.sanitizeHTMLString, 'function', 'core should export sanitizeHTMLString');
 assert.strictEqual(typeof core.formatHTMLSource, 'function', 'core should export formatHTMLSource');
+assert.strictEqual(typeof core.splitImageTextParagraphHTML, 'function', 'core should export splitImageTextParagraphHTML');
 assert.strictEqual(typeof storage.loadDrafts, 'function', 'storage should export loadDrafts');
 assert.strictEqual(typeof storage.collectWorkspaceDrafts, 'function', 'storage should export collectWorkspaceDrafts');
 
