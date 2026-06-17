@@ -1735,6 +1735,7 @@
         <div class="toast" id="toast"></div>
 
         <script src="./src/toolbox-core.js"></script>
+        <script src="./src/toolbox-examples.js"></script>
         <script>
             let navData = [];
             let contactData = {};
@@ -3171,6 +3172,14 @@
             }
 
             function fillNavExample() {
+                if (window.SiteToolboxExamples) {
+                    document.getElementById('sourceInput').value = window.SiteToolboxExamples.navSource;
+                    document.getElementById('templateInput').value = window.SiteToolboxExamples.navTemplate;
+                    document.getElementById('outputArea').value = '';
+                    extractNav();
+                    showToast('已填入导航示例');
+                    return;
+                }
                 document.getElementById('sourceInput').value = `<div class="basic_navbar">
     <div class="itemNav"><a href="/products"><span class="pageLink">产品中心</span></a></div>
     <div class="itemNav"><a href="/news"><span class="pageLink">新闻资讯</span></a></div>
@@ -3206,6 +3215,14 @@
             }
 
             function fillContactExample() {
+                if (window.SiteToolboxExamples) {
+                    document.getElementById('contactInput').value = window.SiteToolboxExamples.contactText;
+                    document.getElementById('contactCodeInput').value = window.SiteToolboxExamples.contactTemplate;
+                    document.getElementById('contactOutput').value = '';
+                    extractContact();
+                    showToast('已填入联系方式示例');
+                    return;
+                }
                 document.getElementById('contactInput').value = `公司名称：星河科技有限公司
 联系人：张三
 手机：13800138000
@@ -3225,6 +3242,13 @@
             }
 
             function fillTextprocExample() {
+                if (window.SiteToolboxExamples) {
+                    document.getElementById('textprocInput').value = window.SiteToolboxExamples.textprocText;
+                    document.getElementById('textprocOutput').value = '';
+                    updateTextprocStats();
+                    showToast('已填入文本处理示例');
+                    return;
+                }
                 document.getElementById('textprocInput').value = `  第一行内容  
 
 第二行    多个空格
@@ -3237,6 +3261,14 @@ Hello World`;
 
             function fillFormatExample() {
                 switchFormatInputTab('rich');
+                if (window.SiteToolboxExamples) {
+                    document.getElementById('richInput').innerHTML = window.SiteToolboxExamples.formatHtml;
+                    document.getElementById('codeInput').value = '';
+                    document.getElementById('fmtPreview').innerHTML = '';
+                    document.getElementById('fmtOutputSource').value = '';
+                    showToast('已填入格式化示例');
+                    return;
+                }
                 document.getElementById('richInput').innerHTML = `<h2>产品优势<br>应用场景</h2>
 <p style="font-size:16px;color:red" onclick="alert(1)">  这是一段  需要清理样式和空格的正文。</p>
 <p><strong>核心特点</strong></p>
