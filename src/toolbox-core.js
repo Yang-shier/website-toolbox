@@ -413,6 +413,92 @@
       .replace(/\n{2,}/g, '\n');
   }
 
+  function extractImageReplacementLinks(input) {
+    var source = String(input || '');
+    var links = [];
+    var imgRe = /<img\b[^>]*?\bsrc\s*=\s*(["'])(.*?)\1/gi;
+    var match;
+    while ((match = imgRe.exec(source))) {
+      var src = decodeEntities(match[2]).trim();
+      if (src) links.push(src);
+    }
+    if (links.length > 0) return links;
+
+    return source
+      .split(/\r?\n/)
+      .map(function (line) {
+        return line.trim();
+      })
+      .filter(Boolean);
+  }
+
+  function collectImageLinkMatches(code, mode) {
+    var source = String(code || '');
+    var matches = [];
+    var match;
+
+    function pushMatch(start, end) {
+      if (start >= 0 && end > start) matches.push({ start: start, end: end });
+    }
+
+    function collectUrlMatches(re) {
+      while ((match = re.exec(source))) {
+        var valueOffset = match[0].indexOf(match[3]);
+        pushMatch(match.index + valueOffset, match.index + valueOffset + match[3].length);
+      }
+    }
+
+    if (mode === 'background') {
+      collectUrlMatches(/\bbackground(?:-image)?\s*:[^;{}]*?(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi);
+    } else {
+      var imgSrcRe = /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']*)(\2)/gi;
+      while ((match = imgSrcRe.exec(source))) {
+        pushMatch(match.index + match[1].length + match[2].length, match.index + match[1].length + match[2].length + match[3].length);
+      }
+
+      var srcsetRe = /(\bsrcset\s*=\s*)(["'])([\s\S]*?)(\2)/gi;
+      while ((match = srcsetRe.exec(source))) {
+        var valueStart = match.index + match[1].length + match[2].length;
+        var value = match[3];
+        var candidateRe = /(^|,\s*)(\S+)([^,]*)/g;
+        var candidate;
+        while ((candidate = candidateRe.exec(value))) {
+          pushMatch(valueStart + candidate.index + candidate[1].length, valueStart + candidate.index + candidate[1].length + candidate[2].length);
+        }
+      }
+
+      collectUrlMatches(/(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi);
+    }
+
+    return matches.sort(function (a, b) {
+      return a.start - b.start;
+    });
+  }
+
+  function replaceImageLinksInCode(options) {
+    options = options || {};
+    var source = String(options.code || '');
+    var links = (options.links || []).map(function (link) {
+      return String(link || '').trim();
+    }).filter(Boolean);
+    var matches = collectImageLinkMatches(source, options.mode === 'background' ? 'background' : 'all');
+    var replaceCount = Math.min(links.length, matches.length);
+    var output = source;
+
+    for (var i = replaceCount - 1; i >= 0; i--) {
+      output = output.slice(0, matches[i].start) + links[i] + output.slice(matches[i].end);
+    }
+
+    return {
+      code: output,
+      linkCount: links.length,
+      matchCount: matches.length,
+      replacedCount: replaceCount,
+      unusedLinks: Math.max(links.length - replaceCount, 0),
+      remainingMatches: Math.max(matches.length - replaceCount, 0),
+    };
+  }
+
   return {
     CONTACT_LABELS: CONTACT_LABELS,
     parseContactText: parseContactText,
@@ -424,5 +510,7 @@
     sanitizeElement: sanitizeElement,
     sanitizeHTMLString: sanitizeHTMLString,
     formatHTMLSource: formatHTMLSource,
+    extractImageReplacementLinks: extractImageReplacementLinks,
+    replaceImageLinksInCode: replaceImageLinksInCode,
   };
 });

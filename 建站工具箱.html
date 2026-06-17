@@ -1177,6 +1177,7 @@
                     <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
                     <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">联系方式替换</button>
                     <button class="tab-btn" data-tab="textproc" onclick="switchTab('textproc')">文本处理</button>
+                    <button class="tab-btn" data-tab="imageReplace" onclick="switchTab('imageReplace')">图片链接替换</button>
                 </div>
             </div>
             <div class="header-meta">
@@ -1356,6 +1357,85 @@
                         清除全部
                     </button>
                     <button class="btn btn-secondary" onclick="restoreLastClear('contact')">撤回</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Image Link Replacement Tab ==================== -->
+        <div class="main" id="imageReplacePage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
+            <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0">
+                <div class="contact-actions-bar" style="flex-wrap: wrap">
+                    <label class="fmt-segment-wrap" style="gap: 8px">
+                        <span>替换模式</span>
+                        <label class="fmt-opt" style="margin: 0">
+                            <input type="radio" name="imageReplaceMode" value="all" checked />
+                            <span>全部图片链接</span>
+                        </label>
+                        <label class="fmt-opt" style="margin: 0">
+                            <input type="radio" name="imageReplaceMode" value="background" />
+                            <span>仅背景图片</span>
+                        </label>
+                    </label>
+                    <span class="textproc-stats" id="imageReplaceStats">
+                        <span>识别 0 个新链接</span>
+                        <span>替换 0 个</span>
+                    </span>
+                </div>
+
+                <div class="contact-row" style="flex: 1; min-height: 0">
+                    <div class="contact-panel" style="flex: 0.8; min-height: 0">
+                        <div class="contact-panel-header">新图片链接</div>
+                        <textarea
+                            id="imageLinksInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="一行一个图片链接，或粘贴包含多个 <img src=&quot;...&quot;> 的 HTML 片段"
+                        ></textarea>
+                    </div>
+                    <div class="contact-panel" style="flex: 1.2; min-height: 0">
+                        <div class="contact-panel-header">待替换代码</div>
+                        <textarea
+                            id="imageCodeInput"
+                            class="contact-textarea"
+                            style="flex: 1"
+                            placeholder="粘贴包含图片链接的 HTML / CSS / 页面代码"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="contact-row" style="flex: 1; min-height: 0">
+                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                        <div class="contact-panel-header">替换结果</div>
+                        <textarea id="imageReplaceOutput" class="contact-textarea" style="flex: 1" placeholder="点击替换后，结果将在这里显示"></textarea>
+                    </div>
+                </div>
+
+                <div class="contact-actions-bar">
+                    <button class="btn btn-primary" onclick="replaceImageLinks()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 1l4 4-4 4" />
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                            <path d="M7 23l-4-4 4-4" />
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                        </svg>
+                        替换图片链接
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyImageReplaceOutput()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
+                        复制结果
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearImageReplace()" style="margin-left: auto">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        清空
+                    </button>
+                    <button class="btn btn-secondary" onclick="restoreLastClear('imageReplace')">撤回</button>
                 </div>
             </div>
         </div>
@@ -2286,6 +2366,8 @@
                     { id: 'contactInput', type: 'value' },
                     { id: 'contactCodeInput', type: 'value' },
                     { id: 'textprocInput', type: 'value' },
+                    { id: 'imageLinksInput', type: 'value' },
+                    { id: 'imageCodeInput', type: 'value' },
                     { id: 'richInput', type: 'html' },
                     { id: 'codeInput', type: 'value' },
                 ];
@@ -2392,7 +2474,7 @@
                     if (workspace.fields[field.id] === undefined) return;
                     var el = document.getElementById(field.id);
                     if (!el) return;
-                    if (field.type === 'html') el.innerHTML = workspace.fields[field.id];
+                    if (field.type === 'html') setSafeHTML(el, workspace.fields[field.id]);
                     else el.value = workspace.fields[field.id];
                     saveDraftField(field.id, workspace.fields[field.id]);
                 });
@@ -2465,7 +2547,20 @@
                 }
                 Object.keys(snapshot).forEach(function (id) {
                     setClearFieldValue(document.getElementById(id), snapshot[id]);
-                    if (['sourceInput', 'templateInput', 'contactInput', 'contactCodeInput', 'textprocInput', 'richInput', 'codeInput'].indexOf(id) !== -1) {
+                    if (
+                        [
+                            'sourceInput',
+                            'templateInput',
+                            'contactInput',
+                            'contactCodeInput',
+                            'textprocInput',
+                            'imageLinksInput',
+                            'imageCodeInput',
+                            'imageReplaceOutput',
+                            'richInput',
+                            'codeInput',
+                        ].indexOf(id) !== -1
+                    ) {
                         saveDraftField(id, snapshot[id]);
                     }
                 });
@@ -3394,6 +3489,86 @@ Hello World`;
                 showToast('已填入文本处理示例');
             }
 
+            function getImageReplaceMode() {
+                var checked = document.querySelector('input[name="imageReplaceMode"]:checked');
+                return checked ? checked.value : 'all';
+            }
+
+            function setImageReplaceStats(result) {
+                var stats = document.getElementById('imageReplaceStats');
+                if (!stats) return;
+                if (!result) {
+                    stats.innerHTML = '<span>识别 0 个新链接</span><span>替换 0 个</span>';
+                    return;
+                }
+                var parts = [
+                    '<span>识别 ' + result.linkCount + ' 个新链接</span>',
+                    '<span>匹配 ' + result.matchCount + ' 个旧链接</span>',
+                    '<span>替换 ' + result.replacedCount + ' 个</span>',
+                ];
+                if (result.remainingMatches > 0) parts.push('<span>新链接不足 ' + result.remainingMatches + ' 个</span>');
+                if (result.unusedLinks > 0) parts.push('<span>未使用 ' + result.unusedLinks + ' 个新链接</span>');
+                stats.innerHTML = parts.join('');
+            }
+
+            function replaceImageLinks() {
+                var linksInput = document.getElementById('imageLinksInput').value;
+                var codeInput = document.getElementById('imageCodeInput').value;
+                var links =
+                    window.SiteToolboxCore && window.SiteToolboxCore.extractImageReplacementLinks
+                        ? window.SiteToolboxCore.extractImageReplacementLinks(linksInput)
+                        : linksInput.split(/\r?\n/).map(function (line) {
+                              return line.trim();
+                          }).filter(Boolean);
+
+                if (!links.length) {
+                    showToast('请先粘贴新图片链接', true);
+                    setImageReplaceStats(null);
+                    return;
+                }
+                if (!codeInput.trim()) {
+                    showToast('请先粘贴待替换代码', true);
+                    setImageReplaceStats(null);
+                    return;
+                }
+                if (!window.SiteToolboxCore || !window.SiteToolboxCore.replaceImageLinksInCode) {
+                    showToast('图片链接替换模块未加载', true);
+                    return;
+                }
+
+                var result = window.SiteToolboxCore.replaceImageLinksInCode({
+                    links: links,
+                    code: codeInput,
+                    mode: getImageReplaceMode(),
+                });
+                document.getElementById('imageReplaceOutput').value = result.code;
+                setImageReplaceStats(result);
+
+                var msg = '已替换 ' + result.replacedCount + ' 个图片链接';
+                if (result.remainingMatches > 0) msg += '，新链接不足 ' + result.remainingMatches + ' 个';
+                if (result.unusedLinks > 0) msg += '，未使用 ' + result.unusedLinks + ' 个新链接';
+                showToast(msg, result.replacedCount === 0 || result.remainingMatches > 0);
+            }
+
+            function copyImageReplaceOutput() {
+                var output = document.getElementById('imageReplaceOutput').value;
+                if (!output) {
+                    showToast('没有可复制的内容', true);
+                    return;
+                }
+                writeClipboardText(output, '替换结果已复制');
+            }
+
+            function clearImageReplace() {
+                rememberClearSnapshot('imageReplace', ['imageLinksInput', 'imageCodeInput', 'imageReplaceOutput']);
+                document.getElementById('imageLinksInput').value = '';
+                document.getElementById('imageCodeInput').value = '';
+                document.getElementById('imageReplaceOutput').value = '';
+                setImageReplaceStats(null);
+                clearDraftFields(['imageLinksInput', 'imageCodeInput']);
+                showToast('已清空');
+            }
+
             function fillFormatExample() {
                 switchFormatInputTab('code');
                 if (window.SiteToolboxExamples) {
@@ -4313,6 +4488,23 @@ Hello World`;
             // 联系人信息粘贴后自动提取
             document.getElementById('contactInput').addEventListener('input', function () {
                 if (this.value.trim()) extractContact();
+            });
+
+            document.getElementById('imageLinksInput').addEventListener('input', function () {
+                if (!window.SiteToolboxCore || !window.SiteToolboxCore.extractImageReplacementLinks) return;
+                setImageReplaceStats({
+                    linkCount: window.SiteToolboxCore.extractImageReplacementLinks(this.value).length,
+                    matchCount: 0,
+                    replacedCount: 0,
+                    remainingMatches: 0,
+                    unusedLinks: 0,
+                });
+            });
+
+            document.querySelectorAll('input[name="imageReplaceMode"]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    setImageReplaceStats(null);
+                });
             });
 
             // === Text Processing Feature ===
