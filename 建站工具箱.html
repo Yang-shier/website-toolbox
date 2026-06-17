@@ -1181,7 +1181,7 @@
             </div>
             <div class="header-meta">
                 <div class="update-summary">
-                    <strong>最近更新：</strong>新增工作区备份、防误清空、自动保存、示例数据和安全清理。
+                    <strong>最近更新：</strong>新增工作区备份、清空撤回、自动保存、示例数据和安全清理。
                 </div>
                 <div class="header-tools">
                     <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
@@ -1283,6 +1283,7 @@
                         </svg>
                         清除全部
                     </button>
+                    <button class="btn btn-secondary" onclick="restoreLastClear('nav')">撤回</button>
                 </div>
             </div>
         </div>
@@ -1354,6 +1355,7 @@
                         </svg>
                         清除全部
                     </button>
+                    <button class="btn btn-secondary" onclick="restoreLastClear('contact')">撤回</button>
                 </div>
             </div>
         </div>
@@ -1458,6 +1460,7 @@
                             </svg>
                             清空
                         </button>
+                        <button class="btn btn-secondary btn-sm" onclick="restoreLastClear('textproc')">撤回</button>
                     </div>
                 </div>
             </div>
@@ -1676,6 +1679,7 @@
                         </svg>
                         清除全部
                     </button>
+                    <button class="btn btn-secondary" onclick="restoreLastClear('format')">撤回</button>
                 </div>
             </div>
         </div>
@@ -1741,6 +1745,7 @@
                         </button>
                     </div>
                     <button class="btn btn-secondary" onclick="clearAllForbiddenWords()" style="color: var(--danger)">清空全部</button>
+                    <button class="btn btn-secondary" onclick="restoreForbiddenWords()">撤回</button>
                     <button class="btn btn-secondary" onclick="closeForbiddenWordsModal()">关闭</button>
                 </div>
             </div>
@@ -2211,7 +2216,7 @@
             }
 
             function clearAll() {
-                if (!confirmClearIfNeeded(['sourceInput', 'templateInput', 'outputArea'], '确认清空导航填充内容？')) return;
+                rememberClearSnapshot('nav', ['sourceInput', 'templateInput', 'navTree', 'outputArea']);
                 document.getElementById('sourceInput').value = '';
                 document.getElementById('templateInput').value = '';
                 document.getElementById('navTree').innerHTML = '';
@@ -2263,6 +2268,15 @@
                 }
             }
 
+            function setSafeHTML(el, html) {
+                if (!el) return;
+                var safeHTML =
+                    window.SiteToolboxCore && window.SiteToolboxCore.sanitizeHTMLString
+                        ? window.SiteToolboxCore.sanitizeHTMLString(html || '')
+                        : html || '';
+                el.innerHTML = safeHTML;
+            }
+
             var TOOLBOX_DRAFT_KEY = 'site_toolbox_drafts_v1';
 
             function getDraftFields() {
@@ -2308,7 +2322,7 @@
                 getDraftFields().forEach(function (field) {
                     var el = document.getElementById(field.id);
                     if (!el || drafts[field.id] === undefined) return;
-                    if (field.type === 'html') el.innerHTML = drafts[field.id];
+                    if (field.type === 'html') setSafeHTML(el, drafts[field.id]);
                     else el.value = drafts[field.id];
                 });
                 if (document.getElementById('textprocInput')) updateTextprocStats();
@@ -2422,18 +2436,43 @@
                 event.target.value = '';
             }
 
-            function hasClearableContent(ids) {
-                return ids.some(function (id) {
-                    var el = document.getElementById(id);
-                    if (!el) return false;
-                    if (el.value !== undefined) return !!el.value.trim();
-                    return !!el.innerHTML.trim();
-                });
+            var lastClearSnapshots = {};
+
+            function getClearFieldValue(el) {
+                if (!el) return '';
+                return el.value !== undefined ? el.value : el.innerHTML;
             }
 
-            function confirmClearIfNeeded(ids, message) {
-                if (!hasClearableContent(ids)) return true;
-                return confirm(message);
+            function setClearFieldValue(el, value) {
+                if (!el) return;
+                if (el.value !== undefined) el.value = value || '';
+                else setSafeHTML(el, value || '');
+            }
+
+            function rememberClearSnapshot(tool, ids) {
+                var snapshot = {};
+                ids.forEach(function (id) {
+                    snapshot[id] = getClearFieldValue(document.getElementById(id));
+                });
+                lastClearSnapshots[tool] = snapshot;
+            }
+
+            function restoreLastClear(tool) {
+                var snapshot = lastClearSnapshots[tool];
+                if (!snapshot) {
+                    showToast('没有可撤回的清空内容', true);
+                    return;
+                }
+                Object.keys(snapshot).forEach(function (id) {
+                    setClearFieldValue(document.getElementById(id), snapshot[id]);
+                    if (['sourceInput', 'templateInput', 'contactInput', 'contactCodeInput', 'textprocInput', 'richInput', 'codeInput'].indexOf(id) !== -1) {
+                        saveDraftField(id, snapshot[id]);
+                    }
+                });
+                if (tool === 'nav' && document.getElementById('sourceInput').value.trim()) extractNav();
+                if (tool === 'contact' && document.getElementById('contactInput').value.trim()) extractContact();
+                if (tool === 'textproc') updateTextprocStats();
+                showToast('已撤回清空');
             }
 
             // === Contact Replacement Feature ===
@@ -3256,7 +3295,7 @@
             }
 
             function clearContact() {
-                if (!confirmClearIfNeeded(['contactInput', 'contactCodeInput', 'contactOutput'], '确认清空联系方式替换内容？')) return;
+                rememberClearSnapshot('contact', ['contactInput', 'contactCodeInput', 'contactList', 'contactOutput']);
                 document.getElementById('contactInput').value = '';
                 document.getElementById('contactCodeInput').value = '';
                 document.getElementById('contactList').innerHTML = '';
@@ -3356,16 +3395,17 @@ Hello World`;
             }
 
             function fillFormatExample() {
-                switchFormatInputTab('rich');
+                switchFormatInputTab('code');
                 if (window.SiteToolboxExamples) {
-                    document.getElementById('richInput').innerHTML = window.SiteToolboxExamples.formatHtml;
-                    document.getElementById('codeInput').value = '';
+                    document.getElementById('richInput').innerHTML = '';
+                    document.getElementById('codeInput').value = window.SiteToolboxExamples.formatHtml;
                     document.getElementById('fmtPreview').innerHTML = '';
                     document.getElementById('fmtOutputSource').value = '';
                     showToast('已填入格式化示例');
                     return;
                 }
-                document.getElementById('richInput').innerHTML = `<h2>产品优势<br>应用场景</h2>
+                document.getElementById('richInput').innerHTML = '';
+                document.getElementById('codeInput').value = `<h2>产品优势<br>应用场景</h2>
 <p style="font-size:16px;color:red" onclick="alert(1)">  这是一段  需要清理样式和空格的正文。</p>
 <p><strong>核心特点</strong></p>
 <p><img src="https://example.com/demo.jpg" style="width:900px" onerror="alert(1)"></p>
@@ -3408,7 +3448,7 @@ Hello World`;
                 var code = document.getElementById('codeInput');
 
                 if (tab === 'rich') {
-                    if (code.value.trim()) rich.innerHTML = code.value;
+                    if (code.value.trim()) setSafeHTML(rich, code.value);
                     rich.classList.remove('hidden');
                     code.classList.add('hidden');
                 } else {
@@ -4190,7 +4230,7 @@ Hello World`;
             }
 
             function clearFormat() {
-                if (!confirmClearIfNeeded(['richInput', 'codeInput', 'fmtPreview', 'fmtOutputSource'], '确认清空 HTML 格式化内容？')) return;
+                rememberClearSnapshot('format', ['richInput', 'codeInput', 'fmtPreview', 'fmtOutputSource']);
                 document.getElementById('richInput').innerHTML = '';
                 document.getElementById('codeInput').value = '';
                 document.getElementById('fmtPreview').innerHTML = '';
@@ -4441,7 +4481,7 @@ Hello World`;
             }
 
             function clearTextproc() {
-                if (!confirmClearIfNeeded(['textprocInput', 'textprocOutput'], '确认清空文本处理内容？')) return;
+                rememberClearSnapshot('textproc', ['textprocInput', 'textprocOutput']);
                 document.getElementById('textprocInput').value = '';
                 document.getElementById('textprocOutput').value = '';
                 document.querySelectorAll('#textprocPage .textproc-tool-btn').forEach(function (item) {
@@ -4456,6 +4496,7 @@ Hello World`;
 
             var DEFAULT_FORBIDDEN_WORDS_URL = './forbidden-words.json';
             var forbiddenWords = [];
+            var lastForbiddenWordsSnapshot = null;
 
             function normalizeForbiddenWord(item) {
                 if (window.SiteToolboxCore && window.SiteToolboxCore.normalizeForbiddenWord) {
@@ -4577,11 +4618,30 @@ Hello World`;
 
             function clearAllForbiddenWords() {
                 if (forbiddenWords.length === 0) return;
-                if (!confirm('确定清空全部禁词？')) return;
+                rememberForbiddenWordsSnapshot();
                 forbiddenWords = [];
                 saveForbiddenWords();
                 renderForbiddenWordList();
                 showToast('已清空禁词库');
+            }
+
+            function rememberForbiddenWordsSnapshot() {
+                lastForbiddenWordsSnapshot = forbiddenWords.map(function (item) {
+                    return { word: item.word, replacement: item.replacement };
+                });
+            }
+
+            function restoreForbiddenWords() {
+                if (!lastForbiddenWordsSnapshot) {
+                    showToast('没有可撤回的禁词清空内容', true);
+                    return;
+                }
+                forbiddenWords = lastForbiddenWordsSnapshot.map(function (item) {
+                    return { word: item.word, replacement: item.replacement };
+                });
+                saveForbiddenWords();
+                renderForbiddenWordList();
+                showToast('已撤回禁词清空');
             }
 
             function renderForbiddenWordList() {

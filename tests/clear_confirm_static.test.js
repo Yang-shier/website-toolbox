@@ -10,18 +10,26 @@ const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
 [
-  'function hasClearableContent(',
-  'function confirmClearIfNeeded(',
-  'confirmClearIfNeeded([\'sourceInput\', \'templateInput\', \'outputArea\']',
-  'confirmClearIfNeeded([\'contactInput\', \'contactCodeInput\', \'contactOutput\']',
-  'confirmClearIfNeeded([\'richInput\', \'codeInput\', \'fmtPreview\', \'fmtOutputSource\']',
-  'confirmClearIfNeeded([\'textprocInput\', \'textprocOutput\']',
-  'confirm(message)',
+  'function rememberClearSnapshot(',
+  'function restoreLastClear(',
+  'rememberClearSnapshot(\'nav\'',
+  'rememberClearSnapshot(\'contact\'',
+  'rememberClearSnapshot(\'format\'',
+  'rememberClearSnapshot(\'textproc\'',
+  'rememberForbiddenWordsSnapshot()',
+  'onclick="restoreLastClear(\'nav\')"',
+  'onclick="restoreLastClear(\'contact\')"',
+  'onclick="restoreLastClear(\'format\')"',
+  'onclick="restoreLastClear(\'textproc\')"',
+  'onclick="restoreForbiddenWords()"',
 ].forEach((needle) => {
-  assert.ok(html.includes(needle), `clear confirmation should include ${needle}`);
+  assert.ok(html.includes(needle), `clear undo should include ${needle}`);
 });
 
-assert.ok(html.includes('防误清空'), 'visible update summary should mention guarded clearing');
-assert.ok(readme.includes('防误清空'), 'README should document guarded clearing');
+assert.ok(!html.includes('function confirmClearIfNeeded('), 'clear actions should not require confirmation anymore');
+assert.ok(!html.includes('confirm(message)'), 'clear actions should not call confirm anymore');
+assert.ok(!html.includes("confirm('确定清空全部禁词？')"), 'forbidden word clearing should not require confirmation anymore');
+assert.ok(html.includes('撤回'), 'clear action bars should expose undo buttons');
+assert.ok(readme.includes('撤回'), 'README should document clear undo');
 
-console.log('clear confirmation static checks passed');
+console.log('clear undo static checks passed');
