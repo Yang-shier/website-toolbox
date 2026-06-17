@@ -9,6 +9,8 @@ const htmlFile = fs
 const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 
 assert.ok(html.includes('id="navExampleTrigger"'), 'source nav header should include an example hover trigger');
+assert.ok(html.includes('window.SiteToolboxCore.parseNavSource'), 'nav parsing should delegate to the shared core when available');
+assert.ok(html.includes('window.SiteToolboxCore.getNavSourceDiagnostics'), 'nav extraction failures should use shared diagnostics');
 assert.ok(html.includes('class="nav-example-popover"'), 'source nav header should include an example popover');
 assert.ok(html.includes('class="contact-panel nav-source-panel"'), 'source nav panel should allow the hover example to overflow');
 assert.ok(html.includes('.nav-source-panel'), 'source nav panel should have dedicated overflow styling');

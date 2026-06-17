@@ -3,7 +3,10 @@ const path = require('path');
 const assert = require('assert');
 
 const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync(path.join(root, '建站工具箱.html'), 'utf8');
+const htmlFile = fs
+  .readdirSync(root)
+  .find((name) => name.endsWith('.html') && name !== 'index.html');
+const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 const defaultsPath = path.join(root, 'forbidden-words.json');
 
 assert.ok(fs.existsSync(defaultsPath), 'forbidden-words.json should be published with the site');
@@ -17,6 +20,10 @@ defaults.forEach((item, index) => {
 });
 
 assert.ok(html.includes('DEFAULT_FORBIDDEN_WORDS_URL'), 'page should load the default forbidden words URL');
+assert.ok(html.includes('./src/toolbox-core.js'), 'page should load the shared core module');
+assert.ok(html.includes('window.SiteToolboxCore.applyForbiddenWords'), 'formatter should delegate forbidden-word replacement to the shared core when available');
+assert.ok(html.includes('window.SiteToolboxCore.formatHTMLSource'), 'formatter source output should delegate to the shared core when available');
+assert.ok(html.includes('saveLocalJson'), 'forbidden word persistence should use guarded localStorage writes');
 assert.ok(html.includes('loadDefaultForbiddenWords'), 'page should load defaults before local words are rendered');
 assert.ok(html.includes('loadDefaultForbiddenWords();'), 'page should call the default forbidden words loader');
 assert.ok(!html.includes('if (!replacement) {'), 'manual add should allow empty replacement');

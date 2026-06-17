@@ -54,6 +54,40 @@
                 letter-spacing: 1px;
                 white-space: nowrap;
             }
+            .version-badge {
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 9px;
+                border-radius: 999px;
+                border: 1px solid var(--border);
+                background: rgba(108, 99, 255, 0.08);
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+            .update-summary {
+                margin-left: auto;
+                max-width: 420px;
+                color: var(--text-dim);
+                font-size: 12px;
+                line-height: 1.45;
+            }
+            .update-summary strong {
+                color: var(--text);
+                font-weight: 600;
+            }
+            .header-tools {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .header-tools .btn {
+                padding: 4px 10px;
+                font-size: 12px;
+            }
             .tab-group {
                 display: flex;
                 gap: 4px;
@@ -446,6 +480,7 @@
             }
             .contact-actions-bar {
                 display: flex;
+                flex-wrap: wrap;
                 gap: 10px;
                 align-items: center;
                 padding: 12px 20px;
@@ -1072,11 +1107,20 @@
     <body>
         <div class="header">
             <h1>建站工具箱</h1>
+            <span class="version-badge">v0.6</span>
             <div class="tab-group">
                 <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>
                 <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
                 <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">联系方式替换</button>
                 <button class="tab-btn" data-tab="textproc" onclick="switchTab('textproc')">文本处理</button>
+            </div>
+            <div class="update-summary">
+                <strong>最近更新：</strong>新增工作区备份、防误清空、自动保存、示例数据和安全清理。
+            </div>
+            <div class="header-tools">
+                <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('workspaceImportFile').click()">导入工作区</button>
+                <input type="file" id="workspaceImportFile" accept=".json" style="display: none" onchange="importWorkspaceDrafts(event)" />
             </div>
         </div>
 
@@ -1159,6 +1203,7 @@
                         </svg>
                         复制结果
                     </button>
+                    <button class="btn btn-secondary" onclick="fillNavExample()">填入示例</button>
                     <label class="nav-limit-control">
                         子产品显示数量
                         <input id="childProductLimit" type="number" min="1" value="4" inputmode="numeric" />
@@ -1233,6 +1278,7 @@
                         </svg>
                         复制结果
                     </button>
+                    <button class="btn btn-secondary" onclick="fillContactExample()">填入示例</button>
                     <button class="btn btn-secondary" onclick="clearContact()" style="margin-left: auto">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18" />
@@ -1336,6 +1382,7 @@
                             </svg>
                             复制结果
                         </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fillTextprocExample()">填入示例</button>
                         <button class="btn btn-secondary btn-sm" onclick="clearTextproc()">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M3 6h18" />
@@ -1553,6 +1600,7 @@
                         </svg>
                         复制结果
                     </button>
+                    <button class="btn btn-secondary" onclick="fillFormatExample()">填入示例</button>
                     <button class="btn btn-secondary" onclick="clearFormat()" style="margin-left: auto">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 6h18" />
@@ -1686,11 +1734,15 @@
 
         <div class="toast" id="toast"></div>
 
+        <script src="./src/toolbox-core.js"></script>
         <script>
             let navData = [];
             let contactData = {};
 
             function parseNavSource(html) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.parseNavSource) {
+                    return window.SiteToolboxCore.parseNavSource(html);
+                }
                 const wrap = document.createElement('div');
                 wrap.innerHTML = html;
                 const items = [];
@@ -1738,7 +1790,11 @@
 
                 navData = parseNavSource(html);
                 if (navData.length === 0) {
-                    showToast('未能提取到导航项，请检查代码结构', true);
+                    var diagnostics =
+                        window.SiteToolboxCore && window.SiteToolboxCore.getNavSourceDiagnostics
+                            ? window.SiteToolboxCore.getNavSourceDiagnostics(html)
+                            : [];
+                    showToast(diagnostics.length ? diagnostics[0] : '未能提取到导航项，请检查代码结构', true);
                     return;
                 }
 
@@ -2082,16 +2138,18 @@
                     showToast('没有可复制的内容', true);
                     return;
                 }
-                navigator.clipboard.writeText(output).then(() => showToast('已复制到剪贴板'));
+                writeClipboardText(output, '已复制到剪贴板');
             }
 
             function clearAll() {
+                if (!confirmClearIfNeeded(['sourceInput', 'templateInput', 'outputArea'], '确认清空导航填充内容？')) return;
                 document.getElementById('sourceInput').value = '';
                 document.getElementById('templateInput').value = '';
                 document.getElementById('navTree').innerHTML = '';
                 document.getElementById('outputArea').value = '';
                 document.getElementById('navCount').style.display = 'none';
                 navData = [];
+                clearDraftFields(['sourceInput', 'templateInput']);
                 showToast('已清除');
             }
 
@@ -2109,6 +2167,176 @@
                 toast._timer = setTimeout(function () {
                     toast.className = 'toast';
                 }, 2500);
+            }
+
+            function writeClipboardText(text, successMessage) {
+                if (!navigator.clipboard || !navigator.clipboard.writeText) {
+                    showToast('当前浏览器不支持自动复制，请手动复制结果', true);
+                    return;
+                }
+                navigator.clipboard.writeText(text).then(
+                    function () {
+                        showToast(successMessage || '已复制到剪贴板');
+                    },
+                    function () {
+                        showToast('复制失败，请手动复制结果', true);
+                    }
+                );
+            }
+
+            function saveLocalJson(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                    return true;
+                } catch (e) {
+                    showToast('本地存储不可用，当前设置不会持久保存', true);
+                    return false;
+                }
+            }
+
+            var TOOLBOX_DRAFT_KEY = 'site_toolbox_drafts_v1';
+
+            function getDraftFields() {
+                return [
+                    { id: 'sourceInput', type: 'value' },
+                    { id: 'templateInput', type: 'value' },
+                    { id: 'contactInput', type: 'value' },
+                    { id: 'contactCodeInput', type: 'value' },
+                    { id: 'textprocInput', type: 'value' },
+                    { id: 'richInput', type: 'html' },
+                    { id: 'codeInput', type: 'value' },
+                ];
+            }
+
+            function loadDrafts() {
+                try {
+                    return JSON.parse(localStorage.getItem(TOOLBOX_DRAFT_KEY) || '{}') || {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveDraftField(id, value) {
+                try {
+                    var drafts = loadDrafts();
+                    if (value) drafts[id] = value;
+                    else delete drafts[id];
+                    localStorage.setItem(TOOLBOX_DRAFT_KEY, JSON.stringify(drafts));
+                } catch (e) {
+                    // Draft autosave is best-effort and should never interrupt editing.
+                }
+            }
+
+            function restoreDrafts() {
+                var drafts = loadDrafts();
+                getDraftFields().forEach(function (field) {
+                    var el = document.getElementById(field.id);
+                    if (!el || drafts[field.id] === undefined) return;
+                    if (field.type === 'html') el.innerHTML = drafts[field.id];
+                    else el.value = drafts[field.id];
+                });
+                if (document.getElementById('textprocInput')) updateTextprocStats();
+            }
+
+            function bindDraftAutosave() {
+                getDraftFields().forEach(function (field) {
+                    var el = document.getElementById(field.id);
+                    if (!el) return;
+                    el.addEventListener('input', function () {
+                        saveDraftField(field.id, field.type === 'html' ? el.innerHTML : el.value);
+                    });
+                });
+            }
+
+            function clearDraftFields(ids) {
+                try {
+                    var drafts = loadDrafts();
+                    ids.forEach(function (id) {
+                        delete drafts[id];
+                    });
+                    localStorage.setItem(TOOLBOX_DRAFT_KEY, JSON.stringify(drafts));
+                } catch (e) {
+                    // Ignore cleanup failures; visible fields are already cleared.
+                }
+            }
+
+            function collectWorkspaceDrafts() {
+                var fields = {};
+                getDraftFields().forEach(function (field) {
+                    var el = document.getElementById(field.id);
+                    if (!el) return;
+                    var value = field.type === 'html' ? el.innerHTML : el.value;
+                    if (value) fields[field.id] = value;
+                });
+                return {
+                    version: 'site-toolbox-workspace-v1',
+                    exportedAt: new Date().toISOString(),
+                    fields: fields,
+                };
+            }
+
+            function applyWorkspaceDrafts(workspace) {
+                if (!workspace || !workspace.fields) return false;
+                getDraftFields().forEach(function (field) {
+                    if (workspace.fields[field.id] === undefined) return;
+                    var el = document.getElementById(field.id);
+                    if (!el) return;
+                    if (field.type === 'html') el.innerHTML = workspace.fields[field.id];
+                    else el.value = workspace.fields[field.id];
+                    saveDraftField(field.id, workspace.fields[field.id]);
+                });
+                updateTextprocStats();
+                return true;
+            }
+
+            function exportWorkspaceDrafts() {
+                var workspace = collectWorkspaceDrafts();
+                if (Object.keys(workspace.fields).length === 0) {
+                    showToast('没有可导出的工作区内容', true);
+                    return;
+                }
+                var blob = new Blob([JSON.stringify(workspace, null, 2)], { type: 'application/json;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'site-toolbox-workspace.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('工作区已导出');
+            }
+
+            function importWorkspaceDrafts(event) {
+                var file = event.target.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        var workspace = JSON.parse(e.target.result);
+                        if (!applyWorkspaceDrafts(workspace)) {
+                            showToast('工作区文件格式不正确', true);
+                            return;
+                        }
+                        showToast('工作区已导入');
+                    } catch (err) {
+                        showToast('工作区 JSON 解析失败', true);
+                    }
+                };
+                reader.readAsText(file, 'UTF-8');
+                event.target.value = '';
+            }
+
+            function hasClearableContent(ids) {
+                return ids.some(function (id) {
+                    var el = document.getElementById(id);
+                    if (!el) return false;
+                    if (el.value !== undefined) return !!el.value.trim();
+                    return !!el.innerHTML.trim();
+                });
+            }
+
+            function confirmClearIfNeeded(ids, message) {
+                if (!hasClearableContent(ids)) return true;
+                return confirm(message);
             }
 
             // === Contact Replacement Feature ===
@@ -2182,6 +2410,9 @@
             });
 
             function parseContactText(text) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.parseContactText) {
+                    return window.SiteToolboxCore.parseContactText(text);
+                }
                 var result = {};
                 var lines = text
                     .split(/\n/)
@@ -2924,19 +3155,97 @@
                     showToast('没有可复制的内容', true);
                     return;
                 }
-                navigator.clipboard.writeText(output).then(function () {
-                    showToast('已复制到剪贴板');
-                });
+                writeClipboardText(output, '已复制到剪贴板');
             }
 
             function clearContact() {
+                if (!confirmClearIfNeeded(['contactInput', 'contactCodeInput', 'contactOutput'], '确认清空联系方式替换内容？')) return;
                 document.getElementById('contactInput').value = '';
                 document.getElementById('contactCodeInput').value = '';
                 document.getElementById('contactList').innerHTML = '';
                 document.getElementById('contactOutput').value = '';
                 document.getElementById('contactCount').style.display = 'none';
                 contactData = {};
+                clearDraftFields(['contactInput', 'contactCodeInput']);
                 showToast('已清除');
+            }
+
+            function fillNavExample() {
+                document.getElementById('sourceInput').value = `<div class="basic_navbar">
+    <div class="itemNav"><a href="/products"><span class="pageLink">产品中心</span></a></div>
+    <div class="itemNav"><a href="/news"><span class="pageLink">新闻资讯</span></a></div>
+    <div class="navchildlist">
+        <div class="level_2_content navchildLine"><a href="/products/a"><span class="navchildLink">产品一</span></a></div>
+        <div class="level_2_content navchildLine"><a href="/products/b"><span class="navchildLink">产品二</span></a></div>
+        <div class="level_2_content navchildLine"><a href="/products/c"><span class="navchildLink">产品三</span></a></div>
+    </div>
+    <div class="navchildlist">
+        <div class="level_2_content navchildLine"><a href="/news/company"><span class="navchildLink">公司新闻</span></a></div>
+        <div class="level_2_content navchildLine"><a href="/news/industry"><span class="navchildLink">行业资讯</span></a></div>
+    </div>
+</div>`;
+                document.getElementById('templateInput').value = `<div class="product-nav">
+    <div class="product-nav-item">
+        <a href="/old-parent">旧栏目</a>
+        <div class="product-nav-children">
+            <p><a href="/old-child-1">旧子项一</a></p>
+            <p><a href="/old-child-2">旧子项二</a></p>
+        </div>
+    </div>
+    <div class="product-nav-item">
+        <a href="/old-parent-2">旧栏目二</a>
+        <div class="product-nav-children">
+            <p><a href="/old-child-3">旧子项三</a></p>
+            <p><a href="/old-child-4">旧子项四</a></p>
+        </div>
+    </div>
+</div>`;
+                document.getElementById('outputArea').value = '';
+                extractNav();
+                showToast('已填入导航示例');
+            }
+
+            function fillContactExample() {
+                document.getElementById('contactInput').value = `公司名称：星河科技有限公司
+联系人：张三
+手机：13800138000
+座机：400-800-1234
+电子邮箱：hello@example.com
+办公地址：广东省深圳市南山区科技园`;
+                document.getElementById('contactCodeInput').value = `<ul class="contact-list">
+    <li><strong>公司名称：</strong><span>旧公司</span></li>
+    <li><strong>联系人：</strong><span>旧联系人</span></li>
+    <li><strong>手机：</strong><a href="tel:10086">10086</a></li>
+    <li><strong>电子邮箱：</strong><a href="mailto:old@example.com">old@example.com</a></li>
+    <li><strong>办公地址：</strong><span>旧地址</span></li>
+</ul>`;
+                document.getElementById('contactOutput').value = '';
+                extractContact();
+                showToast('已填入联系方式示例');
+            }
+
+            function fillTextprocExample() {
+                document.getElementById('textprocInput').value = `  第一行内容  
+
+第二行    多个空格
+第二行    多个空格
+Hello World`;
+                document.getElementById('textprocOutput').value = '';
+                updateTextprocStats();
+                showToast('已填入文本处理示例');
+            }
+
+            function fillFormatExample() {
+                switchFormatInputTab('rich');
+                document.getElementById('richInput').innerHTML = `<h2>产品优势<br>应用场景</h2>
+<p style="font-size:16px;color:red" onclick="alert(1)">  这是一段  需要清理样式和空格的正文。</p>
+<p><strong>核心特点</strong></p>
+<p><img src="https://example.com/demo.jpg" style="width:900px" onerror="alert(1)"></p>
+<script>alert('unsafe')<\/script>`;
+                document.getElementById('codeInput').value = '';
+                document.getElementById('fmtPreview').innerHTML = '';
+                document.getElementById('fmtOutputSource').value = '';
+                showToast('已填入格式化示例');
             }
 
             // === HTML Format Feature ===
@@ -3209,6 +3518,7 @@
                     autoDetectTitles(container, titleRule, titleOutputMode);
                 }
 
+                sanitizeOutputHTML(container);
                 normalizeTextWhitespace(container);
                 removeLeadingSpaces(container);
                 cleanupImageParagraphWhitespace(container);
@@ -3261,6 +3571,33 @@
                         parent.insertBefore(p, h);
                     });
                     parent.removeChild(h);
+                });
+            }
+
+            function sanitizeOutputHTML(el) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.sanitizeElement) {
+                    window.SiteToolboxCore.sanitizeElement(el);
+                    return;
+                }
+                el.querySelectorAll('script, iframe, object, embed').forEach(function (node) {
+                    node.parentNode.removeChild(node);
+                });
+                el.querySelectorAll('*').forEach(function (node) {
+                    Array.from(node.attributes).forEach(function (attr) {
+                        var name = attr.name.toLowerCase();
+                        var value = attr.value || '';
+                        if (attr.name.toLowerCase().indexOf('on') === 0) {
+                            node.removeAttribute(attr.name);
+                            return;
+                        }
+                        if (attr.name.toLowerCase() === 'srcdoc') {
+                            node.removeAttribute(attr.name);
+                            return;
+                        }
+                        if ((name === 'href' || name === 'src') && /^\s*javascript:/i.test(value)) {
+                            node.removeAttribute(attr.name);
+                        }
+                    });
                 });
             }
 
@@ -3684,6 +4021,9 @@
             }
 
             function formatHTMLSource(html) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.formatHTMLSource) {
+                    return window.SiteToolboxCore.formatHTMLSource(html);
+                }
                 return html
                     .replace(/>\s+</g, '><')
                     .replace(/(<\/(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])>)/gi, '$1\n')
@@ -3701,24 +4041,33 @@
 
                 if (currentFormatOutputTab === 'source') {
                     var source = document.getElementById('fmtOutputSource').value;
-                    navigator.clipboard.writeText(source).then(function () {
-                        showToast('源代码已复制');
-                    });
+                    writeClipboardText(source, '源代码已复制');
                 } else {
                     var cleanHTML = preview.innerHTML;
                     var blob = new Blob([cleanHTML], { type: 'text/html' });
                     var textBlob = new Blob([preview.textContent], { type: 'text/plain' });
-                    navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })]).then(function () {
-                        showToast('已复制纯净富文本');
-                    });
+                    if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === 'undefined') {
+                        writeClipboardText(preview.textContent, '已复制纯文本');
+                        return;
+                    }
+                    navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })]).then(
+                        function () {
+                            showToast('已复制纯净富文本');
+                        },
+                        function () {
+                            writeClipboardText(preview.textContent, '已复制纯文本');
+                        }
+                    );
                 }
             }
 
             function clearFormat() {
+                if (!confirmClearIfNeeded(['richInput', 'codeInput', 'fmtPreview', 'fmtOutputSource'], '确认清空 HTML 格式化内容？')) return;
                 document.getElementById('richInput').innerHTML = '';
                 document.getElementById('codeInput').value = '';
                 document.getElementById('fmtPreview').innerHTML = '';
                 document.getElementById('fmtOutputSource').value = '';
+                clearDraftFields(['richInput', 'codeInput']);
                 showToast('已清除');
             }
 
@@ -3827,6 +4176,13 @@
                 }
 
                 var result = input;
+                if (window.SiteToolboxCore && window.SiteToolboxCore.transformText) {
+                    result = window.SiteToolboxCore.transformText(input, type);
+                    document.getElementById('textprocOutput').value = result;
+                    updateTextprocStats();
+                    showToast('处理完成');
+                    return true;
+                }
 
                 switch (type) {
                     case 'upper':
@@ -3943,6 +4299,7 @@
                 document.getElementById('textprocInput').value = output;
                 document.getElementById('textprocOutput').value = '';
                 updateTextprocStats();
+                saveDraftField('textprocInput', output);
                 showToast('结果已回填到源文本');
             }
 
@@ -3952,18 +4309,18 @@
                     showToast('没有可复制的内容', true);
                     return;
                 }
-                navigator.clipboard.writeText(output).then(function () {
-                    showToast('已复制到剪贴板');
-                });
+                writeClipboardText(output, '已复制到剪贴板');
             }
 
             function clearTextproc() {
+                if (!confirmClearIfNeeded(['textprocInput', 'textprocOutput'], '确认清空文本处理内容？')) return;
                 document.getElementById('textprocInput').value = '';
                 document.getElementById('textprocOutput').value = '';
                 document.querySelectorAll('#textprocPage .textproc-tool-btn').forEach(function (item) {
                     item.classList.remove('active');
                 });
                 updateTextprocStats();
+                clearDraftFields(['textprocInput']);
                 showToast('已清除');
             }
 
@@ -3973,6 +4330,9 @@
             var forbiddenWords = [];
 
             function normalizeForbiddenWord(item) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.normalizeForbiddenWord) {
+                    return window.SiteToolboxCore.normalizeForbiddenWord(item);
+                }
                 if (!item || item.word === undefined || item.word === null) return null;
                 var word = String(item.word).trim();
                 if (!word) return null;
@@ -4038,7 +4398,7 @@
             }
 
             function saveForbiddenWords() {
-                localStorage.setItem('fw_forbidden_words', JSON.stringify(forbiddenWords));
+                saveLocalJson('fw_forbidden_words', forbiddenWords);
                 updateFwBadge();
             }
 
@@ -4120,6 +4480,9 @@
             }
 
             function applyForbiddenWords(text) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.applyForbiddenWords) {
+                    return window.SiteToolboxCore.applyForbiddenWords(text, forbiddenWords);
+                }
                 if (forbiddenWords.length === 0) return text;
                 forbiddenWords.forEach(function (item) {
                     if (text.indexOf(item.word) !== -1) {
@@ -4263,6 +4626,9 @@
                 e.clipboardData.setData('text/plain', tmp.textContent);
                 e.preventDefault();
             });
+
+            restoreDrafts();
+            bindDraftAutosave();
         </script>
     </body>
 </html>

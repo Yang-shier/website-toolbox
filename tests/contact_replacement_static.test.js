@@ -3,7 +3,10 @@ const path = require('path');
 const assert = require('assert');
 
 const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync(path.join(root, '建站工具箱.html'), 'utf8');
+const htmlFile = fs
+  .readdirSync(root)
+  .find((name) => name.endsWith('.html') && name !== 'index.html');
+const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 
 [
   '服务热线',
@@ -19,6 +22,8 @@ const html = fs.readFileSync(path.join(root, '建站工具箱.html'), 'utf8');
   assert.ok(html.includes(needle), `contact replacement should include ${needle}`);
 });
 
+assert.ok(html.includes('window.SiteToolboxCore.parseContactText'), 'contact parsing should delegate to the shared core when available');
+assert.ok(html.includes('writeClipboardText'), 'copy actions should use guarded clipboard writes');
 assert.ok(html.includes("links[i].setAttribute('href', 'tel:' + newValue)"), 'telephone hrefs should use tel:');
 assert.ok(html.includes("links[i].setAttribute('href', 'mailto:' + newValue)"), 'email hrefs should use mailto:');
 assert.ok(html.includes("type === 'landline' && contactData.phone"), 'landline templates should fall back to phone data');

@@ -1,0 +1,10 @@
+{
+  "name": "site-toolbox",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "test:static": "node tests/run-all.js",
+    "test:core": "node tests/core_behavior.test.js"
+  }
+}
