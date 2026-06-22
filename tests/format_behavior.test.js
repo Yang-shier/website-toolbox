@@ -38,4 +38,70 @@ assert.strictEqual(
   'splitImageTextParagraphHTML should split preview HTML before image width changes'
 );
 
+assert.deepStrictEqual(
+  core.parseLineList('核心优势\n\n 产品参数 \n核心优势'),
+  ['核心优势', '产品参数'],
+  'parseLineList should trim blank lines and remove duplicates'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTitleBoldHTML('<p>核心优势</p><p>我们的核心优势包括...</p>', ['核心优势']),
+  '<p><strong>核心优势</strong></p><p>我们的核心优势包括...</p>',
+  'specified title bolding should exact-match block text only'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextClassHTML('<p>产品参数</p>', ['产品参数'], 'section-title'),
+  '<p class="section-title">产品参数</p>',
+  'specified class should be added to matching block tags'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextClassHTML('<p class="old">产品参数</p>', ['产品参数'], 'section-title'),
+  '<p class="old section-title">产品参数</p>',
+  'specified class should append without replacing existing classes'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextClassHTML('<p class="old section-title">产品参数</p>', ['产品参数'], 'section-title'),
+  '<p class="old section-title">产品参数</p>',
+  'specified class should not be duplicated'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextClassHTML('<p>产品参数</p>', [], 'section-title'),
+  '<p>产品参数</p>',
+  'empty specified words should leave HTML unchanged'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTitleBoldHTML('<div><p>核心优势</p></div>', ['核心优势']),
+  '<div><p><strong>核心优势</strong></p></div>',
+  'specified title bolding should target the leaf block, not the parent container'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextClassHTML('<div><p>产品参数</p></div>', ['产品参数'], 'section-title'),
+  '<div><p class="section-title">产品参数</p></div>',
+  'specified class should target the leaf block that owns the text'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTitleBoldHTML('<h3>核心优势</h3>', ['核心优势']),
+  '<h3>核心优势</h3>',
+  'specified title bolding should not wrap an existing heading'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextBoldHTML('<p>我们的核心优势包括稳定交付。</p>', ['核心优势']),
+  '<p>我们的<strong>核心优势</strong>包括稳定交付。</p>',
+  'specified text bolding should wrap matching text fragments inside a block'
+);
+
+assert.strictEqual(
+  core.applySpecifiedTextBoldHTML('<p><strong>核心优势</strong>包括核心团队。</p>', ['核心优势', '核心团队']),
+  '<p><strong>核心优势</strong>包括<strong>核心团队</strong>。</p>',
+  'specified text bolding should skip text that is already bold'
+);
+
 console.log('format behavior checks passed');

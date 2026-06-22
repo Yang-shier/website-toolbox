@@ -17,6 +17,14 @@
                 --accent-glow: rgba(108, 99, 255, 0.25);
                 --success: #4caf50;
                 --danger: #e74c3c;
+                --format-warm-bg: #fafaf8;
+                --format-surface: #ffffff;
+                --format-soft: #f4f3ef;
+                --format-line: #e7e4dc;
+                --format-text: #191b20;
+                --format-muted: #858b98;
+                --format-accent: #3157d5;
+                --format-accent-soft: rgba(49, 87, 213, 0.1);
             }
             * {
                 margin: 0;
@@ -25,7 +33,7 @@
             }
             body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                background: linear-gradient(135deg, var(--bg-primary) 0%, #eef1f5 50%, var(--bg-primary) 100%);
+                background: #f8fafc;
                 color: var(--text);
                 height: 100vh;
                 overflow: hidden;
@@ -62,12 +70,9 @@
             }
             .header h1 {
                 font-size: 18px;
-                font-weight: 600;
-                background: linear-gradient(135deg, #6c63ff, #48c6ef);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                letter-spacing: 1px;
+                font-weight: 700;
+                color: #111827;
+                letter-spacing: 0;
                 white-space: nowrap;
             }
             .version-badge {
@@ -132,9 +137,9 @@
                 white-space: nowrap;
             }
             .tab-btn.active {
-                background: linear-gradient(135deg, var(--accent), #48c6ef);
+                background: #2563eb;
                 color: #fff;
-                box-shadow: 0 2px 10px var(--accent-glow);
+                box-shadow: none;
             }
             .tab-btn:not(.active):hover {
                 background: rgba(0, 0, 0, 0.05);
@@ -349,7 +354,8 @@
                 border-radius: 6px;
                 font-size: 13px;
                 outline: none;
-                background: #fff;
+                background: var(--format-surface);
+                box-shadow: 0 16px 40px rgba(31, 35, 43, 0.04);
                 font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
             }
             .contact-field input:focus {
@@ -423,13 +429,13 @@
                 border-radius: 6px;
             }
             .btn-primary {
-                background: linear-gradient(135deg, var(--accent), #48c6ef);
+                background: #2563eb;
                 color: #fff;
-                box-shadow: 0 3px 12px var(--accent-glow);
+                box-shadow: none;
             }
             .btn-primary:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 5px 20px var(--accent-glow);
+                box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
             }
             .btn-secondary {
                 background: var(--bg-card);
@@ -661,6 +667,97 @@
                 cursor: not-allowed;
                 pointer-events: none;
             }
+            .format-advanced-panel {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 160px;
+                gap: 12px;
+                flex-basis: 100%;
+                order: 99;
+                padding: 14px 18px 16px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: var(--bg-secondary);
+            }
+            .format-advanced-panel > .fmt-specified-field {
+                width: 100%;
+            }
+            .format-advanced-head {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 16px;
+                grid-column: 1 / -1;
+            }
+            .format-advanced-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--text);
+            }
+            .format-advanced-desc {
+                font-size: 12px;
+                color: var(--text-dim);
+            }
+            .format-advanced-body {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 14px;
+            }
+            .fmt-specified-card {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                min-width: 0;
+            }
+            .fmt-specified-field {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 0;
+            }
+            .fmt-specified-field label {
+                font-size: 12px;
+                color: var(--text-dim);
+                white-space: nowrap;
+            }
+            .fmt-specified-field textarea,
+            .fmt-specified-field input {
+                width: 100%;
+                min-width: 0;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--panel);
+                color: var(--text);
+                font-size: 12px;
+                outline: none;
+            }
+            .fmt-specified-field textarea {
+                height: 46px;
+                padding: 6px 8px;
+                resize: vertical;
+                line-height: 1.35;
+            }
+            .fmt-specified-field input {
+                height: 28px;
+                padding: 0 8px;
+            }
+            .fmt-specified-field textarea:focus,
+            .fmt-specified-field input:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px var(--accent-glow);
+            }
+            @media (max-width: 900px) {
+                .format-advanced-body {
+                    grid-template-columns: 1fr;
+                }
+                .format-advanced-panel {
+                    grid-template-columns: 1fr;
+                }
+                .format-advanced-head {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 4px;
+                }
+            }
             .toggle {
                 position: relative;
                 width: 40px;
@@ -780,6 +877,484 @@
             }
             .hidden {
                 display: none !important;
+            }
+
+            /* Modern HTML formatter workbench */
+            .format-workbench {
+                width: 100%;
+                flex: 1;
+                min-height: 0;
+                display: grid;
+                grid-template-columns: 300px minmax(0, 1fr);
+                grid-template-rows: minmax(0, 1fr) auto;
+                gap: 18px;
+                background: var(--format-warm-bg);
+                border-top: 1px solid var(--format-line);
+                transition: grid-template-columns 0.24s ease;
+            }
+            .format-workbench.format-sidebar-collapsed {
+                grid-template-columns: 52px minmax(0, 1fr);
+            }
+            .format-workbench.format-sidebar-collapsed .format-inspector {
+                transform: translateX(-12px);
+                padding: 0;
+                overflow: hidden;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+            .format-workbench.format-sidebar-collapsed .format-editor-area,
+            .format-workbench.format-sidebar-collapsed .format-command-bar {
+                grid-column: 2;
+            }
+            .format-inspector {
+                grid-column: 1;
+                padding: 14px;
+                grid-row: 1 / 3;
+                min-height: 0;
+                width: 100%;
+                max-width: 100%;
+                overflow-y: auto;
+                background: transparent;
+                border-right: 0;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+                transition: opacity 0.2s ease, padding 0.2s ease, transform 0.2s ease;
+            }
+            .format-inspector-card {
+                min-height: 0;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 10px 14px;
+                scroll-padding-top: 64px;
+                border: 1px solid var(--format-line);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.95);
+                box-shadow: 0 18px 38px rgba(31, 35, 43, 0.06);
+                overflow-x: hidden;
+            }
+            .format-inspector-card > .fmt-opt {
+                flex-direction: row-reverse;
+                min-height: 42px;
+                justify-content: space-between;
+            }
+            .format-inspector-card > .fmt-title-group {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .format-inspector-card > .fmt-title-group .fmt-opt {
+                flex-direction: row-reverse;
+                justify-content: space-between;
+            }
+            .format-inspector-card > .fmt-title-group .fmt-segment-wrap {
+                justify-content: space-between;
+            }
+            .format-inspector-card > button {
+                justify-content: center;
+                min-height: 30px;
+                flex-shrink: 0;
+                margin-top: 0;
+            }
+            .format-inspector-card > .format-advanced-panel {
+                order: 30;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            #specifiedRulesToggle {
+                order: 20;
+            }
+            #imgWidthBtn,
+            #specifiedRulesToggle,
+            .format-inspector-card > button[onclick="showForbiddenWordsModal()"] {
+                width: 100%;
+                margin-top: 8px;
+            }
+            .format-collapse-btn {
+                order: 40;
+            }
+            .format-inspector-card > .format-collapse-btn {
+                align-items: center;
+                justify-content: flex-start;
+            }
+            .format-inspector-head {
+                position: sticky;
+                top: 0;
+                z-index: 5;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 16px 0 12px;
+                border-bottom: 1px solid var(--format-line);
+                background: rgba(255, 255, 255, 0.98);
+            }
+            .format-inspector-title {
+                font-size: 15px;
+                font-weight: 650;
+                color: var(--format-text);
+            }
+            .format-inspector-reset {
+                border: 0;
+                background: transparent;
+                color: var(--format-muted);
+                font-size: 12px;
+                cursor: pointer;
+            }
+            .format-setting-section {
+                padding: 16px 18px;
+                border-bottom: 1px solid rgba(231, 228, 220, 0.75);
+            }
+            .format-setting-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 12px;
+                color: var(--format-text);
+                font-size: 13px;
+                font-weight: 650;
+            }
+            .format-setting-title span {
+                color: var(--format-muted);
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .format-setting-card {
+                padding: 12px;
+                border: 1px solid transparent;
+                border-radius: 8px;
+                background: transparent;
+            }
+            .format-setting-card[data-section]::before {
+                content: attr(data-section);
+                display: block;
+                margin-bottom: 10px;
+                color: var(--format-text);
+                font-size: 13px;
+                font-weight: 650;
+            }
+            .format-inspector-card > .fmt-opt.format-setting-card[data-section] {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas:
+                    "title title"
+                    "label toggle";
+                align-items: center;
+                row-gap: 10px;
+                min-height: 0;
+            }
+            .format-inspector-card > .fmt-opt.format-setting-card[data-section]::before {
+                grid-area: title;
+                margin-bottom: 0;
+            }
+            .format-inspector-card > .fmt-opt.format-setting-card[data-section] label {
+                grid-area: label;
+            }
+            .format-inspector-card > .fmt-opt.format-setting-card[data-section] .toggle {
+                grid-area: toggle;
+            }
+            .format-setting-card.open {
+                border-color: rgba(231, 228, 220, 0.9);
+                background: rgba(250, 250, 248, 0.72);
+            }
+            .format-setting-card > .format-setting-title {
+                margin-bottom: 10px;
+            }
+            .format-collapse-btn {
+                height: 38px;
+                border: 0;
+                border-top: 1px solid var(--format-line);
+                background: transparent;
+                color: var(--format-muted);
+                font-size: 13px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 6px;
+                padding: 0;
+                line-height: 1;
+                text-align: left;
+                cursor: pointer;
+            }
+            .format-sidebar-open-btn {
+                grid-column: 1;
+                grid-row: 1 / 3;
+                align-self: start;
+                justify-self: center;
+                margin-top: 18px;
+                z-index: 8;
+                display: none;
+                width: 34px;
+                height: 34px;
+                padding: 0;
+                border: 1px solid var(--format-line);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.96);
+                color: var(--format-text);
+                font-size: 16px;
+                box-shadow: 0 12px 28px rgba(31, 35, 43, 0.08);
+                cursor: pointer;
+            }
+            .format-workbench.format-sidebar-collapsed .format-sidebar-open-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+            }
+            .format-editor-area {
+                grid-column: 2;
+                grid-row: 1;
+                position: relative;
+                min-height: 0;
+                padding: 18px 18px 0 0;
+                display: flex;
+                flex-direction: column;
+            }
+            .format-setting-list {
+                display: flex;
+                flex-direction: column;
+                gap: 11px;
+            }
+            .format-setting-list .fmt-opt {
+                flex-direction: row-reverse;
+                justify-content: space-between;
+                min-height: 26px;
+            }
+            .format-setting-list > button {
+                width: 100%;
+                min-height: 30px;
+                justify-content: center;
+            }
+            .format-setting-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                min-height: 28px;
+            }
+            .format-setting-row > label,
+            .format-setting-row > span {
+                color: #4b5563;
+                font-size: 13px;
+                line-height: 1.35;
+            }
+            .format-setting-row .fmt-segment-wrap {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .format-setting-row .fmt-segment {
+                background: var(--format-soft);
+            }
+            .format-setting-note {
+                margin-top: 10px;
+                color: var(--format-muted);
+                font-size: 12px;
+                line-height: 1.45;
+            }
+            .format-setting-field {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .format-setting-field label {
+                color: var(--format-muted);
+                font-size: 12px;
+            }
+            .format-setting-field textarea,
+            .format-setting-field input {
+                width: 100%;
+                border: 1px solid var(--format-line);
+                border-radius: 7px;
+                background: #fff;
+                color: var(--format-text);
+                font-size: 13px;
+                outline: none;
+            }
+            .format-setting-field textarea {
+                height: 74px;
+                padding: 9px 10px;
+                resize: vertical;
+                line-height: 1.45;
+            }
+            .format-setting-field input {
+                height: 34px;
+                padding: 0 10px;
+            }
+            .format-setting-field textarea:focus,
+            .format-setting-field input:focus {
+                border-color: var(--format-accent);
+                box-shadow: 0 0 0 3px var(--format-accent-soft);
+            }
+            .format-workspace {
+                min-width: 0;
+                min-height: 0;
+                display: grid;
+                grid-template-rows: minmax(0, 1fr) auto;
+                padding: 18px;
+                gap: 14px;
+            }
+            .format-editor-grid {
+                flex: 1;
+                min-height: 0;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 12px;
+                padding: 0;
+            }
+            .format-editor-pane {
+                min-width: 0;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border: 1px solid var(--format-line);
+                border-radius: 8px;
+                background: #fff;
+            }
+            .format-pane-header {
+                min-height: 54px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0 14px;
+                border-bottom: 1px solid var(--format-line);
+                background: rgba(255, 255, 255, 0.72);
+            }
+            .format-pane-title {
+                color: var(--format-text);
+                font-size: 15px;
+                font-weight: 650;
+            }
+            .format-pane-spacer {
+                flex: 1;
+            }
+            .format-pane-body {
+                position: relative;
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+            .format-pane-body .rich-input,
+            .format-pane-body .contact-textarea,
+            .format-pane-body .fmt-preview {
+                border: 0;
+                border-radius: 0;
+                background: var(--format-surface);
+            }
+            .format-pane-body .rich-input,
+            .format-pane-body .fmt-preview {
+                height: 100%;
+                padding: 24px 28px;
+            }
+            .format-pane-body .contact-textarea {
+                position: absolute;
+                inset: 0;
+                height: 100%;
+                padding: 24px 28px;
+            }
+            .format-empty-mark {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: min(260px, 70%);
+                text-align: center;
+                color: #a0a5ae;
+                font-size: 13px;
+                line-height: 1.6;
+                pointer-events: none;
+            }
+            .format-empty-icon {
+                width: 44px;
+                height: 44px;
+                margin: 0 auto 12px;
+                display: grid;
+                place-items: center;
+                border: 1px solid var(--format-line);
+                border-radius: 8px;
+                color: #9aa1ad;
+                background: #fbfbfa;
+                font-size: 22px;
+                font-weight: 600;
+            }
+            .rich-input:not(:empty) + .format-empty-mark,
+            .fmt-preview:not(:empty) + .format-empty-mark {
+                display: none;
+            }
+            .format-pane-footer {
+                min-height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 14px;
+                border-top: 1px solid var(--format-line);
+                color: var(--format-muted);
+                font-size: 12px;
+            }
+            .format-command-bar {
+                grid-column: 2;
+                grid-row: 2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                margin: 0 18px 18px 0;
+                padding: 0;
+                border: 0;
+                background: transparent;
+            }
+            .format-command-shell {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 12px 14px;
+                border: 1px solid var(--format-line);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.96);
+                box-shadow: 0 18px 38px rgba(31, 35, 43, 0.08);
+            }
+            .format-command-bar .btn {
+                height: 38px;
+                padding: 0 18px;
+                margin-left: 0 !important;
+            }
+            .format-command-bar .btn-secondary {
+                background: #fff;
+            }
+            .format-safe-note {
+                margin-left: auto;
+                color: var(--format-muted);
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            @media (max-width: 980px) {
+                .format-workbench {
+                    grid-template-columns: 1fr;
+                }
+                .format-inspector {
+                    grid-row: auto;
+                    max-height: 320px;
+                    border-right: 0;
+                    border-bottom: 1px solid var(--format-line);
+                }
+                .format-editor-area,
+                .format-command-bar {
+                    grid-column: 1;
+                    grid-row: auto;
+                    margin-left: 18px;
+                }
+                .format-editor-area {
+                    padding: 0 18px 0 0;
+                }
+                .format-editor-grid {
+                    grid-template-columns: 1fr;
+                }
             }
 
             /* ── Text Processing tab ── */
@@ -1171,7 +1746,7 @@
         <div class="header">
             <div class="header-main">
                 <h1>建站工具箱</h1>
-                <span class="version-badge">v0.6</span>
+                <span class="version-badge">v0.7</span>
                 <div class="tab-group">
                     <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>
                     <button class="tab-btn" data-tab="nav" onclick="switchTab('nav')">导航填充</button>
@@ -1182,7 +1757,7 @@
             </div>
             <div class="header-meta">
                 <div class="update-summary">
-                    <strong>最近更新：</strong>新增工作区备份、清空撤回、自动保存、示例数据和安全清理。
+                    <strong>最近更新：</strong>升级 HTML 格式化设置面板和指定规则，修复非法标题嵌套空段落；保留工作区备份、自动保存、示例数据和安全清理。
                 </div>
                 <div class="header-tools">
                     <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
@@ -1313,8 +1888,8 @@
                 </div>
 
                 <!-- 下半部分：HTML代码输入 + 替换结果输出 -->
-                <div class="contact-row" style="flex: 1; min-height: 0">
-                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                <div class="format-editor-grid">
+                    <div class="format-editor-pane">
                         <div class="contact-panel-header">联系方式代码</div>
                         <textarea
                             id="contactCodeInput"
@@ -1547,18 +2122,41 @@
         </div>
 
         <!-- ==================== Format Tab ==================== -->
-        <div class="main active" id="formatPage" style="flex-direction: column; overflow-y: auto; padding: 24px 48px">
-            <div style="max-width: 1440px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; flex: 1; min-height: 0">
+        <div class="main active" id="formatPage">
+            <div class="format-workbench">
                 <!-- 选项栏 -->
-                <div class="contact-actions-bar" style="flex-wrap: wrap; gap: 16px">
-                    <div class="fmt-opt">
+                <div class="format-inspector">
+                    <div class="format-inspector-card">
+                    <div class="format-inspector-head">
+                        <div class="format-inspector-title">格式化设置</div>
+                        <button class="format-inspector-reset" onclick="clearFormat()" type="button">重置</button>
+                    </div>
+                    <div class="format-setting-card open" data-section="清理规则">
+                        <div class="format-setting-list">
+                            <div class="fmt-opt">
                         <div class="toggle">
                             <input type="checkbox" id="optRemoveStyle" checked />
                             <span class="slider"></span>
                         </div>
                         <label for="optRemoveStyle">去除行内样式</label>
+                            </div>
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optIndent" checked />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optIndent">段落首行缩进</label>
+                            </div>
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optKeepBold" checked />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optKeepBold">保留原有粗体</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="fmt-title-group">
+                    <div class="fmt-title-group format-setting-card open" data-section="小标题">
                         <div class="fmt-opt">
                             <div class="toggle">
                                 <input type="checkbox" id="optAutoTitle" checked onchange="syncTitleOptions()" />
@@ -1583,27 +2181,37 @@
                             <input type="hidden" id="titleOutputMode" value="bold" />
                         </div>
                     </div>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optIndent" checked />
-                            <span class="slider"></span>
+                    <div class="format-advanced-panel hidden format-setting-card open" id="specifiedRulesPanel" data-section="指定规则">
+                        <div class="format-advanced-head">
+                            <div class="format-advanced-title">指定规则</div>
+                            <div class="format-advanced-desc">每行一条，按标签纯文本精确匹配。</div>
                         </div>
-                        <label for="optIndent">段落首行缩进</label>
-                    </div>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optKeepBold" checked />
-                            <span class="slider"></span>
+                        <div class="fmt-specified-field">
+                            <label for="specifiedTitleWords">指定小标题</label>
+                            <textarea id="specifiedTitleWords" placeholder="每行一个标题"></textarea>
                         </div>
-                        <label for="optKeepBold">保留原有粗体</label>
-                    </div>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optRemoveImg" />
-                            <span class="slider"></span>
+                        <div class="fmt-specified-field">
+                            <label for="specifiedBoldWords">指定文字加粗</label>
+                            <textarea id="specifiedBoldWords" placeholder="每行一个文字"></textarea>
                         </div>
-                        <label for="optRemoveImg">去除图片</label>
+                        <div class="fmt-specified-field">
+                            <label for="specifiedClassWords">指定文字加类名</label>
+                            <textarea id="specifiedClassWords" placeholder="每行一个文字"></textarea>
+                        </div>
+                        <div class="fmt-specified-field">
+                            <label for="specifiedClassName">类名</label>
+                            <input id="specifiedClassName" type="text" placeholder="section-title" />
+                        </div>
                     </div>
+                    <div class="format-setting-card" data-section="图片处理">
+                        <div class="format-setting-list">
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optRemoveImg" />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optRemoveImg">去除图片</label>
+                            </div>
                     <button class="btn btn-secondary btn-sm" id="imgWidthBtn" onclick="showImgWidthDialog()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -1612,13 +2220,17 @@
                         </svg>
                         <span id="imgWidthBtnText">图片宽度：未设置</span>
                     </button>
-                    <div class="fmt-opt">
-                        <div class="toggle">
-                            <input type="checkbox" id="optForbiddenWords" />
-                            <span class="slider"></span>
                         </div>
-                        <label for="optForbiddenWords">禁词替换</label>
                     </div>
+                    <div class="format-setting-card" data-section="禁词替换">
+                        <div class="format-setting-list">
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optForbiddenWords" />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optForbiddenWords">禁词替换</label>
+                            </div>
                     <button class="btn btn-secondary btn-sm" onclick="showForbiddenWordsModal()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10" />
@@ -1627,20 +2239,50 @@
                         <span>禁词库</span>
                         <span class="badge" id="fwBadge" style="display: none; font-size: 10px; padding: 1px 6px">0</span>
                     </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="specifiedRulesToggle" onclick="toggleSpecifiedRules()" type="button">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 6h16" />
+                            <path d="M4 12h10" />
+                            <path d="M4 18h7" />
+                        </svg>
+                        <span id="specifiedRulesToggleText">指定规则</span>
+                    </button>
+                    <button class="format-collapse-btn" onclick="toggleFormatSidebar()" type="button">
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 18l-6-6 6-6" />
+                            <path d="M21 12H9" />
+                        </svg>
+                        <span>收起侧栏</span>
+                    </button>
+                    </div>
                 </div>
 
                 <!-- 输入 + 输出 左右对照 -->
-                <div class="contact-row" style="flex: 1; min-height: 0">
-                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                <button class="format-sidebar-open-btn" onclick="toggleFormatSidebar()" type="button" aria-label="展开侧栏" title="展开侧栏">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6" />
+                        <path d="M3 12h12" />
+                    </svg>
+                </button>
+                <div class="format-editor-area">
+                <div class="format-editor-grid">
+                    <div class="format-editor-pane">
                         <div class="contact-panel-header">
                             <span>输入</span>
                             <div class="fmt-tab-group">
-                                <div class="fmt-tab active" onclick="switchFormatInputTab('rich')">富文本</div>
-                                <div class="fmt-tab" onclick="switchFormatInputTab('code')">源代码</div>
+                                <div class="fmt-tab active" data-format-input-tab="rich" onclick="switchFormatInputTab('rich')">富文本</div>
+                                <div class="fmt-tab" data-format-input-tab="code" onclick="switchFormatInputTab('code')">源代码</div>
                             </div>
                         </div>
-                        <div style="flex: 1; overflow: hidden; position: relative">
+                        <div class="format-pane-body">
                             <div class="rich-input" id="richInput" contenteditable="true"></div>
+                            <div class="format-empty-mark">
+                                <div class="format-empty-icon">&lt;/&gt;</div>
+                                <div>在此粘贴或输入 HTML 内容</div>
+                                <div>支持从 Word / 微信 / 网页复制</div>
+                            </div>
                             <textarea
                                 class="contact-textarea hidden"
                                 id="codeInput"
@@ -1650,12 +2292,12 @@
                             ></textarea>
                         </div>
                     </div>
-                    <div class="contact-panel" style="flex: 1; min-height: 0">
+                    <div class="format-editor-pane">
                         <div class="contact-panel-header">
                             <span>输出</span>
                             <div class="fmt-tab-group">
-                                <div class="fmt-tab active" onclick="switchFormatOutputTab('preview')">预览</div>
-                                <div class="fmt-tab" onclick="switchFormatOutputTab('source')">源代码</div>
+                                <div class="fmt-tab active" data-format-output-tab="preview" onclick="switchFormatOutputTab('preview')">预览</div>
+                                <div class="fmt-tab" data-format-output-tab="source" onclick="switchFormatOutputTab('source')">源代码</div>
                             </div>
                             <div style="margin-left: auto; display: flex; align-items: center; gap: 4px">
                                 <button
@@ -1722,8 +2364,13 @@
                                 </button>
                             </div>
                         </div>
-                        <div style="flex: 1; overflow: hidden; position: relative">
+                        <div class="format-pane-body">
                             <div class="fmt-preview" id="fmtPreview" contenteditable="true"></div>
+                            <div class="format-empty-mark">
+                                <div class="format-empty-icon">□</div>
+                                <div>格式化结果将在这里显示</div>
+                                <div>点击下方按钮开始格式化</div>
+                            </div>
                             <textarea
                                 class="contact-textarea hidden"
                                 id="fmtOutputSource"
@@ -1733,9 +2380,11 @@
                         </div>
                     </div>
                 </div>
+                </div>
 
                 <!-- 底部按钮栏 -->
-                <div class="contact-actions-bar">
+                <div class="format-command-bar">
+                    <div class="format-command-shell">
                     <button class="btn btn-primary" onclick="formatAll()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 20h9" />
@@ -1760,6 +2409,7 @@
                         清除全部
                     </button>
                     <button class="btn btn-secondary" onclick="restoreLastClear('format')">撤回</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2370,6 +3020,10 @@
                     { id: 'imageCodeInput', type: 'value' },
                     { id: 'richInput', type: 'html' },
                     { id: 'codeInput', type: 'value' },
+                    { id: 'specifiedTitleWords', type: 'value' },
+                    { id: 'specifiedBoldWords', type: 'value' },
+                    { id: 'specifiedClassWords', type: 'value' },
+                    { id: 'specifiedClassName', type: 'value' },
                 ];
             }
 
@@ -3611,13 +4265,126 @@ Hello World`;
                 if (group) group.classList.toggle('disabled', !enabled);
             }
 
+            function toggleSpecifiedRules() {
+                var panel = document.getElementById('specifiedRulesPanel');
+                var text = document.getElementById('specifiedRulesToggleText');
+                if (!panel) return;
+                var isHidden = panel.classList.toggle('hidden');
+                if (text) text.textContent = isHidden ? '指定规则' : '收起规则';
+            }
+
+            function toggleFormatSidebar() {
+                var workbench = document.querySelector('#formatPage .format-workbench');
+                if (!workbench) return;
+                workbench.classList.toggle('format-sidebar-collapsed');
+            }
+
+            function parseLineList(value) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.parseLineList) {
+                    return window.SiteToolboxCore.parseLineList(value);
+                }
+                var seen = {};
+                return String(value || '')
+                    .split(/\r?\n/)
+                    .map(function (line) {
+                        return line.trim();
+                    })
+                    .filter(function (line) {
+                        if (!line || seen[line]) return false;
+                        seen[line] = true;
+                        return true;
+                    });
+            }
+
+            function isValidClassName(className) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.isValidClassName) {
+                    return window.SiteToolboxCore.isValidClassName(className);
+                }
+                return /^[A-Za-z_-][A-Za-z0-9_-]*$/.test(String(className || '').trim());
+            }
+
+            function applySpecifiedTitleBold(container, words) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.applySpecifiedTitleBoldElement) {
+                    window.SiteToolboxCore.applySpecifiedTitleBoldElement(container, words);
+                    return;
+                }
+                if (!words || !words.length) return;
+                container.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6').forEach(function (block) {
+                    if (block.querySelector('p, div, h1, h2, h3, h4, h5, h6, table, ul, ol, blockquote, section, article')) return;
+                    if (/^H[1-6]$/.test(block.tagName || '')) return;
+                    if (words.indexOf(block.textContent.trim()) === -1) return;
+                    if (block.querySelector('strong, b')) return;
+                    var strong = document.createElement('strong');
+                    while (block.firstChild) strong.appendChild(block.firstChild);
+                    block.appendChild(strong);
+                });
+            }
+
+            function applySpecifiedTextBold(container, words) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.applySpecifiedTextBoldElement) {
+                    window.SiteToolboxCore.applySpecifiedTextBoldElement(container, words);
+                    return;
+                }
+                if (!words || !words.length) return;
+                var escaped = words
+                    .filter(Boolean)
+                    .sort(function (a, b) {
+                        return b.length - a.length;
+                    })
+                    .map(function (word) {
+                        return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    });
+                if (!escaped.length) return;
+                var pattern = new RegExp('(' + escaped.join('|') + ')', 'g');
+                var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function (node) {
+                        if (!node.nodeValue || !pattern.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+                        pattern.lastIndex = 0;
+                        if (node.parentElement && node.parentElement.closest('strong, b')) return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
+                    },
+                });
+                var nodes = [];
+                var node;
+                while ((node = walker.nextNode())) nodes.push(node);
+                nodes.forEach(function (textNode) {
+                    pattern.lastIndex = 0;
+                    var frag = document.createDocumentFragment();
+                    var text = textNode.nodeValue;
+                    var lastIndex = 0;
+                    var match;
+                    while ((match = pattern.exec(text))) {
+                        if (match.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+                        var strong = document.createElement('strong');
+                        strong.textContent = match[0];
+                        frag.appendChild(strong);
+                        lastIndex = match.index + match[0].length;
+                    }
+                    if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+                    textNode.parentNode.replaceChild(frag, textNode);
+                });
+            }
+
+            function applySpecifiedTextClass(container, words, className) {
+                className = String(className || '').trim();
+                if (window.SiteToolboxCore && window.SiteToolboxCore.applySpecifiedTextClassElement) {
+                    window.SiteToolboxCore.applySpecifiedTextClassElement(container, words, className);
+                    return;
+                }
+                if (!words || !words.length || !isValidClassName(className)) return;
+                container.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6').forEach(function (block) {
+                    if (block.querySelector('p, div, h1, h2, h3, h4, h5, h6, table, ul, ol, blockquote, section, article')) return;
+                    if (words.indexOf(block.textContent.trim()) === -1) return;
+                    block.classList.add(className);
+                });
+            }
+
             function switchFormatInputTab(tab) {
                 currentFormatInputTab = tab;
-                var tabs = document.querySelectorAll('#formatPage .contact-panel:first-child .fmt-tab');
+                var tabs = document.querySelectorAll('#formatPage [data-format-input-tab]');
                 tabs.forEach(function (t) {
-                    t.classList.remove('active');
+                    t.classList.toggle('active', t.dataset.formatInputTab === tab);
                 });
-                tabs[tab === 'rich' ? 0 : 1].classList.add('active');
 
                 var rich = document.getElementById('richInput');
                 var code = document.getElementById('codeInput');
@@ -3635,11 +4402,10 @@ Hello World`;
 
             function switchFormatOutputTab(tab) {
                 currentFormatOutputTab = tab;
-                var tabs = document.querySelectorAll('#formatPage .contact-panel:last-child .fmt-tab');
+                var tabs = document.querySelectorAll('#formatPage [data-format-output-tab]');
                 tabs.forEach(function (t) {
-                    t.classList.remove('active');
+                    t.classList.toggle('active', t.dataset.formatOutputTab === tab);
                 });
-                tabs[tab === 'preview' ? 0 : 1].classList.add('active');
 
                 var preview = document.getElementById('fmtPreview');
                 var source = document.getElementById('fmtOutputSource');
@@ -3842,12 +4608,22 @@ Hello World`;
                 var optIndent = document.getElementById('optIndent').checked;
                 var optKeepBold = document.getElementById('optKeepBold').checked;
                 var optRemoveImg = document.getElementById('optRemoveImg').checked;
+                var specifiedTitleWords = parseLineList(document.getElementById('specifiedTitleWords').value);
+                var specifiedBoldWords = parseLineList(document.getElementById('specifiedBoldWords').value);
+                var specifiedClassWords = parseLineList(document.getElementById('specifiedClassWords').value);
+                var specifiedClassName = document.getElementById('specifiedClassName').value.trim();
+
+                if (specifiedClassWords.length && !isValidClassName(specifiedClassName)) {
+                    showToast('类名只能包含字母、数字、下划线或中横线，且不能以数字开头', true);
+                    return;
+                }
 
                 var container = document.createElement('div');
                 container.innerHTML = html;
 
                 if (optRemoveImg) removeImages(container);
                 normalizeBlockStructure(container);
+                unwrapBlockChildrenFromHeadings(container);
                 splitHeadingContent(container);
                 cleanupStructure(container);
                 flattenNestedParagraphs(container);
@@ -3860,6 +4636,9 @@ Hello World`;
                     var titleOutputMode = document.getElementById('titleOutputMode').value;
                     autoDetectTitles(container, titleRule, titleOutputMode);
                 }
+                applySpecifiedTitleBold(container, specifiedTitleWords);
+                applySpecifiedTextBold(container, specifiedBoldWords);
+                applySpecifiedTextClass(container, specifiedClassWords, specifiedClassName);
 
                 sanitizeOutputHTML(container);
                 normalizeTextWhitespace(container);
@@ -3886,6 +4665,17 @@ Hello World`;
 
                 document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
                 showToast('格式化完成');
+            }
+
+            function unwrapBlockChildrenFromHeadings(el) {
+                el.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(function (heading) {
+                    if (!heading.querySelector('p, div, table, ul, ol, blockquote, section, article')) return;
+                    var parent = heading.parentNode;
+                    while (heading.firstChild) {
+                        parent.insertBefore(heading.firstChild, heading);
+                    }
+                    parent.removeChild(heading);
+                });
             }
 
             function splitHeadingContent(el) {
@@ -4413,12 +5203,25 @@ Hello World`;
             }
 
             function clearFormat() {
-                rememberClearSnapshot('format', ['richInput', 'codeInput', 'fmtPreview', 'fmtOutputSource']);
+                rememberClearSnapshot('format', [
+                    'richInput',
+                    'codeInput',
+                    'fmtPreview',
+                    'fmtOutputSource',
+                    'specifiedTitleWords',
+                    'specifiedBoldWords',
+                    'specifiedClassWords',
+                    'specifiedClassName',
+                ]);
                 document.getElementById('richInput').innerHTML = '';
                 document.getElementById('codeInput').value = '';
                 document.getElementById('fmtPreview').innerHTML = '';
                 document.getElementById('fmtOutputSource').value = '';
-                clearDraftFields(['richInput', 'codeInput']);
+                document.getElementById('specifiedTitleWords').value = '';
+                document.getElementById('specifiedBoldWords').value = '';
+                document.getElementById('specifiedClassWords').value = '';
+                document.getElementById('specifiedClassName').value = '';
+                clearDraftFields(['richInput', 'codeInput', 'specifiedTitleWords', 'specifiedBoldWords', 'specifiedClassWords', 'specifiedClassName']);
                 showToast('已清除');
             }
 
