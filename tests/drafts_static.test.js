@@ -31,6 +31,10 @@ const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
   'textprocInput',
   'richInput',
   'codeInput',
+  'specifiedTitleWords',
+  'specifiedBoldWords',
+  'specifiedClassWords',
+  'specifiedClassName',
 ].forEach((id) => {
   assert.ok(html.includes(`id: '${id}'`), `${id} should be included in draft autosave`);
 });

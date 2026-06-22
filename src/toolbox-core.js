@@ -450,6 +450,236 @@
       .replace(/\n{2,}/g, '\n');
   }
 
+  function parseLineList(value) {
+    var seen = {};
+    return String(value || '')
+      .split(/\r?\n/)
+      .map(function (line) {
+        return line.trim();
+      })
+      .filter(function (line) {
+        if (!line || seen[line]) return false;
+        seen[line] = true;
+        return true;
+      });
+  }
+
+  function isValidClassName(className) {
+    return /^[A-Za-z_-][A-Za-z0-9_-]*$/.test(String(className || '').trim());
+  }
+
+  function exactTextMatch(text, words) {
+    var normalized = String(text || '').trim();
+    return (words || []).indexOf(normalized) !== -1;
+  }
+
+  function hasChildBlockElement(block) {
+    if (!block || !block.children) return false;
+    var blockTags = {
+      P: true,
+      DIV: true,
+      H1: true,
+      H2: true,
+      H3: true,
+      H4: true,
+      H5: true,
+      H6: true,
+      TABLE: true,
+      UL: true,
+      OL: true,
+      BLOCKQUOTE: true,
+      SECTION: true,
+      ARTICLE: true,
+    };
+    for (var i = 0; i < block.children.length; i++) {
+      if (blockTags[block.children[i].tagName]) return true;
+      if (hasChildBlockElement(block.children[i])) return true;
+    }
+    return false;
+  }
+
+  function isLeafContentBlock(block) {
+    return block && !hasChildBlockElement(block);
+  }
+
+  function applySpecifiedTitleBoldElement(el, words) {
+    if (!el || !el.querySelectorAll || !words || !words.length) return el;
+    el.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6').forEach(function (block) {
+      if (!isLeafContentBlock(block)) return;
+      if (/^H[1-6]$/.test(block.tagName || '')) return;
+      if (!exactTextMatch(block.textContent, words)) return;
+      if (block.querySelector('strong, b')) return;
+      var strong = el.ownerDocument.createElement('strong');
+      while (block.firstChild) strong.appendChild(block.firstChild);
+      block.appendChild(strong);
+    });
+    return el;
+  }
+
+  function applySpecifiedTextClassElement(el, words, className) {
+    className = String(className || '').trim();
+    if (!el || !el.querySelectorAll || !words || !words.length || !isValidClassName(className)) return el;
+    el.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6').forEach(function (block) {
+      if (!isLeafContentBlock(block)) return;
+      if (!exactTextMatch(block.textContent, words)) return;
+      if (block.classList) {
+        block.classList.add(className);
+        return;
+      }
+      var current = block.getAttribute('class') || '';
+      var classes = current.split(/\s+/).filter(Boolean);
+      if (classes.indexOf(className) === -1) classes.push(className);
+      block.setAttribute('class', classes.join(' '));
+    });
+    return el;
+  }
+
+  function blockTextFromHTML(content) {
+    return String(content || '').replace(/<[^>]*>/g, '').trim();
+  }
+
+  function containsBlockHTML(content) {
+    return /<\s*(?:p|div|h[1-6]|table|ul|ol|blockquote|section|article)\b/i.test(String(content || ''));
+  }
+
+  function escapeRegExp(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function buildWordsPattern(words) {
+    var escaped = (words || [])
+      .filter(Boolean)
+      .sort(function (a, b) {
+        return b.length - a.length;
+      })
+      .map(escapeRegExp);
+    return escaped.length ? new RegExp('(' + escaped.join('|') + ')', 'g') : null;
+  }
+
+  function isInsideBold(node) {
+    var current = node && node.parentNode;
+    while (current) {
+      if (current.nodeType === 1 && /^(strong|b)$/i.test(current.tagName || '')) return true;
+      current = current.parentNode;
+    }
+    return false;
+  }
+
+  function applySpecifiedTextBoldElement(el, words) {
+    if (!el || !el.ownerDocument || !words || !words.length) return el;
+    var pattern = buildWordsPattern(words);
+    if (!pattern) return el;
+    var walker = el.ownerDocument.createTreeWalker(el, 4, {
+      acceptNode: function (node) {
+        if (!node.nodeValue || !pattern.test(node.nodeValue)) return 2;
+        pattern.lastIndex = 0;
+        if (isInsideBold(node)) return 2;
+        return 1;
+      },
+    });
+    var nodes = [];
+    var node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(function (textNode) {
+      pattern.lastIndex = 0;
+      var frag = el.ownerDocument.createDocumentFragment();
+      var text = textNode.nodeValue;
+      var lastIndex = 0;
+      var match;
+      while ((match = pattern.exec(text))) {
+        if (match.index > lastIndex) frag.appendChild(el.ownerDocument.createTextNode(text.slice(lastIndex, match.index)));
+        var strong = el.ownerDocument.createElement('strong');
+        strong.textContent = match[0];
+        frag.appendChild(strong);
+        lastIndex = match.index + match[0].length;
+      }
+      if (lastIndex < text.length) frag.appendChild(el.ownerDocument.createTextNode(text.slice(lastIndex)));
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+    return el;
+  }
+
+  function applySpecifiedTitleBoldHTML(html, words) {
+    words = words || [];
+    var source = String(html || '');
+    if (!words.length) return source;
+    if (typeof document !== 'undefined' && document.createElement) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = source;
+      applySpecifiedTitleBoldElement(wrap, words);
+      return wrap.innerHTML;
+    }
+    return source.replace(/<((?:p|div|h[1-6]))\b([^>]*)>([\s\S]*?)<\/\1>/gi, function (full, tag, attrs, content) {
+      if (containsBlockHTML(content)) {
+        return '<' + tag + attrs + '>' + applySpecifiedTitleBoldHTML(content, words) + '</' + tag + '>';
+      }
+      if (/^h[1-6]$/i.test(tag)) return full;
+      if (!exactTextMatch(blockTextFromHTML(content), words)) return full;
+      if (/<\s*(?:strong|b)\b/i.test(content)) return full;
+      return '<' + tag + attrs + '><strong>' + content + '</strong></' + tag + '>';
+    });
+  }
+
+  function mergeClassIntoAttrs(attrs, className) {
+    var classRe = /\sclass\s*=\s*(["'])(.*?)\1/i;
+    var match = classRe.exec(attrs);
+    if (!match) return attrs + ' class="' + className + '"';
+    var classes = match[2].split(/\s+/).filter(Boolean);
+    if (classes.indexOf(className) === -1) classes.push(className);
+    return attrs.replace(classRe, ' class=' + match[1] + classes.join(' ') + match[1]);
+  }
+
+  function applySpecifiedTextClassHTML(html, words, className) {
+    words = words || [];
+    className = String(className || '').trim();
+    var source = String(html || '');
+    if (!words.length || !isValidClassName(className)) return source;
+    if (typeof document !== 'undefined' && document.createElement) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = source;
+      applySpecifiedTextClassElement(wrap, words, className);
+      return wrap.innerHTML;
+    }
+    return source.replace(/<((?:p|div|h[1-6]))\b([^>]*)>([\s\S]*?)<\/\1>/gi, function (full, tag, attrs, content) {
+      if (containsBlockHTML(content)) {
+        return '<' + tag + attrs + '>' + applySpecifiedTextClassHTML(content, words, className) + '</' + tag + '>';
+      }
+      if (!exactTextMatch(blockTextFromHTML(content), words)) return full;
+      return '<' + tag + mergeClassIntoAttrs(attrs, className) + '>' + content + '</' + tag + '>';
+    });
+  }
+
+  function applyTextBoldToPlainHTML(content, words) {
+    var pattern = buildWordsPattern(words);
+    if (!pattern) return content;
+    return String(content || '').replace(pattern, '<strong>$1</strong>');
+  }
+
+  function applySpecifiedTextBoldHTML(html, words) {
+    words = words || [];
+    var source = String(html || '');
+    if (!words.length) return source;
+    if (typeof document !== 'undefined' && document.createElement) {
+      var wrap = document.createElement('div');
+      wrap.innerHTML = source;
+      applySpecifiedTextBoldElement(wrap, words);
+      return wrap.innerHTML;
+    }
+    return source.replace(/<((?:p|div|h[1-6]))\b([^>]*)>([\s\S]*?)<\/\1>/gi, function (full, tag, attrs, content) {
+      if (/<\s*(?:strong|b)\b/i.test(content)) {
+        return '<' + tag + attrs + '>' + content.replace(/(<\/(?:strong|b)>)([\s\S]*?)(?=<\s*(?:strong|b)\b|$)/gi, function (segment) {
+          return segment.replace(/([^<>]+)(?![^<]*>)/g, function (text) {
+            return applyTextBoldToPlainHTML(text, words);
+          });
+        }) + '</' + tag + '>';
+      }
+      if (containsBlockHTML(content)) {
+        return '<' + tag + attrs + '>' + applySpecifiedTextBoldHTML(content, words) + '</' + tag + '>';
+      }
+      return '<' + tag + attrs + '>' + applyTextBoldToPlainHTML(content, words) + '</' + tag + '>';
+    });
+  }
+
   function extractImageReplacementLinks(input) {
     var source = String(input || '');
     var links = [];
@@ -548,6 +778,14 @@
     sanitizeHTMLString: sanitizeHTMLString,
     formatHTMLSource: formatHTMLSource,
     splitImageTextParagraphHTML: splitImageTextParagraphHTML,
+    parseLineList: parseLineList,
+    isValidClassName: isValidClassName,
+    applySpecifiedTitleBoldElement: applySpecifiedTitleBoldElement,
+    applySpecifiedTextBoldElement: applySpecifiedTextBoldElement,
+    applySpecifiedTextClassElement: applySpecifiedTextClassElement,
+    applySpecifiedTitleBoldHTML: applySpecifiedTitleBoldHTML,
+    applySpecifiedTextBoldHTML: applySpecifiedTextBoldHTML,
+    applySpecifiedTextClassHTML: applySpecifiedTextClassHTML,
     extractImageReplacementLinks: extractImageReplacementLinks,
     replaceImageLinksInCode: replaceImageLinksInCode,
   };

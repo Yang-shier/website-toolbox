@@ -36,9 +36,22 @@ assert.ok(html.includes('id="titleOutputMode"'), 'format page should keep subtit
 assert.ok(html.includes("document.getElementById('titleDetectRule').value"), 'formatter should read subtitle detection rule');
 assert.ok(html.includes("document.getElementById('titleOutputMode').value"), 'formatter should read subtitle output mode');
 assert.ok(html.includes('function autoDetectTitles(el, titleRule, titleOutputMode)'), 'auto title detection should accept rule and output mode');
+assert.ok(html.includes('function unwrapBlockChildrenFromHeadings'), 'formatter should unwrap invalid heading wrappers around block content');
+assert.ok(html.includes('unwrapBlockChildrenFromHeadings(container);'), 'formatter should unwrap invalid heading wrappers before heading conversion');
 assert.ok(html.includes('function scoreTitleCandidate'), 'subtitle detection should use candidate scoring');
 assert.ok(html.includes('function getNeighborBlockText'), 'subtitle detection should compare nearby content');
 assert.ok(html.includes("titleRule === 'english'"), 'subtitle detection should support English content rule');
 assert.ok(html.includes("if (titleOutputMode === 'h3')"), 'subtitle output mode should support h3 conversion');
+assert.ok(html.includes('id="specifiedTitleWords"'), 'format page should include specified subtitle words input');
+assert.ok(html.includes('id="specifiedBoldWords"'), 'format page should include specified text bold words input');
+assert.ok(html.includes('id="specifiedClassWords"'), 'format page should include specified class words input');
+assert.ok(html.includes('id="specifiedClassName"'), 'format page should include specified class name input');
+assert.ok(html.includes('id="specifiedRulesToggle"'), 'format toolbar should expose a compact specified-rules toggle');
+assert.ok(html.includes('id="specifiedRulesPanel"'), 'specified rule inputs should live in a separate advanced panel');
+assert.ok(html.includes('function toggleSpecifiedRules()'), 'specified rules panel should be collapsible');
+assert.ok(/class="[^"]*format-advanced-panel[^"]*hidden[^"]*"/.test(html), 'specified rule panel should start collapsed');
+assert.ok(html.includes('applySpecifiedTitleBold(container'), 'formatter should apply specified subtitle bolding');
+assert.ok(html.includes('applySpecifiedTextBold(container'), 'formatter should apply specified text bolding');
+assert.ok(html.includes('applySpecifiedTextClass(container'), 'formatter should apply specified text class names');
 
 console.log('forbidden word static checks passed');
