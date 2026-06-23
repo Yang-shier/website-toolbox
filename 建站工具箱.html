@@ -4431,6 +4431,11 @@ Hello World`;
             }
 
             function switchFormatOutputTab(tab) {
+                if (currentFormatOutputTab === 'source' && tab === 'preview') {
+                    syncFormatSourceToPreview(false);
+                } else if (currentFormatOutputTab === 'preview' && tab === 'source') {
+                    syncFormatPreviewToSource();
+                }
                 currentFormatOutputTab = tab;
                 var tabs = document.querySelectorAll('#formatPage [data-format-output-tab]');
                 tabs.forEach(function (t) {
@@ -4447,6 +4452,21 @@ Hello World`;
                     source.classList.remove('hidden');
                     preview.classList.add('hidden');
                 }
+            }
+
+            function syncFormatPreviewToSource() {
+                var preview = document.getElementById('fmtPreview');
+                document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
+            }
+
+            function syncFormatSourceToPreview(preserveSourceValue) {
+                var preview = document.getElementById('fmtPreview');
+                var source = document.getElementById('fmtOutputSource');
+                var container = document.createElement('div');
+                container.innerHTML = source.value;
+                sanitizeOutputHTML(container);
+                preview.innerHTML = container.innerHTML;
+                if (!preserveSourceValue) source.value = formatHTMLSource(preview.innerHTML);
             }
 
             // === Find & Replace ===
@@ -4577,6 +4597,7 @@ Hello World`;
                     if (text.substring(start, end) === query) {
                         el.value = text.substring(0, start) + repl + text.substring(end);
                         el.setSelectionRange(start + repl.length, start + repl.length);
+                        syncFormatSourceToPreview(true);
                     }
                     findNext();
                 }
@@ -4614,6 +4635,7 @@ Hello World`;
                         text = text.replace(query, repl);
                     }
                     el.value = text;
+                    syncFormatSourceToPreview(true);
                     document.getElementById('findCount').textContent = count > 0 ? '已替换 ' + count + ' 处' : '无匹配';
                 }
                 showToast('替换完成');
@@ -5314,14 +5336,22 @@ Hello World`;
 
             // 输出区粘贴/编辑时自动给新图片加宽度
             document.getElementById('fmtPreview').addEventListener('input', function () {
-                if (!lastImgWidth) return;
+                if (!lastImgWidth) {
+                    syncFormatPreviewToSource();
+                    return;
+                }
                 this.querySelectorAll('img:not([width])').forEach(function (img) {
                     img.setAttribute('width', lastImgWidth);
                     img.removeAttribute('height');
                 });
+                syncFormatPreviewToSource();
             });
 
             // 源导航代码粘贴后自动提取
+            document.getElementById('fmtOutputSource').addEventListener('input', function () {
+                syncFormatSourceToPreview(true);
+            });
+
             document.getElementById('sourceInput').addEventListener('input', function () {
                 if (this.value.trim()) extractNav();
             });
