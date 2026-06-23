@@ -966,6 +966,21 @@
                 flex-direction: column;
                 gap: 10px;
             }
+            .format-inspector-card .format-advanced-head {
+                align-items: center;
+                justify-content: flex-start;
+                gap: 12px;
+                flex-wrap: nowrap;
+            }
+            .format-inspector-card .format-advanced-title {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+            .format-inspector-card .format-advanced-desc {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                font-size: 12px;
+            }
             #specifiedRulesToggle {
                 order: 20;
             }
@@ -1281,6 +1296,11 @@
                 background: #fbfbfa;
                 font-size: 22px;
                 font-weight: 600;
+            }
+            .format-empty-icon svg {
+                width: 20px;
+                height: 20px;
+                display: block;
             }
             .rich-input:not(:empty) + .format-empty-mark,
             .fmt-preview:not(:empty) + .format-empty-mark {
@@ -2367,7 +2387,13 @@
                         <div class="format-pane-body">
                             <div class="fmt-preview" id="fmtPreview" contenteditable="true"></div>
                             <div class="format-empty-mark">
-                                <div class="format-empty-icon">□</div>
+                                <div class="format-empty-icon">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+                                        <rect x="5" y="5" width="14" height="14" rx="2" />
+                                        <path d="M9 9h6" />
+                                        <path d="M9 13h4" />
+                                    </svg>
+                                </div>
                                 <div>格式化结果将在这里显示</div>
                                 <div>点击下方按钮开始格式化</div>
                             </div>
