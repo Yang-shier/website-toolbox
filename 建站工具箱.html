@@ -971,13 +971,17 @@
                 justify-content: flex-start;
                 gap: 12px;
                 flex-wrap: nowrap;
+                min-width: 0;
             }
             .format-inspector-card .format-advanced-title {
                 flex: 0 0 auto;
                 white-space: nowrap;
             }
             .format-inspector-card .format-advanced-desc {
-                flex: 0 0 auto;
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: 12px;
             }

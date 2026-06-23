@@ -48,6 +48,7 @@ assert.ok(/class="format-collapse-btn"[\s\S]*?<svg/.test(html), 'format collapse
 assert.ok(/class="format-sidebar-open-btn"[\s\S]*?<svg/.test(html), 'format sidebar reopen button should use an SVG icon');
 assert.ok(html.includes('.format-inspector-card .format-advanced-desc'), 'specified-rule helper text should have inspector-specific layout');
 assert.ok(html.includes('white-space: nowrap;'), 'specified-rule helper text should stay on one line');
+assert.ok(html.includes('text-overflow: ellipsis;'), 'specified-rule helper text should truncate instead of overflowing the inspector');
 assert.ok(/<div class="format-empty-icon">[\s\S]*?<svg/.test(html), 'format empty-state icons should use SVG instead of fragile glyphs');
 assert.ok(html.includes('position: sticky;'), 'format inspector header should stay visible while the settings card scrolls');
 assert.ok(html.includes('scroll-padding-top: 64px;'), 'format inspector scroll should preserve top breathing room');
