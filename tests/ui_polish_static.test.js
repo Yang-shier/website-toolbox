@@ -30,6 +30,10 @@ assert.ok(html.includes('class="format-command-bar"'), 'format page should use a
 assert.ok(html.includes('data-format-input-tab'), 'format input tabs should be scoped to the new editor pane');
 assert.ok(html.includes('data-format-output-tab'), 'format output tabs should be scoped to the new editor pane');
 assert.ok(html.includes('--format-warm-bg'), 'format page should use warm refined 1C visual tokens');
+assert.ok(!html.includes('#6c63ff'), 'legacy purple accent should not appear in the refreshed UI');
+assert.ok(!html.includes('#7b73ff'), 'legacy purple hover accent should not appear in the refreshed UI');
+assert.ok(html.includes('--accent: #2563eb;'), 'global accent should align with the modern blue tab style');
+assert.ok(html.includes('background: var(--format-accent);'), 'format pane tabs should use the modern format accent');
 assert.ok(html.includes('class="format-empty-mark"'), 'format editors should include a refined empty-state mark');
 assert.ok(html.includes('class="format-command-shell"'), 'format command bar should use a 1C-style command shell');
 assert.ok(html.includes('class="format-inspector-card"'), 'format settings should live inside a rounded inspector card');
