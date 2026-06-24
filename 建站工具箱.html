@@ -5158,8 +5158,9 @@ Hello World`;
                 blocks.forEach(function (block) {
                     var rawText = block.textContent;
                     var text = rawText.trim();
-                    if (!isTitleCandidateBlock(block, rawText, text, bulletRe, indentRe)) return;
-                    if (scoreTitleCandidate(block, text, titleRule, endPunctuation, cjkRe) < 5) return;
+                    var titleText = stripTitleBullet(text, bulletRe);
+                    if (!isTitleCandidateBlock(block, rawText, text, titleText, indentRe)) return;
+                    if (scoreTitleCandidate(block, titleText, titleRule, endPunctuation, cjkRe) < 5) return;
 
                     var children = block.childNodes;
                     var onlyInline = true;
@@ -5188,16 +5189,19 @@ Hello World`;
                 });
             }
 
-            function isTitleCandidateBlock(block, rawText, text, bulletRe, indentRe) {
+            function stripTitleBullet(text, bulletRe) {
+                return String(text || '').replace(bulletRe, '').trim();
+            }
+
+            function isTitleCandidateBlock(block, rawText, text, titleText, indentRe) {
                 if (block.closest('table, td, th')) return false;
                 if (block.querySelector('p, div, table, ul, ol')) return false;
                 if (block.querySelector('strong, b')) return false;
                 if (!text) return false;
-                if (text.length < 2) return false;
-                if (bulletRe.test(text)) return false;
+                if (!titleText || titleText.length < 2) return false;
                 if (indentRe.test(rawText)) return false;
-                if (/[。！？!?]$/.test(text)) return false;
-                if (/^(https?:\/\/|www\.)/i.test(text)) return false;
+                if (/[。！？!?]$/.test(titleText)) return false;
+                if (/^(https?:\/\/|www\.)/i.test(titleText)) return false;
                 return true;
             }
 
