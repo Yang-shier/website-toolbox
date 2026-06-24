@@ -4677,6 +4677,7 @@ Hello World`;
                 normalizeBlockStructure(container);
                 unwrapBlockChildrenFromHeadings(container);
                 splitHeadingContent(container);
+                splitTopLevelBreaksToParagraphs(container);
                 cleanupStructure(container);
                 flattenNestedParagraphs(container);
                 convertHeadingsToParagraphs(container);
@@ -4827,6 +4828,72 @@ Hello World`;
                     }
                 });
                 el.innerHTML = result;
+            }
+
+            function splitTopLevelBreaksToParagraphs(el) {
+                var children = Array.from(el.childNodes);
+                if (!children.some(function (node) {
+                    return node.nodeType === 1 && node.tagName && node.tagName.toLowerCase() === 'br';
+                })) {
+                    return;
+                }
+
+                var blockTags = {
+                    P: true,
+                    DIV: true,
+                    TABLE: true,
+                    UL: true,
+                    OL: true,
+                    BLOCKQUOTE: true,
+                    SECTION: true,
+                    ARTICLE: true,
+                    H1: true,
+                    H2: true,
+                    H3: true,
+                    H4: true,
+                    H5: true,
+                    H6: true,
+                };
+                var fragment = document.createDocumentFragment();
+                var group = [];
+
+                function groupHasContent(nodes) {
+                    return nodes.some(function (node) {
+                        if (node.nodeType === 3) return !!node.textContent.replace(/[\s\u00a0\u3000]/g, '');
+                        if (node.nodeType !== 1) return false;
+                        return !!node.textContent.replace(/[\s\u00a0\u3000]/g, '') || !!node.querySelector('img, table');
+                    });
+                }
+
+                function flushGroup() {
+                    if (!groupHasContent(group)) {
+                        group = [];
+                        return;
+                    }
+                    var p = document.createElement('p');
+                    group.forEach(function (node) {
+                        p.appendChild(node);
+                    });
+                    fragment.appendChild(p);
+                    group = [];
+                }
+
+                children.forEach(function (node) {
+                    if (node.nodeType === 1 && node.tagName && node.tagName.toLowerCase() === 'br') {
+                        flushGroup();
+                        return;
+                    }
+                    if (node.nodeType === 1 && blockTags[node.tagName]) {
+                        flushGroup();
+                        fragment.appendChild(node);
+                        return;
+                    }
+                    group.push(node);
+                });
+                flushGroup();
+
+                el.innerHTML = '';
+                el.appendChild(fragment);
             }
 
             function cleanupStructure(el) {
