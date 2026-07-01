@@ -4679,6 +4679,7 @@ Hello World`;
                 unwrapBlockChildrenFromHeadings(container);
                 splitHeadingContent(container);
                 splitTopLevelBreaksToParagraphs(container);
+                wrapTopLevelInlineContentInParagraphs(container);
                 cleanupStructure(container);
                 flattenNestedParagraphs(container);
                 convertHeadingsToParagraphs(container);
@@ -4893,6 +4894,63 @@ Hello World`;
                 });
                 flushGroup();
 
+                el.innerHTML = '';
+                el.appendChild(fragment);
+            }
+
+            function wrapTopLevelInlineContentInParagraphs(el) {
+                var children = Array.from(el.childNodes);
+                var blockTags = {
+                    P: true,
+                    DIV: true,
+                    TABLE: true,
+                    UL: true,
+                    OL: true,
+                    BLOCKQUOTE: true,
+                    SECTION: true,
+                    ARTICLE: true,
+                    H1: true,
+                    H2: true,
+                    H3: true,
+                    H4: true,
+                    H5: true,
+                    H6: true,
+                };
+                var fragment = document.createDocumentFragment();
+                var group = [];
+                var changed = false;
+
+                function nodeHasContent(node) {
+                    if (node.nodeType === 3) return !!node.textContent.replace(/[\s\u00a0\u3000]/g, '');
+                    if (node.nodeType !== 1) return false;
+                    return !!node.textContent.replace(/[\s\u00a0\u3000]/g, '') || !!node.querySelector('img, table');
+                }
+
+                function flushGroup() {
+                    if (!group.some(nodeHasContent)) {
+                        group = [];
+                        return;
+                    }
+                    var p = document.createElement('p');
+                    group.forEach(function (node) {
+                        p.appendChild(node);
+                    });
+                    fragment.appendChild(p);
+                    group = [];
+                    changed = true;
+                }
+
+                children.forEach(function (node) {
+                    if (node.nodeType === 1 && blockTags[node.tagName]) {
+                        flushGroup();
+                        fragment.appendChild(node);
+                        return;
+                    }
+                    group.push(node);
+                });
+                flushGroup();
+
+                if (!changed) return;
                 el.innerHTML = '';
                 el.appendChild(fragment);
             }

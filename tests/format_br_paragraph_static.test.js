@@ -14,7 +14,7 @@ assert.ok(
 );
 
 assert.ok(
-  html.includes('splitTopLevelBreaksToParagraphs(container);\n                cleanupStructure(container);'),
+  html.includes('splitTopLevelBreaksToParagraphs(container);\n                wrapTopLevelInlineContentInParagraphs(container);\n                cleanupStructure(container);'),
   'formatter should preserve pasted br line breaks before cleanup removes remaining br tags'
 );
 
