@@ -4918,7 +4918,6 @@ Hello World`;
                 };
                 var fragment = document.createDocumentFragment();
                 var group = [];
-                var changed = false;
 
                 function nodeHasContent(node) {
                     if (node.nodeType === 3) return !!node.textContent.replace(/[\s\u00a0\u3000]/g, '');
@@ -4937,7 +4936,6 @@ Hello World`;
                     });
                     fragment.appendChild(p);
                     group = [];
-                    changed = true;
                 }
 
                 children.forEach(function (node) {
@@ -4950,7 +4948,6 @@ Hello World`;
                 });
                 flushGroup();
 
-                if (!changed) return;
                 el.innerHTML = '';
                 el.appendChild(fragment);
             }

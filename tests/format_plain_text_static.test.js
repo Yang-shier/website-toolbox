@@ -18,4 +18,9 @@ assert.ok(
   'formatter should create paragraphs before cleanup and paragraph indentation run'
 );
 
+assert.ok(
+  !html.includes('if (!changed) return;\n                el.innerHTML = \'\';\n                el.appendChild(fragment);'),
+  'formatter should append existing block nodes back after inspecting top-level inline content'
+);
+
 console.log('format plain text static checks passed');
