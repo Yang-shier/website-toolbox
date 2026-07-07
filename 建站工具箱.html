@@ -65,6 +65,22 @@
             .header-main {
                 flex: 1 1 620px;
             }
+            .brand-logo {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                background: #2563eb;
+                color: #fff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 auto;
+                box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+            }
+            .brand-logo svg {
+                width: 18px;
+                height: 18px;
+            }
             .header-meta {
                 justify-content: flex-end;
                 flex: 1 1 420px;
@@ -1776,6 +1792,14 @@
     <body>
         <div class="header">
             <div class="header-main">
+                <span class="brand-logo" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="5" width="16" height="14" rx="2" />
+                        <path d="M4 9h16" />
+                        <path d="M8 13h3" />
+                        <path d="M8 16h8" />
+                    </svg>
+                </span>
                 <h1>建站工具箱</h1>
                 <div class="tab-group">
                     <button class="tab-btn active" data-tab="format" onclick="switchTab('format')">HTML格式化</button>

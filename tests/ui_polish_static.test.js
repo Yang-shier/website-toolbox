@@ -21,6 +21,8 @@ const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 });
 
 assert.ok(html.includes('<div class="header-main">'), 'header should group brand and tabs together');
+assert.ok(html.includes('class="brand-logo"'), 'header should include a compact brand logo');
+assert.ok(/class="brand-logo"[\s\S]*?<svg/.test(html), 'brand logo should use an inline SVG mark');
 assert.ok(html.includes('<div class="header-meta">'), 'header should group update summary and workspace actions together');
 assert.ok(html.includes('white-space: nowrap;'), 'compact controls should avoid awkward text wrapping');
 assert.ok(html.includes('class="format-workbench"'), 'format page should use a dedicated workbench layout');
