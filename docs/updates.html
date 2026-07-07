@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>版本更新说明 - 建站工具箱</title>
+        <link rel="icon" href="../favicon.ico" sizes="any" />
+        <style>
+            :root {
+                --accent: #2563eb;
+                --accent-soft: rgba(37, 99, 235, 0.08);
+                --border: rgba(15, 23, 42, 0.12);
+                --text: #111827;
+                --muted: #64748b;
+                --bg: #f6f7fb;
+                --card: #ffffff;
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                min-height: 100vh;
+                background: var(--bg);
+                color: var(--text);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+                line-height: 1.7;
+            }
+            .page {
+                width: min(1080px, calc(100% - 32px));
+                margin: 0 auto;
+                padding: 28px 0 48px;
+            }
+            .topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            .brand {
+                font-size: 22px;
+                font-weight: 700;
+            }
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                height: 34px;
+                padding: 0 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card);
+                color: var(--text);
+                font-size: 14px;
+                text-decoration: none;
+            }
+            .back-link:hover {
+                border-color: rgba(37, 99, 235, 0.35);
+                color: var(--accent);
+            }
+            .intro {
+                padding: 22px 24px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card);
+                margin-bottom: 18px;
+            }
+            .intro h1 {
+                font-size: 26px;
+                margin-bottom: 8px;
+            }
+            .intro p {
+                color: var(--muted);
+            }
+            .section {
+                padding: 22px 24px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: var(--card);
+                margin-top: 18px;
+            }
+            h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            h3 {
+                font-size: 15px;
+                margin: 18px 0 8px;
+            }
+            ul,
+            ol {
+                padding-left: 22px;
+            }
+            li + li {
+                margin-top: 6px;
+            }
+            .feature-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .feature {
+                padding: 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #fbfcff;
+            }
+            .feature strong {
+                display: block;
+                margin-bottom: 4px;
+            }
+            .feature span {
+                color: var(--muted);
+                font-size: 14px;
+            }
+            .release {
+                border-left: 3px solid var(--accent);
+                padding-left: 14px;
+            }
+            .release + .release {
+                margin-top: 18px;
+            }
+            .date {
+                display: inline-flex;
+                margin-bottom: 6px;
+                padding: 2px 8px;
+                border-radius: 999px;
+                background: var(--accent-soft);
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 700;
+            }
+            @media (max-width: 760px) {
+                .topbar {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+                .feature-grid {
+                    grid-template-columns: 1fr;
+                }
+                .intro,
+                .section {
+                    padding: 18px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main class="page">
+            <div class="topbar">
+                <div class="brand">建站工具箱</div>
+                <a class="back-link" href="../建站工具箱.html">返回工具箱</a>
+            </div>
+
+            <section class="intro">
+                <h1>版本更新说明</h1>
+                <p>这里记录当前功能、常用操作和后续更新。以后每次添加功能，都在这个页面补一条更新说明。</p>
+            </section>
+
+            <section class="section">
+                <h2>当前功能</h2>
+                <div class="feature-grid">
+                    <div class="feature">
+                        <strong>HTML 格式化</strong>
+                        <span>支持富文本和源码输入，清理样式、空段落、危险标签，处理图片宽度、小标题、禁词和指定规则。</span>
+                    </div>
+                    <div class="feature">
+                        <strong>导航填充</strong>
+                        <span>从源导航提取父级和子级，再填入目标模板；可选择提取没有子级的父级导航。</span>
+                    </div>
+                    <div class="feature">
+                        <strong>联系方式替换</strong>
+                        <span>从联系人文本提取公司、联系人、电话、邮箱、地址等字段，并替换到现有 HTML 联系区域。</span>
+                    </div>
+                    <div class="feature">
+                        <strong>文本处理</strong>
+                        <span>处理空格、空行、大小写、标点转换、去重、排序、编号等纯文本整理任务。</span>
+                    </div>
+                    <div class="feature">
+                        <strong>图片链接替换</strong>
+                        <span>按顺序替换 HTML 和 CSS 里的图片链接，可选择全部图片或仅背景图片。</span>
+                    </div>
+                    <div class="feature">
+                        <strong>草稿和工作区</strong>
+                        <span>主要输入区自动保存，支持导出工作区 JSON，也可以导入恢复当前工作内容。</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>基本使用</h2>
+                <ol>
+                    <li>打开主页面，选择顶部对应工具。</li>
+                    <li>把源内容粘贴到左侧输入区，也可以点“填入示例”快速试用。</li>
+                    <li>根据工具需要调整设置，例如导航子产品显示数量、HTML 格式化规则或图片替换模式。</li>
+                    <li>查看提取结果或预览内容，确认无误后生成、复制或导出。</li>
+                    <li>清空后可以点“撤回”恢复刚清掉的内容；跨设备迁移时用“导出工作区”和“导入工作区”。</li>
+                </ol>
+            </section>
+
+            <section class="section">
+                <h2>更新记录</h2>
+                <div class="release">
+                    <span class="date">2026-07-07</span>
+                    <h3>导航提取增强</h3>
+                    <ul>
+                        <li>新增“无子级父级：关/开”按钮，默认关闭，保持原来的导航提取习惯。</li>
+                        <li>开启后，没有子级分类的父级导航也会被提取出来。</li>
+                        <li>开启状态增加蓝色高亮和悬浮色，避免看不清当前状态。</li>
+                    </ul>
+                </div>
+                <div class="release">
+                    <span class="date">2026-07-07</span>
+                    <h3>说明入口调整</h3>
+                    <ul>
+                        <li>右上角“最近更新”改为“版本更新说明”，点击进入独立说明页。</li>
+                        <li>左上角移除页面版本号，标题区更简洁。</li>
+                    </ul>
+                </div>
+                <div class="release">
+                    <span class="date">历史功能</span>
+                    <h3>基础工具能力</h3>
+                    <ul>
+                        <li>提供 HTML 格式化、导航填充、联系方式替换、文本处理、图片链接替换和禁词处理。</li>
+                        <li>支持自动保存草稿、撤回清空、示例数据、安全清理和工作区备份。</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

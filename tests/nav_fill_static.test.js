@@ -23,6 +23,12 @@ assert.ok(html.includes('id="childProductLimit"'), 'nav fill page should include
 assert.ok(html.includes('type="number"'), 'child product limit should be a numeric input');
 assert.ok(html.includes('min="1"'), 'child product limit should prevent values below 1 in the UI');
 assert.ok(html.includes('value="4"'), 'child product limit should default to 4');
+assert.ok(html.includes('id="includeLeafNavParentsToggle"'), 'nav fill page should include an opt-in leaf parent extraction toggle');
+assert.ok(html.includes('includeLeafParents: includeLeafNavParents'), 'nav parsing should pass the leaf parent option');
+assert.ok(
+  html.includes("#includeLeafNavParentsToggle[aria-pressed='true']"),
+  'leaf parent extraction toggle should have a visible active style'
+);
 
 assert.ok(html.includes('function getChildProductLimit()'), 'generation should read child product limit through a helper');
 assert.ok(html.includes('childrenToUse.length > childLimit + 1'), 'overflow threshold should be based on the configured limit');

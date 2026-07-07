@@ -276,7 +276,8 @@
     return { href: attr('<a ' + match[1] + '>', 'href'), text: stripTags(match[2]) };
   }
 
-  function parseNavSource(html) {
+  function parseNavSource(html, options) {
+    var includeLeafParents = options && options.includeLeafParents === true;
     if (typeof document !== 'undefined' && document.createElement) {
       var wrap = document.createElement('div');
       wrap.innerHTML = String(html || '');
@@ -290,23 +291,25 @@
         if (!a) return;
         var parentTitle = (a.querySelector('.pageLink, .nav_item_name') || a).textContent.trim();
         var parentLink = a.getAttribute('href') || '';
-        if (!childLists[index]) return;
-
-        var level2Items = childLists[index].querySelectorAll('.level_2_content.navchildLine');
-        if (level2Items.length === 0) level2Items = childLists[index].querySelectorAll('.child_content_list > .navchildLine');
-        if (level2Items.length === 0) level2Items = childLists[index].querySelectorAll('.navchildPart > .navchildLine');
-        if (level2Items.length === 0) level2Items = childLists[index].querySelectorAll('.navchildLine');
-
+        var childList = childLists[index];
         var children = [];
-        level2Items.forEach(function (line) {
-          var ca = line.querySelector('a[href]');
-          if (!ca) return;
-          var childTitle = (ca.querySelector('.navchildLink, .level_2_title') || ca).textContent.trim();
-          var childLink = ca.getAttribute('href') || '';
-          if (childTitle) children.push({ title: childTitle, link: childLink, checked: true });
-        });
 
-        if (children.length > 0) {
+        if (childList) {
+          var level2Items = childList.querySelectorAll('.level_2_content.navchildLine');
+          if (level2Items.length === 0) level2Items = childList.querySelectorAll('.child_content_list > .navchildLine');
+          if (level2Items.length === 0) level2Items = childList.querySelectorAll('.navchildPart > .navchildLine');
+          if (level2Items.length === 0) level2Items = childList.querySelectorAll('.navchildLine');
+
+          level2Items.forEach(function (line) {
+            var ca = line.querySelector('a[href]');
+            if (!ca) return;
+            var childTitle = (ca.querySelector('.navchildLink, .level_2_title') || ca).textContent.trim();
+            var childLink = ca.getAttribute('href') || '';
+            if (childTitle) children.push({ title: childTitle, link: childLink, checked: true });
+          });
+        }
+
+        if (children.length > 0 || includeLeafParents) {
           domItems.push({ title: parentTitle, link: parentLink, children: children, checked: true });
         }
       });
@@ -333,7 +336,7 @@
         if (child && child.text) children.push({ title: child.text, link: child.href, checked: true });
       });
 
-      if (children.length > 0) {
+      if (children.length > 0 || includeLeafParents) {
         items.push({ title: parent.text, link: parent.href, children: children, checked: true });
       }
     });

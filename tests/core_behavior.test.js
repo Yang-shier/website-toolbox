@@ -109,4 +109,20 @@ assert.deepStrictEqual(
   ['没有找到子级导航容器 .navchildlist']
 );
 
+const leafParentNavSource = `
+<div class="basic_navbar">
+  <div class="itemNav"><a href="/about"><span class="pageLink">Leaf Parent</span></a></div>
+</div>
+`;
+
+assert.deepStrictEqual(core.parseNavSource(leafParentNavSource), []);
+assert.deepStrictEqual(core.parseNavSource(leafParentNavSource, { includeLeafParents: true }), [
+  {
+    title: 'Leaf Parent',
+    link: '/about',
+    checked: true,
+    children: [],
+  },
+]);
+
 console.log('core behavior checks passed');
