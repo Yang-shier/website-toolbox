@@ -53,6 +53,16 @@ const { pathToFileURL } = require('url');
   assert.strictEqual(fileOriginPreflight.status, 204);
   assert.strictEqual(fileOriginPreflight.headers.get('Access-Control-Allow-Origin'), 'null');
 
+  const health = await worker.default.fetch(
+    new Request('https://worker.example/health', {
+      method: 'GET',
+      headers: { Origin: 'https://example.com' },
+    }),
+    { ALLOWED_ORIGINS: 'https://example.com', QWEN_API_KEY: 'test-key', QWEN_MODEL: 'qwen-turbo' }
+  );
+  assert.strictEqual(health.status, 200);
+  assert.deepStrictEqual(await health.json(), { ok: true, model: 'qwen-turbo' });
+
   const missingKey = await worker.default.fetch(
     new Request('https://worker.example/title-detect', { method: 'POST', body: '{"items":[]}' }),
     {}

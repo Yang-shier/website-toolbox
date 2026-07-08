@@ -104,6 +104,10 @@ async function callQwen(items, env) {
 
 export async function handleTitleDetect(request, env = {}) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(request, env) });
+  const url = new URL(request.url);
+  if (request.method === 'GET' && url.pathname === '/health') {
+    return json({ ok: true, model: env.QWEN_MODEL || DEFAULT_MODEL }, 200, request, env);
+  }
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405, request, env);
   if (!env.QWEN_API_KEY) return json({ error: 'QWEN_API_KEY is not configured' }, 500, request, env);
 
