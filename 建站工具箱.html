@@ -2232,6 +2232,14 @@
                             </div>
                             <label for="optAutoTitle">小标题识别</label>
                         </div>
+                        <div class="fmt-opt">
+                            <div class="toggle">
+                                <input type="checkbox" id="optAiTitle" />
+                                <span class="slider"></span>
+                            </div>
+                            <label for="optAiTitle">AI辅助识别</label>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="showAiTitleConfig()" type="button">配置AI接口</button>
                         <div class="fmt-segment-wrap">
                             <span>规则</span>
                             <div class="fmt-segment" data-title-group="rule">
@@ -2505,6 +2513,19 @@
                     <button class="btn btn-secondary" onclick="resetImgWidth()" style="margin-right: auto">重置</button>
                     <button class="btn btn-secondary" onclick="closeImgWidthDialog()">取消</button>
                     <button class="btn btn-primary" onclick="applyImgWidth()">应用</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="aiTitleConfigModal">
+            <div class="modal" style="width: 560px">
+                <div class="modal-title">AI辅助识别配置</div>
+                <div class="modal-desc">填写 Cloudflare Worker 接口地址。Qwen API Key 只配置在 Worker 环境变量里，不保存在网页中。</div>
+                <input type="text" class="modal-input" id="aiTitleEndpointInput" placeholder="https://your-worker.workers.dev/title-detect" />
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="testAiTitleEndpoint()" type="button" style="margin-right: auto">测试连接</button>
+                    <button class="btn btn-secondary" onclick="closeAiTitleConfig()" type="button">取消</button>
+                    <button class="btn btn-primary" onclick="saveAiTitleConfig()" type="button">保存</button>
                 </div>
             </div>
         </div>
@@ -4335,6 +4356,8 @@ Hello World`;
             var currentFormatInputTab = 'rich';
             var currentFormatOutputTab = 'preview';
             var lastImgWidth = '';
+            var AI_TITLE_CONFIG_KEY = 'site_toolbox_ai_title_config';
+            var DEFAULT_AI_TITLE_ENDPOINT = 'https://site-toolbox-title-ai.yangzhen1031.workers.dev';
 
             function setTitleOption(group, value) {
                 var inputId = group === 'rule' ? 'titleDetectRule' : 'titleOutputMode';
@@ -4348,6 +4371,52 @@ Hello World`;
                 var enabled = document.getElementById('optAutoTitle').checked;
                 var group = document.querySelector('.fmt-title-group');
                 if (group) group.classList.toggle('disabled', !enabled);
+            }
+
+            function getAiTitleConfig() {
+                try {
+                    var config = JSON.parse(localStorage.getItem(AI_TITLE_CONFIG_KEY) || '{}') || {};
+                    if (!config.endpoint) config.endpoint = DEFAULT_AI_TITLE_ENDPOINT;
+                    return config;
+                } catch (e) {
+                    return { endpoint: DEFAULT_AI_TITLE_ENDPOINT };
+                }
+            }
+
+            function showAiTitleConfig() {
+                var config = getAiTitleConfig();
+                document.getElementById('aiTitleEndpointInput').value = config.endpoint || '';
+                document.getElementById('aiTitleConfigModal').classList.add('show');
+            }
+
+            function closeAiTitleConfig() {
+                document.getElementById('aiTitleConfigModal').classList.remove('show');
+            }
+
+            function saveAiTitleConfig() {
+                var endpoint = document.getElementById('aiTitleEndpointInput').value.trim();
+                if (!endpoint) {
+                    showToast('请输入 Worker 接口地址', true);
+                    return;
+                }
+                saveLocalJson(AI_TITLE_CONFIG_KEY, { endpoint: endpoint });
+                closeAiTitleConfig();
+                showToast('AI接口配置已保存');
+            }
+
+            async function testAiTitleEndpoint() {
+                var endpoint = document.getElementById('aiTitleEndpointInput').value.trim();
+                if (!endpoint) {
+                    showToast('请输入 Worker 接口地址', true);
+                    return;
+                }
+                try {
+                    var result = await requestAiTitleIndexes(endpoint, [{ index: 0, text: '产品特点' }]);
+                    if (Array.isArray(result)) showToast('AI接口连接正常');
+                    else showToast('AI接口返回格式不正确', true);
+                } catch (e) {
+                    showToast('AI接口测试失败：' + (e.message || '请求失败'), true);
+                }
             }
 
             function toggleSpecifiedRules() {
@@ -4703,7 +4772,80 @@ Hello World`;
                 return document.getElementById('codeInput').value;
             }
 
-            function formatAll() {
+            function collectAiTitleItems(container) {
+                return Array.from(container.querySelectorAll('p, div'))
+                    .filter(function (block) {
+                        if (block.closest('table, td, th')) return false;
+                        if (block.querySelector('p, div, table, ul, ol, blockquote, section, article')) return false;
+                        return !!block.textContent.trim();
+                    })
+                    .slice(0, 120)
+                    .map(function (block, index) {
+                        return {
+                            index: index,
+                            text: block.textContent.trim().replace(/\s+/g, ' ').slice(0, 120),
+                            block: block,
+                        };
+                    });
+            }
+
+            async function requestAiTitleIndexes(endpoint, items) {
+                var controller = new AbortController();
+                var timer = setTimeout(function () {
+                    controller.abort();
+                }, 12000);
+                try {
+                    var response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            items: items.map(function (item) {
+                                return { index: item.index, text: item.text };
+                            }),
+                        }),
+                        signal: controller.signal,
+                    });
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    var data = await response.json();
+                    return Array.isArray(data.titles) ? data.titles : [];
+                } finally {
+                    clearTimeout(timer);
+                }
+            }
+
+            function applyAiTitleIndexes(container, titles, titleOutputMode) {
+                var titleSet = {};
+                (titles || []).forEach(function (index) {
+                    if (Number.isInteger(index)) titleSet[index] = true;
+                });
+                collectAiTitleItems(container).forEach(function (item) {
+                    if (!titleSet[item.index]) return;
+                    var block = item.block;
+                    if (titleOutputMode === 'h3' && block.tagName !== 'H3') {
+                        var h3 = document.createElement('h3');
+                        while (block.firstChild) h3.appendChild(block.firstChild);
+                        block.parentNode.replaceChild(h3, block);
+                        return;
+                    }
+                    if (block.querySelector('strong, b')) return;
+                    var strong = document.createElement('strong');
+                    while (block.firstChild) strong.appendChild(block.firstChild);
+                    block.appendChild(strong);
+                });
+            }
+
+            async function applyAiTitleDetection(container, titleOutputMode) {
+                var config = getAiTitleConfig();
+                if (!config.endpoint) throw new Error('未配置AI接口');
+                var items = collectAiTitleItems(container);
+                if (!items.length) return true;
+                showToast('AI小标题识别中...');
+                var titles = await requestAiTitleIndexes(config.endpoint, items);
+                applyAiTitleIndexes(container, titles, titleOutputMode);
+                return true;
+            }
+
+            async function formatAll() {
                 var html = getFormatInputHTML();
                 if (!html.trim()) {
                     showToast('请先输入内容', true);
@@ -4715,6 +4857,7 @@ Hello World`;
                 var optIndent = document.getElementById('optIndent').checked;
                 var optKeepBold = document.getElementById('optKeepBold').checked;
                 var optMarkdown = document.getElementById('optMarkdown').checked;
+                var optAiTitle = document.getElementById('optAiTitle').checked;
                 var optRemoveImg = document.getElementById('optRemoveImg').checked;
                 var specifiedTitleWords = parseLineList(document.getElementById('specifiedTitleWords').value);
                 var specifiedBoldWords = parseLineList(document.getElementById('specifiedBoldWords').value);
@@ -4747,7 +4890,15 @@ Hello World`;
                 if (optAutoTitle && !optMarkdown) {
                     var titleRule = document.getElementById('titleDetectRule').value;
                     var titleOutputMode = document.getElementById('titleOutputMode').value;
-                    autoDetectTitles(container, titleRule, titleOutputMode);
+                    var aiTitleApplied = false;
+                    if (optAiTitle) {
+                        try {
+                            aiTitleApplied = await applyAiTitleDetection(container, titleOutputMode);
+                        } catch (e) {
+                            showToast('AI识别失败，已使用本地规则', true);
+                        }
+                    }
+                    if (!aiTitleApplied) autoDetectTitles(container, titleRule, titleOutputMode);
                 }
                 applySpecifiedTitleBold(container, specifiedTitleWords);
                 applySpecifiedTextBold(container, specifiedBoldWords);
