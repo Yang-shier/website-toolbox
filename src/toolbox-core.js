@@ -247,6 +247,51 @@
     return decodeEntities(String(html || '').replace(/<[^>]*>/g, '')).trim();
   }
 
+  function escapeHTML(text) {
+    return String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function markdownTextFromHTML(source) {
+    return decodeEntities(
+      String(source || '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/(?:p|div|h[1-6]|li)>/gi, '\n')
+        .replace(/<[^>]*>/g, '')
+    ).trim();
+  }
+
+  function markdownToHTMLSource(source) {
+    var lines = markdownTextFromHTML(source).split(/\r?\n/);
+    var html = [];
+
+    lines.forEach(function (rawLine) {
+      var line = rawLine.trim();
+      var match;
+      if (!line) return;
+
+      match = line.match(/^#{1,6}\s+(.+)$/);
+      if (match) {
+        html.push('<p><strong>' + escapeHTML(match[1].trim()) + '</strong></p>');
+        return;
+      }
+
+      match = line.match(/^[-*+]\s+(.+)$/);
+      if (match) {
+        html.push('<p>&bull; ' + escapeHTML(match[1].trim()) + '</p>');
+        return;
+      }
+
+      html.push('<p>' + escapeHTML(line) + '</p>');
+    });
+
+    return html.join('\n');
+  }
+
   function attr(html, name) {
     var re = new RegExp(name + "\\s*=\\s*([\"'])(.*?)\\1", 'i');
     var match = String(html || '').match(re);
@@ -779,6 +824,7 @@
     getNavSourceDiagnostics: getNavSourceDiagnostics,
     sanitizeElement: sanitizeElement,
     sanitizeHTMLString: sanitizeHTMLString,
+    markdownToHTMLSource: markdownToHTMLSource,
     formatHTMLSource: formatHTMLSource,
     splitImageTextParagraphHTML: splitImageTextParagraphHTML,
     parseLineList: parseLineList,

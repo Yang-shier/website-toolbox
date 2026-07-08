@@ -202,6 +202,16 @@
             <section class="section">
                 <h2>更新记录</h2>
                 <div class="release">
+                    <span class="date">2026-07-08</span>
+                    <h3>HTML 格式化兼容性优化</h3>
+                    <ul>
+                        <li>新增“Markdown格式”开关，开启后可处理豆包等工具复制出的 Markdown 文本，标题统一转为加粗段落。</li>
+                        <li>Markdown 模式下跳过自动小标题识别，避免同一段内容被二次识别导致异常加粗。</li>
+                        <li>小标题识别改为保守规则，短句不再仅凭“短 + 无标点”被加粗，减少型号、产品名和功能点误判。</li>
+                        <li>优化多行列表项清理，列表项内部的多行说明会拆成独立段落，同时继续去掉列表点号。</li>
+                    </ul>
+                </div>
+                <div class="release">
                     <span class="date">2026-07-07</span>
                     <h3>导航提取增强</h3>
                     <ul>

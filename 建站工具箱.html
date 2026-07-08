@@ -2215,6 +2215,13 @@
                                 </div>
                                 <label for="optKeepBold">保留原有粗体</label>
                             </div>
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optMarkdown" />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optMarkdown">Markdown格式</label>
+                            </div>
                         </div>
                     </div>
                     <div class="fmt-title-group format-setting-card open" data-section="小标题">
@@ -4707,6 +4714,7 @@ Hello World`;
                 var optAutoTitle = document.getElementById('optAutoTitle').checked;
                 var optIndent = document.getElementById('optIndent').checked;
                 var optKeepBold = document.getElementById('optKeepBold').checked;
+                var optMarkdown = document.getElementById('optMarkdown').checked;
                 var optRemoveImg = document.getElementById('optRemoveImg').checked;
                 var specifiedTitleWords = parseLineList(document.getElementById('specifiedTitleWords').value);
                 var specifiedBoldWords = parseLineList(document.getElementById('specifiedBoldWords').value);
@@ -4719,6 +4727,9 @@ Hello World`;
                 }
 
                 var container = document.createElement('div');
+                if (optMarkdown && window.SiteToolboxCore && window.SiteToolboxCore.markdownToHTMLSource) {
+                    html = window.SiteToolboxCore.markdownToHTMLSource(html);
+                }
                 container.innerHTML = html;
 
                 if (optRemoveImg) removeImages(container);
@@ -4733,7 +4744,7 @@ Hello World`;
 
                 if (!optKeepBold) removeBold(container);
                 if (optRemoveStyle) removeInlineStyles(container);
-                if (optAutoTitle) {
+                if (optAutoTitle && !optMarkdown) {
                     var titleRule = document.getElementById('titleDetectRule').value;
                     var titleOutputMode = document.getElementById('titleOutputMode').value;
                     autoDetectTitles(container, titleRule, titleOutputMode);
@@ -5036,14 +5047,7 @@ Hello World`;
                 });
 
                 el.querySelectorAll('li').forEach(function (li) {
-                    if (li.querySelector('p')) {
-                        while (li.firstChild) li.parentNode.insertBefore(li.firstChild, li);
-                        li.parentNode.removeChild(li);
-                    } else {
-                        var p = document.createElement('p');
-                        p.innerHTML = li.innerHTML;
-                        li.parentNode.replaceChild(p, li);
-                    }
+                    splitListItemIntoParagraphs(li);
                 });
                 el.querySelectorAll('ul, ol').forEach(function (list) {
                     while (list.firstChild) list.parentNode.insertBefore(list.firstChild, list);
@@ -5085,6 +5089,48 @@ Hello World`;
                         node.parentNode.removeChild(node);
                     });
                 });
+            }
+
+            function splitListItemIntoParagraphs(li) {
+                var parent = li.parentNode;
+                var current = [];
+
+                function hasContent(nodes) {
+                    return nodes.some(function (node) {
+                        if (node.nodeType === 3) return !!node.textContent.trim();
+                        if (node.nodeType !== 1) return false;
+                        return !!node.textContent.trim() || !!node.querySelector('img, table');
+                    });
+                }
+
+                function flush() {
+                    if (!hasContent(current)) {
+                        current = [];
+                        return;
+                    }
+                    var p = document.createElement('p');
+                    current.forEach(function (node) {
+                        p.appendChild(node);
+                    });
+                    parent.insertBefore(p, li);
+                    current = [];
+                }
+
+                Array.from(li.childNodes).forEach(function (node) {
+                    if (node.nodeType === 1 && node.tagName === 'BR') {
+                        flush();
+                        return;
+                    }
+                    if (node.nodeType === 1 && ['DIV', 'P'].indexOf(node.tagName) !== -1) {
+                        flush();
+                        while (node.firstChild) current.push(node.firstChild);
+                        flush();
+                        return;
+                    }
+                    current.push(node);
+                });
+                flush();
+                parent.removeChild(li);
             }
 
             function flattenNestedParagraphs(el) {
@@ -5337,6 +5383,7 @@ Hello World`;
                     var block = context.block;
                     var titleText = context.titleText;
                     if (!context.isCandidate) return;
+                    if (!hasTitleEvidence(context, titleRule)) return;
                     if (scoreTitleCandidate(block, titleText, titleRule, endPunctuation, cjkRe, context, titleContexts) < 5) return;
 
                     var children = block.childNodes;
@@ -5368,6 +5415,16 @@ Hello World`;
 
             function stripTitleBullet(text, bulletRe) {
                 return String(text || '').replace(bulletRe, '').trim();
+            }
+
+            function hasTitleEvidence(context, titleRule) {
+                var text = context ? context.titleText : '';
+                if (!text) return false;
+                if (context.keywordScore >= 2) return true;
+                if (/^(?:第?[\u4e00-\u9fff]+[、.．]|[（(]?[\u4e00-\u9fff]+[）)]?[、.．]|[（(]?\d+[）)]?[、．]|[（(]?\d+[）)]?\.\s+)/.test(text)) return true;
+                if (titleRule === 'english' && /\b(features?|advantages?|benefits?|applications?|specifications?|parameters?|details?|overview|installation|usage|maintenance|faq|why choose|about us|product|service|solution|case|packing|shipping|payment|warranty)\b/i.test(text)) return true;
+                if (context.nextText && text.length <= 12 && context.nextText.length >= text.length * 2.5) return true;
+                return false;
             }
 
             function isTitleCandidateBlock(block, rawText, text, titleText, indentRe) {

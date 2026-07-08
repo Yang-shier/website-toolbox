@@ -104,4 +104,12 @@ assert.strictEqual(
   'specified text bolding should skip text that is already bold'
 );
 
+assert.strictEqual(
+  core.markdownToHTMLSource(
+    '<span style="white-space: pre;"># 主流型号\nAC707N\nJL701N\n\n# 产品特点\n- 丰富的系统资源\n- 2.5D GPU</span>'
+  ),
+  '<p><strong>主流型号</strong></p>\n<p>AC707N</p>\n<p>JL701N</p>\n<p><strong>产品特点</strong></p>\n<p>&bull; 丰富的系统资源</p>\n<p>&bull; 2.5D GPU</p>',
+  'markdownToHTMLSource should strip rich-copy wrappers and render headings as bold paragraphs'
+);
+
 console.log('format behavior checks passed');
