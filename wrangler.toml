@@ -3,5 +3,5 @@ main = "workers/title-detect-worker.mjs"
 compatibility_date = "2026-07-08"
 
 [vars]
-ALLOWED_ORIGINS = "https://yang-shier.github.io,http://127.0.0.1:8787"
+ALLOWED_ORIGINS = "https://yang-shier.github.io,http://127.0.0.1:8787,null"
 QWEN_MODEL = "qwen-turbo"

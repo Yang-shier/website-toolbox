@@ -43,6 +43,16 @@ const { pathToFileURL } = require('url');
   assert.strictEqual(upstreamBody.temperature, 0);
   assert.ok(upstreamBody.messages[0].content.includes('型号、产品名、普通功能点'));
 
+  const fileOriginPreflight = await worker.default.fetch(
+    new Request('https://worker.example/title-detect', {
+      method: 'OPTIONS',
+      headers: { Origin: 'null' },
+    }),
+    { ALLOWED_ORIGINS: 'https://example.com,null', QWEN_API_KEY: 'test-key' }
+  );
+  assert.strictEqual(fileOriginPreflight.status, 204);
+  assert.strictEqual(fileOriginPreflight.headers.get('Access-Control-Allow-Origin'), 'null');
+
   const missingKey = await worker.default.fetch(
     new Request('https://worker.example/title-detect', { method: 'POST', body: '{"items":[]}' }),
     {}

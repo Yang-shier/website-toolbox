@@ -2523,7 +2523,7 @@
                 <div class="modal-desc">填写 Cloudflare Worker 接口地址。Qwen API Key 只配置在 Worker 环境变量里，不保存在网页中。</div>
                 <input type="text" class="modal-input" id="aiTitleEndpointInput" placeholder="https://your-worker.workers.dev/title-detect" />
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="testAiTitleEndpoint()" type="button" style="margin-right: auto">测试连接</button>
+                    <button class="btn btn-secondary" id="aiTitleTestBtn" onclick="testAiTitleEndpoint()" type="button" style="margin-right: auto">测试连接</button>
                     <button class="btn btn-secondary" onclick="closeAiTitleConfig()" type="button">取消</button>
                     <button class="btn btn-primary" onclick="saveAiTitleConfig()" type="button">保存</button>
                 </div>
@@ -4406,16 +4406,27 @@ Hello World`;
 
             async function testAiTitleEndpoint() {
                 var endpoint = document.getElementById('aiTitleEndpointInput').value.trim();
+                var btn = document.getElementById('aiTitleTestBtn');
                 if (!endpoint) {
                     showToast('请输入 Worker 接口地址', true);
                     return;
                 }
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = '测试中...';
+                }
+                showToast('AI接口测试中...');
                 try {
                     var result = await requestAiTitleIndexes(endpoint, [{ index: 0, text: '产品特点' }]);
                     if (Array.isArray(result)) showToast('AI接口连接正常');
                     else showToast('AI接口返回格式不正确', true);
                 } catch (e) {
                     showToast('AI接口测试失败：' + (e.message || '请求失败'), true);
+                } finally {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = '测试连接';
+                    }
                 }
             }
 
