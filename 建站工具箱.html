@@ -4959,12 +4959,23 @@ Hello World`;
                 return true;
             }
 
+            function buildPlainTextFallbackHTML(sourceHTML) {
+                var fallback = document.createElement('div');
+                fallback.innerHTML = sourceHTML || '';
+                var text = fallback.textContent.replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                if (!text) return '';
+                return '<p>' + esc(text).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+            }
+
             async function formatAll() {
                 var html = getFormatInputHTML();
                 if (!html.trim()) {
                     showToast('请先输入内容', true);
                     return;
                 }
+
+                var originalHTMLForFallback = html;
+                var completionToast = '\u683c\u5f0f\u5316\u5b8c\u6210';
 
                 var optRemoveStyle = document.getElementById('optRemoveStyle').checked;
                 var optAutoTitle = document.getElementById('optAutoTitle').checked;
@@ -5031,6 +5042,13 @@ Hello World`;
                     result = applyForbiddenWords(result);
                 }
                 result = splitImageTextParagraphHTML(result);
+                if (!String(result || '').trim()) {
+                    var fallbackResult = buildPlainTextFallbackHTML(originalHTMLForFallback);
+                    if (fallbackResult) {
+                        result = fallbackResult;
+                        completionToast = '\u683c\u5f0f\u5316\u7ed3\u679c\u4e3a\u7a7a\uff0c\u5df2\u4fdd\u7559\u7eaf\u6587\u672c';
+                    }
+                }
                 var preview = document.getElementById('fmtPreview');
                 preview.innerHTML = result;
 
@@ -5042,7 +5060,7 @@ Hello World`;
                 }
 
                 document.getElementById('fmtOutputSource').value = formatHTMLSource(preview.innerHTML);
-                showToast('格式化完成');
+                showToast(completionToast, completionToast !== '\u683c\u5f0f\u5316\u5b8c\u6210');
             }
 
             function unwrapBlockChildrenFromHeadings(el) {
