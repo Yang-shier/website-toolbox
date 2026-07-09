@@ -59,14 +59,22 @@ function buildPrompt(items) {
 function parseTitles(content, validIndexes) {
   const text = String(content || '').trim();
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match) return [];
-  let parsed;
-  try {
-    parsed = JSON.parse(match[0]);
-  } catch (error) {
-    return [];
+  let titles = [];
+  if (match) {
+    try {
+      const parsed = JSON.parse(match[0]);
+      titles = Array.isArray(parsed.titles)
+        ? parsed.titles
+        : Array.isArray(parsed.titleIndexes)
+          ? parsed.titleIndexes
+          : Array.isArray(parsed.indices)
+            ? parsed.indices
+            : [];
+    } catch (error) {
+      titles = [];
+    }
   }
-  const titles = Array.isArray(parsed.titles) ? parsed.titles : [];
+  if (!titles.length) titles = text.match(/\d+/g) || [];
   const seen = new Set();
   return titles
     .map((value) => Number(value))

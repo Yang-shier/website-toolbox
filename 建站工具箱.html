@@ -4420,8 +4420,8 @@ Hello World`;
                     await requestAiTitleHealth(endpoint);
                     showToast('Worker连接正常，正在测试Qwen...');
                     var result = await requestAiTitleIndexes(endpoint, [{ index: 0, text: '产品特点' }]);
-                    if (Array.isArray(result)) showToast('AI接口连接正常');
-                    else showToast('AI接口返回格式不正确', true);
+                    if (Array.isArray(result) && result.indexOf(0) !== -1) showToast('AI接口连接正常');
+                    else showToast('AI接口可访问，但未识别出测试标题', true);
                 } catch (e) {
                     showToast('AI接口测试失败：' + (e.message || '请求失败'), true);
                 } finally {
@@ -4883,7 +4883,9 @@ Hello World`;
                 if (!items.length) return true;
                 showToast('AI小标题识别中...');
                 var titles = await requestAiTitleIndexes(config.endpoint, items);
+                if (!titles.length) throw new Error('AI未识别到小标题');
                 applyAiTitleIndexes(container, titles, titleOutputMode);
+                showToast('AI已识别 ' + titles.length + ' 个小标题');
                 return true;
             }
 

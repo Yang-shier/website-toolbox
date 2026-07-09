@@ -43,6 +43,36 @@ const { pathToFileURL } = require('url');
   assert.strictEqual(upstreamBody.temperature, 0);
   assert.ok(upstreamBody.messages[0].content.includes('型号、产品名、普通功能点'));
 
+  env.QWEN_FETCH = async () =>
+    new Response(JSON.stringify({ choices: [{ message: { content: '{"titleIndexes":[0,2]}' } }] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  const alternateField = await worker.default.fetch(
+    new Request('https://worker.example/title-detect', {
+      method: 'POST',
+      headers: { Origin: 'https://example.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ index: 0, text: '主流型号' }, { index: 2, text: '产品特点' }] }),
+    }),
+    env
+  );
+  assert.deepStrictEqual(await alternateField.json(), { titles: [0, 2] });
+
+  env.QWEN_FETCH = async () =>
+    new Response(JSON.stringify({ choices: [{ message: { content: '标题序号：0, 2' } }] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  const textFallback = await worker.default.fetch(
+    new Request('https://worker.example/title-detect', {
+      method: 'POST',
+      headers: { Origin: 'https://example.com', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ index: 0, text: '主流型号' }, { index: 2, text: '产品特点' }] }),
+    }),
+    env
+  );
+  assert.deepStrictEqual(await textFallback.json(), { titles: [0, 2] });
+
   const fileOriginPreflight = await worker.default.fetch(
     new Request('https://worker.example/title-detect', {
       method: 'OPTIONS',
