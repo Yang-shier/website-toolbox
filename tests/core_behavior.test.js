@@ -64,6 +64,19 @@ assert.strictEqual(
   '<img src="https://old.test/photo.jpg"><section style="background-image: url(\'https://new.test/bg.jpg\')"></section>'
 );
 
+const noBackgroundReplace = core.replaceImageLinksInCode({
+  links: ['https://new.test/photo.jpg', 'https://new.test/icon.svg', 'https://new.test/small.jpg', 'https://new.test/large.jpg'],
+  code:
+    '<img src="https://old.test/photo.jpg"><section style="background-image:url(https://old.test/bg.jpg)"></section><span style="mask-image:url(https://old.test/icon.svg)"></span><img srcset="https://old.test/small.jpg 480w, https://old.test/large.jpg 960w">',
+  mode: 'noBackground',
+});
+assert.strictEqual(noBackgroundReplace.replacedCount, 4);
+assert.strictEqual(noBackgroundReplace.remainingMatches, 0);
+assert.strictEqual(
+  noBackgroundReplace.code,
+  '<img src="https://new.test/photo.jpg"><section style="background-image:url(https://old.test/bg.jpg)"></section><span style="mask-image:url(https://new.test/icon.svg)"></span><img srcset="https://new.test/small.jpg 480w, https://new.test/large.jpg 960w">'
+);
+
 const shortLinksReplace = core.replaceImageLinksInCode({
   links: ['https://new.test/only.jpg'],
   code: '<img src="https://old.test/a.jpg"><img src="https://old.test/b.jpg">',

@@ -756,16 +756,41 @@
       if (start >= 0 && end > start) matches.push({ start: start, end: end });
     }
 
-    function collectUrlMatches(re) {
+    function collectUrlMatches(re, skipRanges) {
       while ((match = re.exec(source))) {
         var valueOffset = match[0].indexOf(match[3]);
-        pushMatch(match.index + valueOffset, match.index + valueOffset + match[3].length);
+        var start = match.index + valueOffset;
+        var end = start + match[3].length;
+        if (
+          skipRanges &&
+          skipRanges.some(function (range) {
+            return start >= range.start && end <= range.end;
+          })
+        ) {
+          continue;
+        }
+        pushMatch(start, end);
       }
+    }
+
+    function collectBackgroundUrlRanges() {
+      var ranges = [];
+      var re = /\bbackground(?:-image)?\s*:[^;{}]*?(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi;
+      var bgMatch;
+      while ((bgMatch = re.exec(source))) {
+        var valueOffset = bgMatch[0].indexOf(bgMatch[3]);
+        ranges.push({
+          start: bgMatch.index + valueOffset,
+          end: bgMatch.index + valueOffset + bgMatch[3].length,
+        });
+      }
+      return ranges;
     }
 
     if (mode === 'background') {
       collectUrlMatches(/\bbackground(?:-image)?\s*:[^;{}]*?(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi);
     } else {
+      var backgroundRanges = mode === 'noBackground' ? collectBackgroundUrlRanges() : null;
       var imgSrcRe = /(<img\b[^>]*?\bsrc\s*=\s*)(["'])([^"']*)(\2)/gi;
       while ((match = imgSrcRe.exec(source))) {
         pushMatch(match.index + match[1].length + match[2].length, match.index + match[1].length + match[2].length + match[3].length);
@@ -782,7 +807,7 @@
         }
       }
 
-      collectUrlMatches(/(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi);
+      collectUrlMatches(/(url\(\s*)(["']?)([^"')]+)(\2\s*\))/gi, backgroundRanges);
     }
 
     return matches.sort(function (a, b) {
@@ -796,7 +821,8 @@
     var links = (options.links || []).map(function (link) {
       return String(link || '').trim();
     }).filter(Boolean);
-    var matches = collectImageLinkMatches(source, options.mode === 'background' ? 'background' : 'all');
+    var mode = options.mode === 'background' || options.mode === 'noBackground' ? options.mode : 'all';
+    var matches = collectImageLinkMatches(source, mode);
     var replaceCount = Math.min(links.length, matches.length);
     var output = source;
 

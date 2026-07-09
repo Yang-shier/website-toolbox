@@ -10,6 +10,8 @@ assert.ok(html.includes('id="imageLinksInput"'), 'new image links input should e
 assert.ok(html.includes('id="imageCodeInput"'), 'source code input should exist');
 assert.ok(html.includes('id="imageReplaceOutput"'), 'replacement output should exist');
 assert.ok(html.includes('name="imageReplaceMode"'), 'replacement mode controls should exist');
+assert.ok(html.includes('value="noBackground"'), 'replacement modes should include skipping background images');
+assert.ok(html.includes('不替换背景图片'), 'skip background image mode should be visible');
 assert.ok(html.includes('function replaceImageLinks()'), 'replace action should be implemented');
 assert.ok(html.includes("restoreLastClear('imageReplace')"), 'clear undo should be wired');
 assert.ok(html.includes("clearDraftFields(['imageLinksInput', 'imageCodeInput']);"), 'draft cleanup should include image replacement inputs');
