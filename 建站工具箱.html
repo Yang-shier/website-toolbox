@@ -2378,6 +2378,15 @@
                             <div style="margin-left: auto; display: flex; align-items: center; gap: 4px">
                                 <button
                                     class="btn btn-secondary btn-sm"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="togglePreviewBold()"
+                                    title="加粗/取消加粗"
+                                    style="padding: 3px 8px; font-size: 12px; min-width: 28px"
+                                >
+                                    <strong>B</strong>
+                                </button>
+                                <button
+                                    class="btn btn-secondary btn-sm"
                                     onclick="toggleFindReplace()"
                                     title="查找替换"
                                     style="padding: 3px 8px; font-size: 12px"
@@ -4355,6 +4364,7 @@ Hello World`;
 
             var currentFormatInputTab = 'rich';
             var currentFormatOutputTab = 'preview';
+            var savedFormatPreviewRange = null;
             var lastImgWidth = '';
             var AI_TITLE_CONFIG_KEY = 'site_toolbox_ai_title_config';
             var DEFAULT_AI_TITLE_ENDPOINT = 'https://site-toolbox-title-ai.yangzhen1031.workers.dev';
@@ -4604,6 +4614,66 @@ Hello World`;
                 sanitizeOutputHTML(container);
                 preview.innerHTML = container.innerHTML;
                 if (!preserveSourceValue) source.value = formatHTMLSource(preview.innerHTML);
+            }
+
+            function normalizePreviewBoldTags(preview) {
+                preview.querySelectorAll('b').forEach(function (b) {
+                    var strong = document.createElement('strong');
+                    while (b.firstChild) strong.appendChild(b.firstChild);
+                    b.parentNode.replaceChild(strong, b);
+                });
+            }
+
+            function restorePreviewSelection() {
+                var preview = document.getElementById('fmtPreview');
+                var selection = window.getSelection();
+                if (
+                    !savedFormatPreviewRange ||
+                    !preview.contains(savedFormatPreviewRange.startContainer) ||
+                    !preview.contains(savedFormatPreviewRange.endContainer)
+                ) {
+                    return selection;
+                }
+
+                try {
+                    selection.removeAllRanges();
+                    selection.addRange(savedFormatPreviewRange.cloneRange());
+                } catch (err) {
+                    savedFormatPreviewRange = null;
+                }
+                return selection;
+            }
+
+            function togglePreviewBold() {
+                var preview = document.getElementById('fmtPreview');
+                if (preview.classList.contains('hidden')) {
+                    showToast('请先切换到预览再加粗', true);
+                    return;
+                }
+
+                var selection = window.getSelection();
+                if (
+                    (!selection || selection.rangeCount === 0 || selection.isCollapsed) &&
+                    savedFormatPreviewRange
+                ) {
+                    selection = restorePreviewSelection();
+                }
+                if (
+                    !selection ||
+                    selection.rangeCount === 0 ||
+                    selection.isCollapsed ||
+                    !preview.contains(selection.anchorNode) ||
+                    !preview.contains(selection.focusNode)
+                ) {
+                    showToast('请先选中预览内容', true);
+                    return;
+                }
+
+                preview.focus();
+                document.execCommand('bold', false, null);
+                normalizePreviewBoldTags(preview);
+                syncFormatPreviewToSource();
+                showToast('已切换加粗');
             }
 
             // === Find & Replace ===
@@ -5847,6 +5917,23 @@ Hello World`;
                     img.removeAttribute('height');
                 });
                 syncFormatPreviewToSource();
+            });
+
+            // 保存输出预览选区，避免工具栏点击打断选中状态
+            document.addEventListener('selectionchange', function () {
+                var preview = document.getElementById('fmtPreview');
+                if (!preview || preview.classList.contains('hidden')) return;
+
+                var selection = window.getSelection();
+                if (
+                    selection &&
+                    selection.rangeCount > 0 &&
+                    !selection.isCollapsed &&
+                    preview.contains(selection.anchorNode) &&
+                    preview.contains(selection.focusNode)
+                ) {
+                    savedFormatPreviewRange = selection.getRangeAt(0).cloneRange();
+                }
             });
 
             // 源导航代码粘贴后自动提取
