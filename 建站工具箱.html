@@ -5410,7 +5410,7 @@ Hello World`;
                     }
                     if (node.nodeType === 1 && ['DIV', 'P'].indexOf(node.tagName) !== -1) {
                         flush();
-                        while (node.firstChild) current.push(node.firstChild);
+                        while (node.firstChild) current.push(node.removeChild(node.firstChild));
                         flush();
                         return;
                     }
