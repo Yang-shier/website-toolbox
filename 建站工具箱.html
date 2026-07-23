@@ -5316,7 +5316,9 @@ Hello World`;
                     var parent = p.parentNode;
                     parts.forEach(function (part) {
                         var text = part.replace(/<[^>]*>/g, '').trim();
-                        if (!text) return;
+                        var partContainer = document.createElement('div');
+                        partContainer.innerHTML = part.trim();
+                        if (!text && !partContainer.querySelector('img, table')) return;
                         var newP = document.createElement('p');
                         newP.innerHTML = part.trim();
                         parent.insertBefore(newP, p);
