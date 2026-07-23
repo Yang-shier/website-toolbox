@@ -19,6 +19,9 @@ assert.ok(!html.includes('最近更新'), 'header should not show the old recent
 assert.ok(fs.existsSync(updatesPath), 'updates.html should exist');
 const updates = fs.readFileSync(updatesPath, 'utf8');
 [
+  '2026-07-23',
+  'HTML 格式化图片保留修复',
+  '纯图片段',
   '当前功能',
   '基本使用',
   '更新记录',
