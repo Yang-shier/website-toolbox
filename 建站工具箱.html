@@ -887,6 +887,12 @@
                 width: 100%;
                 margin: 12px 0;
             }
+            .fmt-preview td.fmt-table-selected-cell,
+            .fmt-preview th.fmt-table-selected-cell {
+                outline: 2px solid var(--accent);
+                outline-offset: -2px;
+                background: rgba(37, 99, 235, 0.08);
+            }
             .fmt-preview td,
             .fmt-preview th {
                 border: 1px solid rgba(0, 0, 0, 0.12);
@@ -2381,13 +2387,31 @@
                             </div>
                             <div style="margin-left: auto; display: flex; align-items: center; gap: 4px">
                                 <button
-                                    class="btn btn-secondary btn-sm"
+                                    class="btn btn-secondary"
                                     onmousedown="event.preventDefault()"
                                     onclick="togglePreviewBold()"
                                     title="加粗/取消加粗"
-                                    style="padding: 3px 8px; font-size: 12px; min-width: 28px"
+                                    style="padding: 5px 10px; font-size: 13px"
                                 >
-                                    <strong>B</strong>
+                                    加粗选中文本
+                                </button>
+                                <button
+                                    class="btn btn-secondary"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="deleteSelectedTableRow()"
+                                    title="删除当前选中单元格所在的行"
+                                    style="padding: 5px 10px; font-size: 13px"
+                                >
+                                    删除当前行
+                                </button>
+                                <button
+                                    class="btn btn-secondary"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="deleteSelectedTableColumn()"
+                                    title="删除当前选中单元格所在的列"
+                                    style="padding: 5px 10px; font-size: 13px"
+                                >
+                                    删除当前列
                                 </button>
                                 <button
                                     class="btn btn-secondary btn-sm"
@@ -4369,6 +4393,7 @@ Hello World`;
             var currentFormatInputTab = 'rich';
             var currentFormatOutputTab = 'preview';
             var savedFormatPreviewRange = null;
+            var selectedFormatTableCell = null;
             var lastImgWidth = '';
             var AI_TITLE_CONFIG_KEY = 'site_toolbox_ai_title_config';
             var DEFAULT_AI_TITLE_ENDPOINT = 'https://site-toolbox-title-ai.yangzhen1031.workers.dev';
@@ -4678,6 +4703,66 @@ Hello World`;
                 normalizePreviewBoldTags(preview);
                 syncFormatPreviewToSource();
                 showToast('已切换加粗');
+            }
+
+            function clearSelectedFormatTableCell() {
+                if (selectedFormatTableCell) selectedFormatTableCell.classList.remove('fmt-table-selected-cell');
+                selectedFormatTableCell = null;
+            }
+
+            function selectFormatTableCell(cell) {
+                clearSelectedFormatTableCell();
+                selectedFormatTableCell = cell;
+                selectedFormatTableCell.classList.add('fmt-table-selected-cell');
+            }
+
+            function getSelectedFormatTableCell() {
+                var preview = document.getElementById('fmtPreview');
+                if (preview.classList.contains('hidden')) {
+                    showToast('请先切换到预览再编辑表格', true);
+                    return null;
+                }
+                if (!selectedFormatTableCell || !preview.contains(selectedFormatTableCell)) {
+                    showToast('请先点击表格中的单元格', true);
+                    return null;
+                }
+                return selectedFormatTableCell;
+            }
+
+            function removeEmptySelectedTable(table) {
+                if (!table.querySelector('td, th')) table.remove();
+                clearSelectedFormatTableCell();
+                syncFormatPreviewToSource();
+            }
+
+            function deleteSelectedTableRow() {
+                var cell = getSelectedFormatTableCell();
+                if (!cell) return;
+                var row = cell.closest('tr');
+                var table = cell.closest('table');
+                if (!row || !table) {
+                    showToast('未找到可删除的表格行', true);
+                    return;
+                }
+                row.remove();
+                removeEmptySelectedTable(table);
+                showToast('已删除当前行');
+            }
+
+            function deleteSelectedTableColumn() {
+                var cell = getSelectedFormatTableCell();
+                if (!cell) return;
+                var table = cell.closest('table');
+                if (!table) {
+                    showToast('未找到可删除的表格列', true);
+                    return;
+                }
+                var columnIndex = cell.cellIndex;
+                table.querySelectorAll('tr').forEach(function (row) {
+                    if (row.cells[columnIndex]) row.deleteCell(columnIndex);
+                });
+                removeEmptySelectedTable(table);
+                showToast('已删除当前列');
             }
 
             // === Find & Replace ===
@@ -5958,6 +6043,15 @@ Hello World`;
                 ) {
                     savedFormatPreviewRange = selection.getRangeAt(0).cloneRange();
                 }
+            });
+
+            document.getElementById('fmtPreview').addEventListener('click', function (event) {
+                var cell = event.target.closest('td, th');
+                if (!cell || !this.contains(cell)) {
+                    clearSelectedFormatTableCell();
+                    return;
+                }
+                selectFormatTableCell(cell);
             });
 
             // 源导航代码粘贴后自动提取

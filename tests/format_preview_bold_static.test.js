@@ -9,8 +9,8 @@ const htmlFile = fs
 const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 
 assert.ok(
-  /onclick="togglePreviewBold\(\)"[\s\S]*?<strong>B<\/strong>/.test(html),
-  'output toolbar should expose a bold toggle button'
+  /onclick="togglePreviewBold\(\)"[\s\S]*?加粗选中文本/.test(html),
+  'output toolbar should expose a clear bold action label'
 );
 assert.ok(
   /onmousedown="event\.preventDefault\(\)"[\s\S]*?onclick="togglePreviewBold\(\)"/.test(html),
@@ -36,6 +36,19 @@ assert.ok(
 assert.ok(
   /function togglePreviewBold\(\)[\s\S]*?syncFormatPreviewToSource\(\)/.test(html),
   'bold toggle should keep output source synchronized after editing the preview'
+);
+assert.ok(html.includes('onclick="deleteSelectedTableRow()"'), 'output toolbar should offer deleting the selected table row');
+assert.ok(html.includes('onclick="deleteSelectedTableColumn()"'), 'output toolbar should offer deleting the selected table column');
+assert.ok(html.includes('function deleteSelectedTableRow()'), 'table row deletion should have a handler');
+assert.ok(html.includes('function deleteSelectedTableColumn()'), 'table column deletion should have a handler');
+assert.ok(html.includes("event.target.closest('td, th')"), 'clicking a preview table cell should select its row and column target');
+assert.ok(
+  /function deleteSelectedTableRow\(\)[\s\S]*?syncFormatPreviewToSource\(\)/.test(html),
+  'deleting a row should keep output source synchronized'
+);
+assert.ok(
+  /function deleteSelectedTableColumn\(\)[\s\S]*?syncFormatPreviewToSource\(\)/.test(html),
+  'deleting a column should keep output source synchronized'
 );
 
 console.log('format preview bold static checks passed');
