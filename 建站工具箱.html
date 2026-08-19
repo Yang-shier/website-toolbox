@@ -2135,7 +2135,7 @@
                                 class="contact-textarea"
                                 style="flex: 1"
                                 placeholder="粘贴需要处理的纯文本..."
-                                oninput="updateTextprocStats()"
+                                oninput="resetTextprocChain()"
                             ></textarea>
                         </div>
                         <div class="contact-panel" style="min-height: 0">
@@ -6013,16 +6013,22 @@ Hello World`;
             }
 
             function processText(type) {
-                var input = document.getElementById('textprocInput').value;
-                if (!input) {
+                var inputElement = document.getElementById('textprocInput');
+                var outputElement = document.getElementById('textprocOutput');
+                var input = inputElement.value;
+                var output = outputElement.value;
+                var source = output || input;
+                if (!source) {
                     showToast('请先输入文本', true);
                     return false;
                 }
 
+                input = source;
+
                 var result = input;
                 if (window.SiteToolboxCore && window.SiteToolboxCore.transformText) {
                     result = window.SiteToolboxCore.transformText(input, type);
-                    document.getElementById('textprocOutput').value = result;
+                    outputElement.value = result;
                     updateTextprocStats();
                     showToast('处理完成');
                     return true;
@@ -6065,7 +6071,12 @@ Hello World`;
                         }
                         break;
                     case 'trimEmpty':
-                        result = input.replace(/\n[ \t]*\n/g, '\n');
+                        result = input
+                            .split(/\r\n?|\n/)
+                            .filter(function (line) {
+                                return line.replace(/[\s\u200B\uFEFF]/g, '') !== '';
+                            })
+                            .join('\n');
                         break;
                     case 'removeBreaks':
                         result = input.replace(/[\r\n]+/g, '');
@@ -6110,7 +6121,7 @@ Hello World`;
                         break;
                 }
 
-                document.getElementById('textprocOutput').value = result;
+                outputElement.value = result;
                 updateTextprocStats();
                 showToast('处理完成');
                 return true;
@@ -6132,6 +6143,11 @@ Hello World`;
             function updateTextprocStats() {
                 renderTextprocStats('textprocInputStats', document.getElementById('textprocInput').value);
                 renderTextprocStats('textprocOutputStats', document.getElementById('textprocOutput').value);
+            }
+
+            function resetTextprocChain() {
+                document.getElementById('textprocOutput').value = '';
+                updateTextprocStats();
             }
 
             function useTextprocOutputAsInput() {

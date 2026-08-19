@@ -28,6 +28,11 @@ assert.strictEqual(
 
 assert.strictEqual(core.transformText('  A  B  ', 'trimSpaces'), 'A  B');
 assert.strictEqual(core.transformText('A  B\tC', 'collapseSpaces'), 'A B C');
+assert.strictEqual(
+  core.transformText('第一段\r\n\r\n  \u3000\t\r\n第二段', 'trimEmpty'),
+  '第一段\n第二段',
+  'trimEmpty should remove consecutive Windows blank lines that contain whitespace'
+);
 assert.strictEqual(core.transformText('b\na\nb\n', 'lineUnique'), 'b\na');
 
 assert.deepStrictEqual(

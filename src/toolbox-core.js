@@ -187,7 +187,12 @@
         }
         break;
       case 'trimEmpty':
-        result = input.replace(/\n[ \t]*\n/g, '\n');
+        result = input
+          .split(/\r\n?|\n/)
+          .filter(function (line) {
+            return line.replace(/[\s\u200B\uFEFF]/g, '') !== '';
+          })
+          .join('\n');
         break;
       case 'removeBreaks':
         result = input.replace(/[\r\n]+/g, '');
