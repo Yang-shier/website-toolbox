@@ -2242,14 +2242,14 @@
                             </div>
                             <label for="optAutoTitle">小标题识别</label>
                         </div>
-                        <div class="fmt-opt">
+                        <div class="fmt-opt hidden">
                             <div class="toggle">
                                 <input type="checkbox" id="optAiTitle" />
                                 <span class="slider"></span>
                             </div>
                             <label for="optAiTitle">AI辅助识别</label>
                         </div>
-                        <button class="btn btn-secondary btn-sm" onclick="showAiTitleConfig()" type="button">配置AI接口</button>
+                        <button class="btn btn-secondary btn-sm hidden" onclick="showAiTitleConfig()" type="button">配置AI接口</button>
                         <div class="fmt-segment-wrap">
                             <span>规则</span>
                             <div class="fmt-segment" data-title-group="rule">
@@ -2554,7 +2554,7 @@
             </div>
         </div>
 
-        <div class="modal-overlay" id="aiTitleConfigModal">
+        <div class="modal-overlay hidden" id="aiTitleConfigModal">
             <div class="modal" style="width: 560px">
                 <div class="modal-title">AI辅助识别配置</div>
                 <div class="modal-desc">填写 Cloudflare Worker 接口地址。Qwen API Key 只配置在 Worker 环境变量里，不保存在网页中。</div>

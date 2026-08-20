@@ -8,8 +8,9 @@ const htmlFile = fs
   .find((name) => name.endsWith('.html') && name !== 'index.html');
 const html = fs.readFileSync(path.join(root, htmlFile), 'utf8');
 
-assert.ok(html.includes('id="optAiTitle"'), 'format page should include an AI subtitle detection toggle');
-assert.ok(html.includes('id="aiTitleConfigModal"'), 'format page should include local AI endpoint configuration');
+assert.ok(/<div class="fmt-opt hidden">[\s\S]*?id="optAiTitle"/.test(html), 'AI subtitle detection toggle should be hidden from the format page');
+assert.ok(/<button class="btn btn-secondary btn-sm hidden" onclick="showAiTitleConfig\(\)"/.test(html), 'AI endpoint configuration button should be hidden from the format page');
+assert.ok(/<div class="modal-overlay hidden" id="aiTitleConfigModal">/.test(html), 'AI endpoint configuration modal should be hidden from the page');
 assert.ok(html.includes('id="aiTitleTestBtn"'), 'AI endpoint test button should expose visible testing state');
 assert.ok(html.includes("var AI_TITLE_CONFIG_KEY = 'site_toolbox_ai_title_config';"), 'AI endpoint config should be stored locally');
 assert.ok(html.includes("var DEFAULT_AI_TITLE_ENDPOINT = 'https://site-toolbox-title-ai.yangzhen1031.workers.dev';"), 'AI title detection should default to the deployed Worker endpoint');
