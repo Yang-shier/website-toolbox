@@ -494,8 +494,12 @@
     });
   }
 
+  function normalizeNonBreakingHyphens(html) {
+    return String(html || '').replace(/\u2011/g, '-');
+  }
+
   function formatHTMLSource(html) {
-    return splitImageTextParagraphHTML(html)
+    return splitImageTextParagraphHTML(normalizeNonBreakingHyphens(html))
       .replace(/>\s+</g, '><')
       .replace(/(<\/(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])>)/gi, '$1\n')
       .replace(/(<(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])[\s>])/gi, '\n$1')
@@ -856,6 +860,7 @@
     sanitizeElement: sanitizeElement,
     sanitizeHTMLString: sanitizeHTMLString,
     markdownToHTMLSource: markdownToHTMLSource,
+    normalizeNonBreakingHyphens: normalizeNonBreakingHyphens,
     formatHTMLSource: formatHTMLSource,
     splitImageTextParagraphHTML: splitImageTextParagraphHTML,
     parseLineList: parseLineList,

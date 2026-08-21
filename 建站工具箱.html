@@ -4639,7 +4639,7 @@ Hello World`;
                 var preview = document.getElementById('fmtPreview');
                 var source = document.getElementById('fmtOutputSource');
                 var container = document.createElement('div');
-                container.innerHTML = source.value;
+                container.innerHTML = normalizeNonBreakingHyphens(source.value);
                 sanitizeOutputHTML(container);
                 preview.innerHTML = container.innerHTML;
                 if (!preserveSourceValue) source.value = formatHTMLSource(preview.innerHTML);
@@ -5057,7 +5057,7 @@ Hello World`;
             }
 
             async function formatAll() {
-                var html = getFormatInputHTML();
+                var html = normalizeNonBreakingHyphens(getFormatInputHTML());
                 if (!html.trim()) {
                     showToast('请先输入内容', true);
                     return;
@@ -5891,12 +5891,19 @@ Hello World`;
                 if (window.SiteToolboxCore && window.SiteToolboxCore.formatHTMLSource) {
                     return window.SiteToolboxCore.formatHTMLSource(html);
                 }
-                return html
+                return normalizeNonBreakingHyphens(html)
                     .replace(/>\s+</g, '><')
                     .replace(/(<\/(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])>)/gi, '$1\n')
                     .replace(/(<(?:p|div|table|tbody|thead|tr|td|th|ul|ol|li|h[1-6])[\s>])/gi, '\n$1')
                     .replace(/^\n+/, '')
                     .replace(/\n{3,}/g, '\n\n');
+            }
+
+            function normalizeNonBreakingHyphens(html) {
+                if (window.SiteToolboxCore && window.SiteToolboxCore.normalizeNonBreakingHyphens) {
+                    return window.SiteToolboxCore.normalizeNonBreakingHyphens(html);
+                }
+                return String(html || '').replace(/\u2011/g, '-');
             }
 
             function splitImageTextParagraphHTML(html) {
