@@ -495,7 +495,7 @@
   }
 
   function normalizeNonBreakingHyphens(html) {
-    return String(html || '').replace(/\u2011/g, '-');
+    return String(html || '').replace(/[\u001e\u2011]/g, '-');
   }
 
   function formatHTMLSource(html) {

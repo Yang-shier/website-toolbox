@@ -39,6 +39,12 @@ assert.strictEqual(
 );
 
 assert.strictEqual(
+  core.formatHTMLSource('<p>eco\x1efriendly</p>').trim(),
+  '<p>eco-friendly</p>',
+  'formatHTMLSource should convert WPS-record-separator hyphens to portable plain hyphens'
+);
+
+assert.strictEqual(
   core.splitImageTextParagraphHTML('<p style="text-align:center"><img src="a.jpg"/>洞洞板</p>').trim(),
   '<p style="text-align:center"><img src="a.jpg"/></p>\n<p style="text-align:center">洞洞板</p>',
   'splitImageTextParagraphHTML should split preview HTML before image width changes'
