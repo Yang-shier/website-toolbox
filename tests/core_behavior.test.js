@@ -35,6 +35,17 @@ assert.strictEqual(
 );
 assert.strictEqual(core.transformText('b\na\nb\n', 'lineUnique'), 'b\na');
 
+assert.strictEqual(
+  core.convertPunctuation('尺寸（宽×高），注意：安全！', 'cn2en'),
+  '尺寸(宽×高),注意:安全!',
+  'Chinese punctuation conversion should use the matching ASCII parentheses and punctuation'
+);
+assert.strictEqual(
+  core.convertPunctuation('Size (W x H), note: safe!', 'en2cn'),
+  'Size （W x H）， note： safe！',
+  'English punctuation conversion should use the matching full-width parentheses and punctuation'
+);
+
 assert.deepStrictEqual(
   core.extractImageReplacementLinks('<p><img src="https://cdn.test/a.jpg"/><img src="https://cdn.test/b.jpg"/></p>'),
   ['https://cdn.test/a.jpg', 'https://cdn.test/b.jpg']

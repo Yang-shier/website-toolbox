@@ -59,8 +59,39 @@
     return b[0].length - a[0].length;
   });
 
-  var CN_PUNCT = '，。！？、；：“”‘’【】（）《》——…';
-  var EN_PUNCT = ',.!?;:\'""[]()<>--.';
+  function convertPunctuation(input, direction) {
+    var result = String(input || '');
+    if (direction === 'cn2en') {
+      [
+        ['……', '...'], ['——', '--'], ['，', ','], ['。', '.'], ['！', '!'], ['？', '?'], ['、', ','],
+        ['；', ';'], ['：', ':'], ['“', '"'], ['”', '"'], ['‘', "'"], ['’', "'"], ['【', '['],
+        ['】', ']'], ['（', '('], ['）', ')'], ['《', '<'], ['》', '>'], ['—', '-'], ['…', '...'], ['·', '*'],
+      ].forEach(function (pair) {
+        result = result.split(pair[0]).join(pair[1]);
+      });
+      return result;
+    }
+    if (direction !== 'en2cn') return result;
+
+    result = result.replace(/\.\.\./g, '……');
+    result = result.replace(/[,:;!?\[\]()<>]/g, function (ch) {
+      return { ',': '，', ':': '：', ';': '；', '!': '！', '?': '？', '[': '【', ']': '】', '(': '（', ')': '）', '<': '《', '>': '》' }[ch];
+    });
+    var doubleQuoteOpen = true;
+    var singleQuoteOpen = true;
+    return result.replace(/[."']/g, function (ch, index, text) {
+      if (ch === '.') return '。';
+      if (ch === '"') {
+        var doubleQuote = doubleQuoteOpen ? '“' : '”';
+        doubleQuoteOpen = !doubleQuoteOpen;
+        return doubleQuote;
+      }
+      if (/\w/.test(text.charAt(index - 1)) && /\w/.test(text.charAt(index + 1))) return ch;
+      var singleQuote = singleQuoteOpen ? '‘' : '’';
+      singleQuoteOpen = !singleQuoteOpen;
+      return singleQuote;
+    });
+  }
 
   function pushValue(result, key, value) {
     if (!key || !value) return;
@@ -179,12 +210,10 @@
         result = input.replace(/[\t\u00a0\u3000 ]+/g, '');
         break;
       case 'cn2en':
-        for (var i = 0; i < CN_PUNCT.length; i++) result = result.split(CN_PUNCT[i]).join(EN_PUNCT[i] || '');
+        result = convertPunctuation(input, 'cn2en');
         break;
       case 'en2cn':
-        for (var j = 0; j < EN_PUNCT.length; j++) {
-          if (EN_PUNCT[j]) result = result.split(EN_PUNCT[j]).join(CN_PUNCT[j] || '');
-        }
+        result = convertPunctuation(input, 'en2cn');
         break;
       case 'trimEmpty':
         result = input
@@ -856,6 +885,7 @@
     parseContactText: parseContactText,
     normalizeForbiddenWord: normalizeForbiddenWord,
     applyForbiddenWords: applyForbiddenWords,
+    convertPunctuation: convertPunctuation,
     transformText: transformText,
     parseNavSource: parseNavSource,
     getNavSourceDiagnostics: getNavSourceDiagnostics,
