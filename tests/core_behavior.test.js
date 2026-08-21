@@ -90,6 +90,19 @@ const shortLinksReplace = core.replaceImageLinksInCode({
 assert.strictEqual(shortLinksReplace.replacedCount, 1);
 assert.strictEqual(shortLinksReplace.remainingMatches, 1);
 
+const oneLinkReplace = core.replaceImageLinksInCode({
+  links: ['https://new.test/shared.jpg'],
+  code: '<img src="https://old.test/a.jpg"><img src="https://old.test/b.jpg">',
+  mode: 'all',
+  reuseFirstLink: true,
+});
+assert.strictEqual(oneLinkReplace.replacedCount, 2);
+assert.strictEqual(oneLinkReplace.remainingMatches, 0);
+assert.strictEqual(
+  oneLinkReplace.code,
+  '<img src="https://new.test/shared.jpg"><img src="https://new.test/shared.jpg">'
+);
+
 const srcsetReplace = core.replaceImageLinksInCode({
   links: ['https://new.test/small.jpg', 'https://new.test/large.jpg'],
   code: '<img srcset="https://old.test/small.jpg 480w, https://old.test/large.jpg 960w">',

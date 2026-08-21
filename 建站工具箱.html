@@ -2021,6 +2021,10 @@
                             <input type="radio" name="imageReplaceMode" value="noBackground" />
                             <span>不替换背景图片</span>
                         </label>
+                        <label class="fmt-opt" style="margin: 0" title="用第一条新链接替换当前模式下的全部图片链接">
+                            <input type="checkbox" id="imageReplaceOneLink" />
+                            <span>一链全换</span>
+                        </label>
                     </label>
                     <span class="textproc-stats" id="imageReplaceStats">
                         <span>识别 0 个新链接</span>
@@ -4303,6 +4307,7 @@ Hello World`;
                     '<span>匹配 ' + result.matchCount + ' 个旧链接</span>',
                     '<span>替换 ' + result.replacedCount + ' 个</span>',
                 ];
+                if (result.reusedFirstLink) parts.push('<span>一链全换</span>');
                 if (result.remainingMatches > 0) parts.push('<span>新链接不足 ' + result.remainingMatches + ' 个</span>');
                 if (result.unusedLinks > 0) parts.push('<span>未使用 ' + result.unusedLinks + ' 个新链接</span>');
                 stats.innerHTML = parts.join('');
@@ -4337,11 +4342,14 @@ Hello World`;
                     links: links,
                     code: codeInput,
                     mode: getImageReplaceMode(),
+                    reuseFirstLink: document.getElementById('imageReplaceOneLink').checked,
                 });
                 document.getElementById('imageReplaceOutput').value = result.code;
                 setImageReplaceStats(result);
 
-                var msg = '已替换 ' + result.replacedCount + ' 个图片链接';
+                var msg = result.reusedFirstLink
+                    ? '已用第一条链接替换 ' + result.replacedCount + ' 个图片链接'
+                    : '已替换 ' + result.replacedCount + ' 个图片链接';
                 if (result.remainingMatches > 0) msg += '，新链接不足 ' + result.remainingMatches + ' 个';
                 if (result.unusedLinks > 0) msg += '，未使用 ' + result.unusedLinks + ' 个新链接';
                 showToast(msg, result.replacedCount === 0 || result.remainingMatches > 0);

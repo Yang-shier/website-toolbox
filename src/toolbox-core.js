@@ -831,12 +831,13 @@
       return String(link || '').trim();
     }).filter(Boolean);
     var mode = options.mode === 'background' || options.mode === 'noBackground' ? options.mode : 'all';
+    var reuseFirstLink = options.reuseFirstLink === true;
     var matches = collectImageLinkMatches(source, mode);
-    var replaceCount = Math.min(links.length, matches.length);
+    var replaceCount = reuseFirstLink && links.length ? matches.length : Math.min(links.length, matches.length);
     var output = source;
 
     for (var i = replaceCount - 1; i >= 0; i--) {
-      output = output.slice(0, matches[i].start) + links[i] + output.slice(matches[i].end);
+      output = output.slice(0, matches[i].start) + links[reuseFirstLink ? 0 : i] + output.slice(matches[i].end);
     }
 
     return {
@@ -844,8 +845,9 @@
       linkCount: links.length,
       matchCount: matches.length,
       replacedCount: replaceCount,
-      unusedLinks: Math.max(links.length - replaceCount, 0),
+      unusedLinks: reuseFirstLink ? Math.max(links.length - 1, 0) : Math.max(links.length - replaceCount, 0),
       remainingMatches: Math.max(matches.length - replaceCount, 0),
+      reusedFirstLink: reuseFirstLink,
     };
   }
 
