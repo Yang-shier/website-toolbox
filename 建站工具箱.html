@@ -2236,6 +2236,20 @@
                                 </div>
                                 <label for="optMarkdown">Markdown格式</label>
                             </div>
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optPunctuationCnToEn" onchange="syncPunctuationOptions(this)" />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optPunctuationCnToEn">中文标点转英文</label>
+                            </div>
+                            <div class="fmt-opt">
+                                <div class="toggle">
+                                    <input type="checkbox" id="optPunctuationEnToCn" onchange="syncPunctuationOptions(this)" />
+                                    <span class="slider"></span>
+                                </div>
+                                <label for="optPunctuationEnToCn">英文标点转中文</label>
+                            </div>
                         </div>
                     </div>
                     <div class="fmt-title-group format-setting-card open" data-section="小标题">
@@ -5079,6 +5093,7 @@ Hello World`;
                 var optIndent = document.getElementById('optIndent').checked;
                 var optKeepBold = document.getElementById('optKeepBold').checked;
                 var optMarkdown = document.getElementById('optMarkdown').checked;
+                var punctuationDirection = document.getElementById('optPunctuationCnToEn').checked ? 'cn2en' : (document.getElementById('optPunctuationEnToCn').checked ? 'en2cn' : '');
                 var optAiTitle = document.getElementById('optAiTitle').checked;
                 var optRemoveImg = document.getElementById('optRemoveImg').checked;
                 var specifiedTitleWords = parseLineList(document.getElementById('specifiedTitleWords').value);
@@ -5133,6 +5148,7 @@ Hello World`;
                 removeEmptyParagraphs(container);
                 if (optIndent) addParagraphIndent(container);
                 centerImageParagraphs(container);
+                if (punctuationDirection) convertPunctuationInTextNodes(container, punctuationDirection);
 
                 var result = container.innerHTML;
                 if (document.getElementById('optForbiddenWords').checked) {
@@ -5679,6 +5695,25 @@ Hello World`;
                 });
             }
 
+            function syncPunctuationOptions(changed) {
+                if (!changed.checked) return;
+                var oppositeId = changed.id === 'optPunctuationCnToEn' ? 'optPunctuationEnToCn' : 'optPunctuationCnToEn';
+                document.getElementById(oppositeId).checked = false;
+            }
+
+            function convertPunctuationInTextNodes(container, punctuationDirection) {
+                var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+                var nodes = [];
+                var node;
+                while ((node = walker.nextNode())) nodes.push(node);
+                nodes.forEach(function (node) {
+                    if (node.parentNode && /^(script|style)$/i.test(node.parentNode.tagName)) return;
+                    if (window.SiteToolboxCore && window.SiteToolboxCore.convertPunctuation) {
+                        node.nodeValue = window.SiteToolboxCore.convertPunctuation(node.nodeValue, punctuationDirection);
+                    }
+                });
+            }
+
             var TITLE_KEYWORD_GROUPS = [
                 {
                     score: 4,
@@ -6102,9 +6137,6 @@ Hello World`;
 
             // === Text Processing Feature ===
 
-            var CN_PUNCT = '，。！？、；：“”‘’【】（）《》—…·';
-            var EN_PUNCT = ',.!?;:\'""[]()<>—...*';
-
             function fmtTabClick(el, type) {
                 var siblings = el.parentNode.querySelectorAll('.fmt-tab');
                 for (var i = 0; i < siblings.length; i++) siblings[i].classList.remove('active');
@@ -6170,14 +6202,14 @@ Hello World`;
                         result = input.replace(/[\t\u00a0\u3000 ]+/g, '');
                         break;
                     case 'cn2en':
-                        for (var i = 0; i < CN_PUNCT.length; i++) {
-                            result = result.split(CN_PUNCT[i]).join(EN_PUNCT[i] || '');
-                        }
+                        result = window.SiteToolboxCore && window.SiteToolboxCore.convertPunctuation
+                            ? window.SiteToolboxCore.convertPunctuation(input, 'cn2en')
+                            : input;
                         break;
                     case 'en2cn':
-                        for (var i = 0; i < EN_PUNCT.length; i++) {
-                            if (EN_PUNCT[i]) result = result.split(EN_PUNCT[i]).join(CN_PUNCT[i] || '');
-                        }
+                        result = window.SiteToolboxCore && window.SiteToolboxCore.convertPunctuation
+                            ? window.SiteToolboxCore.convertPunctuation(input, 'en2cn')
+                            : input;
                         break;
                     case 'trimEmpty':
                         result = input

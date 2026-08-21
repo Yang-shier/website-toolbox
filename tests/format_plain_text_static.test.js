@@ -14,7 +14,7 @@ assert.ok(
 );
 
 assert.ok(
-  html.includes('wrapTopLevelInlineContentInParagraphs(container);\n                cleanupStructure(container);'),
+  /wrapTopLevelInlineContentInParagraphs\(container\);\r?\n                cleanupStructure\(container\);/.test(html),
   'formatter should create paragraphs before cleanup and paragraph indentation run'
 );
 
