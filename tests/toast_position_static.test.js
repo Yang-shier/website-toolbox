@@ -13,8 +13,8 @@ assert.match(
 );
 assert.match(
   html,
-  /\.toast\s*\{[\s\S]*?transform:\s*translateX\(-50%\)\s+translateY\(calc\(100%\s*\+\s*24px\)\);/,
-  'hidden toast should move by its own height so no part remains visible'
+  /\.toast\s*\{[\s\S]*?transform:\s*translateX\(-50%\)\s+translateY\(calc\(100%\s*\+\s*120px\)\);/,
+  'hidden toast should clear both its own height and the elevated bottom offset'
 );
 
 console.log('toast position static checks passed');
