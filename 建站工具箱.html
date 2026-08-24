@@ -1257,6 +1257,45 @@
                 grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: 12px;
                 padding: 0;
+                transition: grid-template-columns 0.24s ease;
+                will-change: grid-template-columns;
+            }
+            .format-editor-grid.multi-bold-active {
+                grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            }
+            .multi-bold-action-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                height: 0;
+                padding: 0 14px;
+                overflow: hidden;
+                border-top: 0 solid transparent;
+                background: #fffaf0;
+                opacity: 0;
+                transform: translateY(8px);
+                pointer-events: none;
+                transition: height 0.2s ease, padding 0.2s ease, border-top-width 0.2s ease, opacity 0.16s ease, transform 0.2s ease;
+            }
+            .format-editor-grid.multi-bold-active .multi-bold-action-bar {
+                height: 52px;
+                padding: 8px 14px;
+                border-top-width: 1px;
+                border-top-color: var(--format-line);
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+            .multi-bold-action-status {
+                color: var(--format-muted);
+                font-size: 13px;
+            }
+            .multi-bold-action-buttons {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
             }
             .format-editor-pane {
                 min-width: 0;
@@ -1390,6 +1429,10 @@
                 font-size: 12px;
                 white-space: nowrap;
             }
+            ::highlight(site-toolbox-multi-bold-selection) {
+                background: rgba(245, 158, 11, 0.28);
+                color: inherit;
+            }
             @media (max-width: 980px) {
                 .format-workbench {
                     grid-template-columns: 1fr;
@@ -1409,8 +1452,12 @@
                 .format-editor-area {
                     padding: 0 18px 0 0;
                 }
-                .format-editor-grid {
+            }
+            @media (max-width: 720px) {
+                .format-editor-grid,
+                .format-editor-grid.multi-bold-active {
                     grid-template-columns: 1fr;
+                    transition: none;
                 }
             }
 
@@ -1758,7 +1805,7 @@
             /* ── Toast ── */
             .toast {
                 position: fixed;
-                bottom: 30px;
+                bottom: 96px;
                 left: 50%;
                 transform: translateX(-50%) translateY(100px);
                 padding: 12px 28px;
@@ -1956,7 +2003,7 @@
 
                 <!-- 下半部分：HTML代码输入 + 替换结果输出 -->
                 <div class="format-editor-grid">
-                    <div class="format-editor-pane">
+                    <div class="format-editor-pane format-input-pane">
                         <div class="contact-panel-header">联系方式代码</div>
                         <textarea
                             id="contactCodeInput"
@@ -2372,7 +2419,7 @@
                 </button>
                 <div class="format-editor-area">
                 <div class="format-editor-grid">
-                    <div class="format-editor-pane">
+                    <div class="format-editor-pane format-input-pane">
                         <div class="contact-panel-header">
                             <span>输入</span>
                             <div class="fmt-tab-group">
@@ -2396,7 +2443,7 @@
                             ></textarea>
                         </div>
                     </div>
-                    <div class="format-editor-pane">
+                    <div class="format-editor-pane format-output-pane">
                         <div class="contact-panel-header">
                             <span>输出</span>
                             <div class="fmt-tab-group">
@@ -2412,6 +2459,16 @@
                                     style="padding: 5px 10px; font-size: 13px"
                                 >
                                     加粗选中文本
+                                </button>
+                                <button
+                                    class="btn btn-secondary"
+                                    id="multiBoldModeButton"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="togglePreviewMultiBoldMode()"
+                                    title="连续选择多段文字后一次加粗"
+                                    style="padding: 5px 10px; font-size: 13px"
+                                >
+                                    批量选择加粗
                                 </button>
                                 <button
                                     class="btn btn-secondary"
@@ -2514,6 +2571,31 @@
                                 style="position: absolute; inset: 0; height: 100%"
                                 spellcheck="false"
                             ></textarea>
+                        </div>
+                        <div class="multi-bold-action-bar" id="multiBoldActionBar">
+                            <span class="multi-bold-action-status" id="multiBoldSelectionCount">已选择 0 处</span>
+                            <div class="multi-bold-action-buttons">
+                                <button
+                                    class="btn btn-secondary"
+                                    id="undoMultiBoldSelectionButton"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="undoPreviewMultiBoldSelection()"
+                                    title="撤回最近一次暂存的选择"
+                                    style="padding: 5px 10px; font-size: 13px"
+                                >
+                                    撤回上次选择
+                                </button>
+                                <button
+                                    class="btn btn-primary"
+                                    id="applyMultiBoldButton"
+                                    onmousedown="event.preventDefault()"
+                                    onclick="applyPreviewMultiBold()"
+                                    title="将已选择的文字一次加粗"
+                                    style="padding: 5px 10px; font-size: 13px"
+                                >
+                                    应用加粗（0）
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4415,6 +4497,9 @@ Hello World`;
             var currentFormatInputTab = 'rich';
             var currentFormatOutputTab = 'preview';
             var savedFormatPreviewRange = null;
+            var previewMultiBoldMode = false;
+            var multiBoldRanges = [];
+            var MULTI_BOLD_HIGHLIGHT_NAME = 'site-toolbox-multi-bold-selection';
             var selectedFormatTableCell = null;
             var lastImgWidth = '';
             var AI_TITLE_CONFIG_KEY = 'site_toolbox_ai_title_config';
@@ -4725,6 +4810,140 @@ Hello World`;
                 normalizePreviewBoldTags(preview);
                 syncFormatPreviewToSource();
                 showToast('已切换加粗');
+            }
+
+            function isPreviewRange(range, preview) {
+                return (
+                    range &&
+                    !range.collapsed &&
+                    preview.contains(range.startContainer) &&
+                    preview.contains(range.endContainer) &&
+                    range.toString().trim()
+                );
+            }
+
+            function updatePreviewMultiBoldControls() {
+                var modeButton = document.getElementById('multiBoldModeButton');
+                var undoButton = document.getElementById('undoMultiBoldSelectionButton');
+                var applyButton = document.getElementById('applyMultiBoldButton');
+                var selectionCount = document.getElementById('multiBoldSelectionCount');
+                modeButton.textContent = previewMultiBoldMode ? '取消批量选择' : '批量选择加粗';
+                modeButton.classList.toggle('btn-primary', previewMultiBoldMode);
+                modeButton.classList.toggle('btn-secondary', !previewMultiBoldMode);
+                undoButton.disabled = !multiBoldRanges.length;
+                applyButton.disabled = !multiBoldRanges.length;
+                applyButton.textContent = '应用加粗（' + multiBoldRanges.length + '）';
+                selectionCount.textContent = '已选择 ' + multiBoldRanges.length + ' 处';
+            }
+
+            function updatePreviewMultiBoldLayout() {
+                var editorGrid = document.querySelector('#formatPage .format-editor-grid');
+                editorGrid.classList.toggle('multi-bold-active', previewMultiBoldMode);
+            }
+
+            function renderPreviewMultiBoldHighlights() {
+                if (!window.CSS || !CSS.highlights || !window.Highlight) return;
+                if (multiBoldRanges.length) {
+                    CSS.highlights.set(MULTI_BOLD_HIGHLIGHT_NAME, new Highlight(...multiBoldRanges));
+                } else {
+                    CSS.highlights.delete(MULTI_BOLD_HIGHLIGHT_NAME);
+                }
+            }
+
+            function clearPreviewMultiBoldRanges() {
+                multiBoldRanges = [];
+                if (window.CSS && CSS.highlights) CSS.highlights.delete(MULTI_BOLD_HIGHLIGHT_NAME);
+                updatePreviewMultiBoldControls();
+            }
+
+            function undoPreviewMultiBoldSelection() {
+                if (!previewMultiBoldMode || !multiBoldRanges.length) {
+                    showToast('暂无可撤回的选择', true);
+                    return;
+                }
+
+                multiBoldRanges.pop();
+                renderPreviewMultiBoldHighlights();
+                updatePreviewMultiBoldControls();
+                showToast('已撤回上次选择');
+            }
+
+            function togglePreviewMultiBoldMode() {
+                var preview = document.getElementById('fmtPreview');
+                if (preview.classList.contains('hidden')) {
+                    showToast('请先切换到预览再批量选择', true);
+                    return;
+                }
+
+                previewMultiBoldMode = !previewMultiBoldMode;
+                clearPreviewMultiBoldRanges();
+                updatePreviewMultiBoldLayout();
+                if (previewMultiBoldMode) {
+                    showToast('批量选择已开启：依次选中词或短句，最后点击“应用加粗”');
+                } else {
+                    showToast('已取消批量选择');
+                }
+            }
+
+            function rememberPreviewMultiBoldRange() {
+                if (!previewMultiBoldMode) return;
+
+                var preview = document.getElementById('fmtPreview');
+                var selection = window.getSelection();
+                if (!selection || selection.rangeCount === 0) return;
+
+                var range = selection.getRangeAt(0);
+                if (!isPreviewRange(range, preview)) return;
+
+                var duplicate = multiBoldRanges.some(function (savedRange) {
+                    return (
+                        savedRange.startContainer === range.startContainer &&
+                        savedRange.startOffset === range.startOffset &&
+                        savedRange.endContainer === range.endContainer &&
+                        savedRange.endOffset === range.endOffset
+                    );
+                });
+                if (duplicate) return;
+
+                multiBoldRanges.push(range.cloneRange());
+                renderPreviewMultiBoldHighlights();
+                updatePreviewMultiBoldControls();
+            }
+
+            function applyPreviewMultiBold() {
+                var preview = document.getElementById('fmtPreview');
+                if (!previewMultiBoldMode || !multiBoldRanges.length) {
+                    showToast('请先选择至少一段文字', true);
+                    return;
+                }
+
+                var ranges = multiBoldRanges
+                    .filter(function (range) {
+                        return isPreviewRange(range, preview);
+                    })
+                    .sort(function (a, b) {
+                        return b.compareBoundaryPoints(Range.START_TO_START, a);
+                    });
+
+                if (!ranges.length) {
+                    clearPreviewMultiBoldRanges();
+                    showToast('已选内容已变化，请重新选择', true);
+                    return;
+                }
+
+                if (window.CSS && CSS.highlights) CSS.highlights.delete(MULTI_BOLD_HIGHLIGHT_NAME);
+                ranges.forEach(function (range) {
+                    var fragment = range.extractContents();
+                    var strong = document.createElement('strong');
+                    strong.appendChild(fragment);
+                    range.insertNode(strong);
+                });
+                normalizePreviewBoldTags(preview);
+                previewMultiBoldMode = false;
+                clearPreviewMultiBoldRanges();
+                updatePreviewMultiBoldLayout();
+                syncFormatPreviewToSource();
+                showToast('已批量加粗 ' + ranges.length + ' 处文字');
             }
 
             function clearSelectedFormatTableCell() {
@@ -6093,6 +6312,10 @@ Hello World`;
                 ) {
                     savedFormatPreviewRange = selection.getRangeAt(0).cloneRange();
                 }
+            });
+
+            document.getElementById('fmtPreview').addEventListener('mouseup', function () {
+                rememberPreviewMultiBoldRange();
             });
 
             document.getElementById('fmtPreview').addEventListener('click', function (event) {
