@@ -11,5 +11,10 @@ assert.match(
   /\.toast\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?bottom:\s*96px;/,
   'global toast should stay above every page bottom action bar'
 );
+assert.match(
+  html,
+  /\.toast\s*\{[\s\S]*?transform:\s*translateX\(-50%\)\s+translateY\(calc\(100%\s*\+\s*24px\)\);/,
+  'hidden toast should move by its own height so no part remains visible'
+);
 
 console.log('toast position static checks passed');
