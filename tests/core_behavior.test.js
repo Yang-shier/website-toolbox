@@ -34,6 +34,21 @@ assert.strictEqual(
   'trimEmpty should remove consecutive Windows blank lines that contain whitespace'
 );
 assert.strictEqual(core.transformText('b\na\nb\n', 'lineUnique'), 'b\na');
+assert.strictEqual(
+  core.transformText("Kunshan Qing'an Energy\nTechnology Co., Ltd.", 'removeBreaks'),
+  "Kunshan Qing'an Energy Technology Co., Ltd.",
+  'removeBreaks should retain a word separator when joining wrapped English lines'
+);
+assert.strictEqual(
+  core.transformText('产品介绍\n技术参数', 'removeBreaks'),
+  '产品介绍技术参数',
+  'removeBreaks should not insert an English-style space between Chinese lines'
+);
+assert.strictEqual(
+  core.transformText('Energy \nTechnology', 'removeBreaks'),
+  'Energy Technology',
+  'removeBreaks should preserve an existing word separator instead of adding another one'
+);
 
 assert.strictEqual(
   core.convertPunctuation('尺寸（宽×高），注意：安全！', 'cn2en'),

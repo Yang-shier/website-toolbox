@@ -6443,7 +6443,17 @@ Hello World`;
                             .join('\n');
                         break;
                     case 'removeBreaks':
-                        result = input.replace(/[\r\n]+/g, '');
+                        result = input.replace(/(?:\r\n?|\n)+/g, function (lineBreaks, offset, source) {
+                            var before = source.slice(0, offset);
+                            var after = source.slice(offset + lineBreaks.length);
+                            var previousLine = before.split(/\r\n?|\n/).pop();
+                            var nextLine = after.split(/\r\n?|\n/)[0];
+                            var hasExistingSeparator = /[ \t\u00a0\u3000]$/.test(before) || /^[ \t\u00a0\u3000]/.test(after);
+
+                            return /[A-Za-z]/.test(previousLine) && /[A-Za-z]/.test(nextLine) && !hasExistingSeparator
+                                ? ' '
+                                : '';
+                        });
                         break;
                     case 'keepSingleBreak':
                         result = input.replace(/\n{2,}/g, '\n').replace(/\r{2,}/g, '\r');
