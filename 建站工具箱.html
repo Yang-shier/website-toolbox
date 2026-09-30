@@ -1668,10 +1668,10 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
-            .resource-detail {
+            .resource-library-detail {
                 padding: 20px;
             }
-            .resource-detail h2 {
+            .resource-library-detail h2 {
                 margin: 0;
                 font-size: 19px;
             }
@@ -3171,6 +3171,10 @@
                         var partKeys = partOrder.filter(function (key) { return typeof entry.parts[key] === 'string' && entry.parts[key]; });
                         if (!partKeys.length) {
                             addMissingMessage(detailElement, '此资料没有可用的代码部分。');
+                            var unavailablePartsActions = makeElement('div', 'resource-detail-actions');
+                            addAction(unavailablePartsActions, '复制当前部分', function () {}, true);
+                            addAction(unavailablePartsActions, '复制全部', function () {}, true);
+                            detailElement.appendChild(unavailablePartsActions);
                             return;
                         }
                         if (partKeys.indexOf(selectedPartKey) === -1) selectedPartKey = partKeys[0];
@@ -3267,6 +3271,7 @@
                     if (selectedEntryId && !entries.some(function (entry) { return entry.id === selectedEntryId; })) {
                         selectedEntryId = '';
                         selectedPartKey = '';
+                        page.classList.remove('resource-detail-open');
                     }
                     count.textContent = '共 ' + entries.length + ' 条';
                     renderCategories();
