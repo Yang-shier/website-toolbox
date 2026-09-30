@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将 `C:\Users\PC\Desktop\常用网址及代码.xlsx` 整理为建站工具箱内可搜索、分类、查看、打开与复制的资料库工作区。
+**Goal:** 将 `E:\ai\建站工具箱\常用网址及代码.xlsx` 整理为建站工具箱内可搜索、分类、查看、打开与复制的资料库工作区。
 
 **Architecture:** 工作簿内容先转为独立的浏览器全局数据模块，再由纯逻辑模块提供搜索、过滤、路径还原和复制内容计算。主 HTML 只负责资料库 DOM、样式、状态切换和事件绑定，保持现有五个工具入口及格式化逻辑不变。
 
@@ -39,7 +39,7 @@
 - Create: `tests/resource_library_behavior.test.js`
 
 **Interfaces:**
-- Consumes: `C:\Users\PC\Desktop\常用网址及代码.xlsx` 中的 `ai提示词`、`常用代码`、`共享地址`、`多语言内页banner代码样式`；`目录` 只作核对。
+- Consumes: `E:\ai\建站工具箱\常用网址及代码.xlsx` 中的 `ai提示词`、`常用代码`、`共享地址`、`多语言内页banner代码样式`；`目录` 只作核对。
 - Produces: `window.ToolboxResourceData = { categories, pathBases, entries }`。
 - Produces: `window.ToolboxResources = { normalizeText, getFullPath, getCopyText, filterEntries, isValidHttpUrl }`；Node 测试环境通过 `module.exports` 暴露相同逻辑。
 - `filterEntries(entries, query, category)` 返回同时满足分类与全文搜索的条目，分类值 `all` 表示不过滤分类。
@@ -135,4 +135,3 @@ Expected: 全部测试 PASS，且 Task 1 和原 39 个测试文件无回归。
 git add 建站工具箱.html tests/resource_library_static.test.js docs/建站工具箱使用说明.md docs/updates.html
 git commit -m "feat: add in-page resource library"
 ```
-
