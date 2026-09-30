@@ -1549,6 +1549,190 @@
             .textproc-actions {
                 justify-content: flex-end;
             }
+            /* ── Resource library ── */
+            .resource-library {
+                flex-direction: column;
+                overflow: auto;
+                padding: 20px 28px;
+                background: #f7f8fc;
+            }
+            .resource-library-shell {
+                width: min(1440px, 100%);
+                min-height: 0;
+                margin: 0 auto;
+                display: flex;
+                flex: 1;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .resource-library-search-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .resource-library-search {
+                width: 100%;
+                min-height: 42px;
+                padding: 0 14px;
+                border: 1px solid var(--border);
+                border-radius: 9px;
+                outline: none;
+                background: #fff;
+                color: var(--text);
+                font: inherit;
+            }
+            .resource-library-search:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            }
+            .resource-library-count {
+                flex: 0 0 auto;
+                color: var(--text-dim);
+                font-size: 13px;
+                white-space: nowrap;
+            }
+            .resource-library-layout {
+                display: grid;
+                grid-template-columns: 190px minmax(240px, 0.8fr) minmax(360px, 1.3fr);
+                min-height: 0;
+                flex: 1;
+                gap: 14px;
+            }
+            .resource-library-panel {
+                min-height: 0;
+                overflow: auto;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: #fff;
+            }
+            .resource-library-categories {
+                padding: 8px;
+            }
+            .resource-category {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: 9px 10px;
+                border: 0;
+                border-radius: 7px;
+                background: transparent;
+                color: var(--text);
+                cursor: pointer;
+                font: inherit;
+                font-size: 13px;
+                text-align: left;
+            }
+            .resource-category:hover,
+            .resource-category.active {
+                background: rgba(37, 99, 235, 0.09);
+                color: var(--accent);
+            }
+            .resource-category-count {
+                color: var(--text-dim);
+                font-size: 12px;
+            }
+            .resource-list {
+                padding: 8px;
+            }
+            .resource-list-item {
+                display: block;
+                width: 100%;
+                padding: 11px 12px;
+                border: 0;
+                border-radius: 8px;
+                background: transparent;
+                color: var(--text);
+                cursor: pointer;
+                font: inherit;
+                text-align: left;
+            }
+            .resource-list-item:hover,
+            .resource-list-item.active {
+                background: #f0f5ff;
+            }
+            .resource-list-item-title {
+                display: block;
+                overflow: hidden;
+                font-size: 14px;
+                font-weight: 600;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .resource-list-item-meta {
+                display: block;
+                margin-top: 4px;
+                overflow: hidden;
+                color: var(--text-dim);
+                font-size: 12px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .resource-detail {
+                padding: 20px;
+            }
+            .resource-detail h2 {
+                margin: 0;
+                font-size: 19px;
+            }
+            .resource-detail-meta {
+                margin: 8px 0 14px;
+                color: var(--text-dim);
+                font-size: 13px;
+            }
+            .resource-detail-label {
+                display: block;
+                margin: 16px 0 6px;
+                color: var(--text-dim);
+                font-size: 12px;
+                font-weight: 600;
+            }
+            .resource-detail-content {
+                max-height: 48vh;
+                margin: 0;
+                padding: 12px;
+                overflow: auto;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #f8fafc;
+                color: #1e293b;
+                font: 12px/1.6 Consolas, 'Courier New', monospace;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            .resource-detail-actions,
+            .resource-part-tabs {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 14px;
+            }
+            .resource-part-tab {
+                padding: 5px 10px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: #fff;
+                color: var(--text);
+                cursor: pointer;
+                font: inherit;
+                font-size: 12px;
+            }
+            .resource-part-tab.active {
+                border-color: var(--accent);
+                background: rgba(37, 99, 235, 0.08);
+                color: var(--accent);
+            }
+            .resource-empty {
+                padding: 32px 16px;
+                color: var(--text-dim);
+                text-align: center;
+            }
+            .resource-empty .btn {
+                margin-top: 12px;
+            }
+            [data-resource-back] {
+                display: none;
+            }
             @media (max-width: 1100px) {
                 .header-meta {
                     justify-content: flex-start;
@@ -1586,6 +1770,42 @@
                 }
                 .textproc-tool-grid {
                     grid-template-columns: 1fr;
+                }
+                .resource-library {
+                    padding: 14px 16px !important;
+                }
+                .resource-library-layout {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+                .resource-library-categories {
+                    display: flex;
+                    gap: 6px;
+                    overflow-x: auto;
+                    padding: 8px;
+                }
+                .resource-category {
+                    flex: 0 0 auto;
+                    width: auto;
+                    gap: 7px;
+                    white-space: nowrap;
+                }
+                .resource-library-detail {
+                    display: none;
+                }
+                #resourceLibraryPage.resource-detail-open .resource-library-categories,
+                #resourceLibraryPage.resource-detail-open .resource-library-list-panel {
+                    display: none;
+                }
+                #resourceLibraryPage.resource-detail-open .resource-library-detail {
+                    display: block;
+                }
+                #resourceLibraryPage.resource-detail-open .resource-library-layout {
+                    display: block;
+                }
+                #resourceLibraryPage.resource-detail-open [data-resource-back] {
+                    display: inline-flex;
+                    align-items: center;
+                    margin-bottom: 12px;
                 }
             }
             @media (max-width: 520px) {
@@ -1865,9 +2085,29 @@
             <div class="header-meta">
                 <a class="update-summary" href="./docs/updates.html">版本更新说明</a>
                 <div class="header-tools">
+                    <button class="btn btn-secondary" type="button" data-open-resource-library>资料库</button>
                     <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
                     <button class="btn btn-secondary" onclick="document.getElementById('workspaceImportFile').click()">导入工作区</button>
                     <input type="file" id="workspaceImportFile" accept=".json" style="display: none" onchange="importWorkspaceDrafts(event)" />
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== Resource Library ==================== -->
+        <div class="main resource-library" id="resourceLibraryPage">
+            <div class="resource-library-shell">
+                <div class="resource-library-search-row">
+                    <input id="resourceLibrarySearch" class="resource-library-search" type="search" placeholder="搜索网址、路径、代码、提示词……" autocomplete="off" />
+                    <span class="resource-library-count" data-resource-count></span>
+                </div>
+                <div class="resource-library-layout">
+                    <nav class="resource-library-panel resource-library-categories" data-resource-categories aria-label="资料分类"></nav>
+                    <section class="resource-library-panel resource-library-list-panel" aria-label="资料列表">
+                        <div class="resource-list" data-resource-list></div>
+                    </section>
+                    <section class="resource-library-panel resource-library-detail" data-resource-detail aria-live="polite">
+                        <button class="btn btn-secondary" type="button" data-resource-back>返回列表</button>
+                    </section>
                 </div>
             </div>
         </div>
@@ -2771,10 +3011,282 @@
         <script src="./src/toolbox-core.js"></script>
         <script src="./src/toolbox-examples.js"></script>
         <script src="./src/toolbox-storage.js"></script>
+        <script src="./src/toolbox-resource-data.js"></script>
+        <script src="./src/toolbox-resources.js"></script>
         <script>
             let navData = [];
             let includeLeafNavParents = false;
             let contactData = {};
+
+            function bindResourceLibrary() {
+                var page = document.getElementById('resourceLibraryPage');
+                var search = document.getElementById('resourceLibrarySearch');
+                var count = document.querySelector('[data-resource-count]');
+                var categoriesElement = document.querySelector('[data-resource-categories]');
+                var listElement = document.querySelector('[data-resource-list]');
+                var detailElement = document.querySelector('[data-resource-detail]');
+                var returnButton = document.querySelector('[data-resource-back]');
+                var openButton = document.querySelector('[data-open-resource-library]');
+                var data = window.ToolboxResourceData;
+                var helpers = window.ToolboxResources;
+                if (!page || !search || !count || !categoriesElement || !listElement || !detailElement || !returnButton || !openButton || !data || !helpers) return;
+
+                var resourceCategoryDefinitions = [
+                    { category: 'all', label: '全部' },
+                    { category: 'url', label: '常用网址' },
+                    { category: 'internal', label: '内网共享' },
+                    { category: 'html', label: 'HTML 模块' },
+                    { category: 'css', label: 'CSS 样式' },
+                    { category: 'javascript', label: 'JavaScript' },
+                    { category: 'mixed', label: 'HTML + CSS + JavaScript' },
+                    { category: 'quick-fix', label: '快速修复' },
+                    { category: 'prompt', label: 'AI 提示词' },
+                    { category: 'banner', label: 'Banner 样式' },
+                ];
+                var selectedCategory = 'all';
+                var selectedEntryId = '';
+                var selectedPartKey = '';
+
+                function makeElement(tagName, className, text) {
+                    var element = document.createElement(tagName);
+                    if (className) element.className = className;
+                    if (typeof text === 'string') element.textContent = text;
+                    return element;
+                }
+
+                function findEntry(entryId) {
+                    return data.entries.find(function (entry) { return entry.id === entryId; }) || null;
+                }
+
+                function categoryLabel(category) {
+                    var definition = resourceCategoryDefinitions.find(function (item) { return item.category === category; });
+                    return definition ? definition.label : '未分类';
+                }
+
+                function addAction(parent, label, handler, disabled) {
+                    var button = makeElement('button', 'btn btn-secondary', label);
+                    button.type = 'button';
+                    button.disabled = !!disabled;
+                    if (!disabled) button.addEventListener('click', handler);
+                    parent.appendChild(button);
+                    return button;
+                }
+
+                function copyText(value, successMessage) {
+                    if (!value) {
+                        showToast('没有可复制的内容', true);
+                        return;
+                    }
+                    var finish = function (copied) {
+                        showToast(copied ? successMessage : '复制失败，请手动复制', !copied);
+                    };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(value).then(function () {
+                            finish(true);
+                        }).catch(function () {
+                            copyWithFallback(value, finish);
+                        });
+                    } else {
+                        copyWithFallback(value, finish);
+                    }
+                }
+
+                function copyWithFallback(value, finish) {
+                    var textarea = document.createElement('textarea');
+                    textarea.value = value;
+                    textarea.setAttribute('readonly', '');
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    var copied = false;
+                    try {
+                        copied = document.execCommand('copy');
+                    } catch (_error) {
+                        copied = false;
+                    }
+                    textarea.remove();
+                    finish(copied);
+                }
+
+                function addMissingMessage(parent, message) {
+                    parent.appendChild(makeElement('p', 'resource-detail-meta', message));
+                }
+
+                function renderDetail() {
+                    var entry = findEntry(selectedEntryId);
+                    detailElement.replaceChildren(returnButton);
+                    if (!entry) {
+                        detailElement.appendChild(makeElement('p', 'resource-empty', '从列表中选择一条资料查看详情'));
+                        return;
+                    }
+
+                    detailElement.appendChild(makeElement('h2', '', entry.title));
+                    var metadata = [categoryLabel(entry.category)];
+                    if (entry.variantLabel) metadata.push(entry.variantLabel);
+                    if (entry.description) metadata.push(entry.description);
+                    detailElement.appendChild(makeElement('p', 'resource-detail-meta', metadata.join(' · ')));
+
+                    if (entry.url !== undefined) {
+                        detailElement.appendChild(makeElement('span', 'resource-detail-label', '完整网址'));
+                        if (entry.url) {
+                            detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.url));
+                            var urlActions = makeElement('div', 'resource-detail-actions');
+                            var validUrl = helpers.isValidHttpUrl(entry.url);
+                            addAction(urlActions, '打开网址', function () {
+                                window.open(entry.url, '_blank', 'noopener,noreferrer');
+                            }, !validUrl);
+                            addAction(urlActions, '复制网址', function () {
+                                copyText(entry.url, '已复制网址');
+                            });
+                            detailElement.appendChild(urlActions);
+                            if (!validUrl) addMissingMessage(detailElement, '网址格式无效，无法在浏览器中打开。');
+                        } else {
+                            addMissingMessage(detailElement, '此资料没有可用的网址。');
+                            var unavailableUrlActions = makeElement('div', 'resource-detail-actions');
+                            addAction(unavailableUrlActions, '打开网址', function () {}, true);
+                            addAction(unavailableUrlActions, '复制网址', function () {}, true);
+                            detailElement.appendChild(unavailableUrlActions);
+                        }
+                        return;
+                    }
+
+                    if (entry.basePathKey) {
+                        var fullPath = helpers.getFullPath(entry, data.pathBases);
+                        detailElement.appendChild(makeElement('span', 'resource-detail-label', '共享组'));
+                        detailElement.appendChild(makeElement('pre', 'resource-detail-content', data.pathBases[entry.basePathKey] || entry.basePathKey));
+                        detailElement.appendChild(makeElement('span', 'resource-detail-label', '相对路径'));
+                        detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.relativePath || '未提供'));
+                        var pathActions = makeElement('div', 'resource-detail-actions');
+                        addAction(pathActions, '复制完整路径', function () {
+                            copyText(fullPath, '已复制完整路径，可粘贴到文件资源管理器地址栏');
+                        }, !fullPath);
+                        detailElement.appendChild(pathActions);
+                        if (!fullPath) addMissingMessage(detailElement, '此资料缺少可复制的完整内网路径。');
+                        return;
+                    }
+
+                    if (entry.parts && typeof entry.parts === 'object') {
+                        var partOrder = ['HTML', 'CSS', 'JavaScript', 'H1', 'P'];
+                        var partKeys = partOrder.filter(function (key) { return typeof entry.parts[key] === 'string' && entry.parts[key]; });
+                        if (!partKeys.length) {
+                            addMissingMessage(detailElement, '此资料没有可用的代码部分。');
+                            return;
+                        }
+                        if (partKeys.indexOf(selectedPartKey) === -1) selectedPartKey = partKeys[0];
+                        var tabs = makeElement('div', 'resource-part-tabs');
+                        partKeys.forEach(function (partKey) {
+                            var tab = makeElement('button', 'resource-part-tab' + (partKey === selectedPartKey ? ' active' : ''), partKey);
+                            tab.type = 'button';
+                            tab.addEventListener('click', function () {
+                                selectedPartKey = partKey;
+                                renderDetail();
+                            });
+                            tabs.appendChild(tab);
+                        });
+                        detailElement.appendChild(tabs);
+                        detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.parts[selectedPartKey]));
+                        var partsActions = makeElement('div', 'resource-detail-actions');
+                        addAction(partsActions, '复制当前部分', function () {
+                            copyText(helpers.getCopyText(entry, selectedPartKey, data.pathBases), '已复制当前部分');
+                        });
+                        addAction(partsActions, '复制全部', function () {
+                            copyText(helpers.getCopyText(entry, 'all', data.pathBases), '已复制全部内容');
+                        });
+                        detailElement.appendChild(partsActions);
+                        return;
+                    }
+
+                    detailElement.appendChild(makeElement('span', 'resource-detail-label', entry.category === 'prompt' ? '提示词内容' : '代码内容'));
+                    if (entry.content) {
+                        detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.content));
+                        var contentActions = makeElement('div', 'resource-detail-actions');
+                        addAction(contentActions, entry.category === 'prompt' ? '复制提示词' : '复制代码', function () {
+                            copyText(helpers.getCopyText(entry, undefined, data.pathBases), entry.category === 'prompt' ? '已复制提示词' : '已复制代码');
+                        });
+                        detailElement.appendChild(contentActions);
+                    } else {
+                        addMissingMessage(detailElement, '此资料没有可复制的内容。');
+                        var unavailableContentActions = makeElement('div', 'resource-detail-actions');
+                        addAction(unavailableContentActions, entry.category === 'prompt' ? '复制提示词' : '复制代码', function () {}, true);
+                        detailElement.appendChild(unavailableContentActions);
+                    }
+                }
+
+                function renderCategories() {
+                    categoriesElement.replaceChildren();
+                    resourceCategoryDefinitions.forEach(function (definition) {
+                        var categoryCount = definition.category === 'all'
+                            ? data.entries.length
+                            : data.entries.filter(function (entry) { return entry.category === definition.category; }).length;
+                        var button = makeElement('button', 'resource-category' + (definition.category === selectedCategory ? ' active' : ''));
+                        button.type = 'button';
+                        button.appendChild(makeElement('span', '', definition.label));
+                        button.appendChild(makeElement('span', 'resource-category-count', String(categoryCount)));
+                        button.addEventListener('click', function () {
+                            selectedCategory = definition.category;
+                            render();
+                        });
+                        categoriesElement.appendChild(button);
+                    });
+                }
+
+                function renderList(entries) {
+                    listElement.replaceChildren();
+                    if (!entries.length) {
+                        var empty = makeElement('div', 'resource-empty', '没有找到相关资料');
+                        var clearButton = makeElement('button', 'btn btn-secondary', '清除搜索');
+                        clearButton.type = 'button';
+                        clearButton.addEventListener('click', function () {
+                            search.value = '';
+                            render();
+                            search.focus();
+                        });
+                        empty.appendChild(document.createElement('br'));
+                        empty.appendChild(clearButton);
+                        listElement.appendChild(empty);
+                        return;
+                    }
+                    entries.forEach(function (entry) {
+                        var item = makeElement('button', 'resource-list-item' + (entry.id === selectedEntryId ? ' active' : ''));
+                        item.type = 'button';
+                        item.appendChild(makeElement('span', 'resource-list-item-title', entry.title));
+                        item.appendChild(makeElement('span', 'resource-list-item-meta', categoryLabel(entry.category) + (entry.description ? ' · ' + entry.description : '')));
+                        item.addEventListener('click', function () {
+                            selectedEntryId = entry.id;
+                            selectedPartKey = '';
+                            page.classList.add('resource-detail-open');
+                            render();
+                        });
+                        listElement.appendChild(item);
+                    });
+                }
+
+                function render() {
+                    var entries = helpers.filterEntries(data.entries, search.value, selectedCategory);
+                    if (selectedEntryId && !entries.some(function (entry) { return entry.id === selectedEntryId; })) {
+                        selectedEntryId = '';
+                        selectedPartKey = '';
+                    }
+                    count.textContent = '共 ' + entries.length + ' 条';
+                    renderCategories();
+                    renderList(entries);
+                    renderDetail();
+                }
+
+                search.addEventListener('input', render);
+                returnButton.addEventListener('click', function () {
+                    page.classList.remove('resource-detail-open');
+                });
+                openButton.addEventListener('click', function () {
+                    switchTab('resourceLibrary');
+                    render();
+                    search.focus();
+                });
+                render();
+            }
+
+            bindResourceLibrary();
 
             function parseNavSource(html) {
                 if (window.SiteToolboxCore && window.SiteToolboxCore.parseNavSource) {
