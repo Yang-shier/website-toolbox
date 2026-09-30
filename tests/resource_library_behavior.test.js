@@ -60,5 +60,17 @@ assert.strictEqual(new Set(data.entries.map(exactContentKey)).size, data.entries
 
 const sameTitleEntries = data.entries.filter((entry, index, entries) => entries.some((other, otherIndex) => otherIndex !== index && other.title === entry.title));
 assert.ok(sameTitleEntries.some((entry, index, entries) => entries.some((other, otherIndex) => otherIndex !== index && normalizeText(other.content) !== normalizeText(entry.content))), 'same-title resources with different content remain as variants');
+assert.strictEqual(data.entries.length, 129, 'all source records survive exact title-and-full-content deduplication');
+assert.strictEqual(data.entries.filter((entry) => entry.id.startsWith('path-')).length, 26, 'all shared-address source rows remain available');
+for (const id of ['path-012', 'path-013', 'path-022', 'path-023']) {
+  assert.ok(data.entries.some((entry) => entry.id === id), `${id} preserves its distinct UNC source path`);
+}
+assert.ok(sameTitleEntries.every((entry) => typeof entry.variantLabel === 'string' && entry.variantLabel), 'every same-title variant has a distinguishable version label');
+for (const id of ['code-034', 'code-035']) {
+  assert.ok(data.entries.find((entry) => entry.id === id).description.includes('复制后请替换示例数据'), `${id} identifies source-specific example data`);
+}
+assert.ok(filterEntries(data.entries, 'unsplash', 'all').some((entry) => entry.id === 'path-025'), 'search includes URL values');
+assert.ok(filterEntries(data.entries, '172.16.0.4', 'all').some((entry) => entry.category === 'internal'), 'search includes reconstructed UNC paths');
+assert.ok(filterEntries(data.entries, 'ps无法处理webp', 'all').some((entry) => entry.id === 'path-009'), 'search includes internal relative paths');
 
 console.log('resource_library_behavior: all assertions passed');

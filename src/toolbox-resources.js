@@ -66,7 +66,14 @@
       return '';
     }
 
-    const values = [entry.title, entry.description, entry.content];
+    const values = [
+      entry.title,
+      entry.description,
+      entry.content,
+      entry.url,
+      entry.relativePath,
+      getFullPath(entry),
+    ];
     if (Array.isArray(entry.aliases)) values.push(...entry.aliases);
     if (Array.isArray(entry.tags)) values.push(...entry.tags);
     if (entry.parts && typeof entry.parts === 'object') values.push(...Object.values(entry.parts));
