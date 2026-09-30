@@ -66,7 +66,7 @@ for (const id of ['path-012', 'path-013', 'path-022', 'path-023']) {
   assert.ok(data.entries.some((entry) => entry.id === id), `${id} preserves its distinct UNC source path`);
 }
 assert.ok(sameTitleEntries.every((entry) => typeof entry.variantLabel === 'string' && entry.variantLabel), 'every same-title variant has a distinguishable version label');
-for (const id of ['code-034', 'code-035']) {
+for (const id of ['code-013', 'code-025', 'code-034', 'code-035', 'code-047', 'code-068', 'code-069']) {
   assert.ok(data.entries.find((entry) => entry.id === id).description.includes('复制后请替换示例数据'), `${id} identifies source-specific example data`);
 }
 assert.ok(filterEntries(data.entries, 'unsplash', 'all').some((entry) => entry.id === 'path-025'), 'search includes URL values');
