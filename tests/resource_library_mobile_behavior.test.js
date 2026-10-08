@@ -4,9 +4,9 @@ const path = require('path');
 const vm = require('vm');
 
 const html = fs.readFileSync(path.join(__dirname, '..', '建站工具箱.html'), 'utf8');
-const bindingMatch = html.match(/function bindResourceLibrary\(\) \{[\s\S]*?\n            \}\n\n            bindResourceLibrary\(\);/);
+const bindingMatch = html.match(/function bindResourceLibrary\(\) \{[\s\S]*?\r?\n            \}\r?\n\r?\n            bindResourceLibrary\(\);/);
 assert.ok(bindingMatch, 'resource-library binding is present for interaction regression coverage');
-const mobileCss = html.match(/@media \(max-width: 760px\) \{([\s\S]*?)\n            \}\n            @media \(max-width: 520px\)/);
+const mobileCss = html.match(/@media \(max-width: 760px\) \{([\s\S]*?)\r?\n            \}\r?\n            @media \(max-width: 520px\)/);
 assert.ok(mobileCss, 'resource-library has a dedicated 760px mobile CSS section');
 assert.ok(mobileCss[1].includes('grid-template-rows: auto minmax(0, 1fr);'), 'mobile resource-library keeps category navigation compact instead of stretching its grid row');
 
