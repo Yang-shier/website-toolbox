@@ -3054,6 +3054,7 @@
 
                 var resourceCategoryDefinitions = [
                     { category: 'all', label: '全部' },
+                    { category: 'favorite', label: '常用' },
                     { category: 'url', label: '常用网址' },
                     { category: 'internal', label: '内网共享' },
                     { category: 'html', label: 'HTML 模块' },
@@ -3067,6 +3068,49 @@
                 var selectedCategory = 'all';
                 var selectedEntryId = '';
                 var selectedPartKey = '';
+                var RESOURCE_FAVORITES_KEY = 'site_toolbox_resource_favorites_v1';
+                var resourceFavorites = loadResourceFavorites();
+
+                function loadResourceFavorites() {
+                    try {
+                        var saved = window.localStorage && window.localStorage.getItem(RESOURCE_FAVORITES_KEY);
+                        var parsed = saved ? JSON.parse(saved) : {};
+                        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+                        return Object.keys(parsed).reduce(function (favorites, entryId) {
+                            var record = parsed[entryId];
+                            if (record && Number.isFinite(record.count) && record.count > 0 && Number.isFinite(record.lastUsedAt)) {
+                                favorites[entryId] = { count: record.count, lastUsedAt: record.lastUsedAt };
+                            }
+                            return favorites;
+                        }, {});
+                    } catch (_error) {
+                        return {};
+                    }
+                }
+
+                function recordResourceFavorite(entryId) {
+                    if (!entryId) return;
+                    var previous = resourceFavorites[entryId] || { count: 0, lastUsedAt: 0 };
+                    resourceFavorites[entryId] = { count: previous.count + 1, lastUsedAt: Date.now() };
+                    try {
+                        if (window.localStorage) window.localStorage.setItem(RESOURCE_FAVORITES_KEY, JSON.stringify(resourceFavorites));
+                    } catch (_error) {
+                        // Local usage ranking is best-effort and must not interrupt copying.
+                    }
+                    render();
+                }
+
+                function getFavoriteEntries(query) {
+                    return helpers.filterEntries(data.entries.filter(function (entry) {
+                        return resourceFavorites[entry.id] && resourceFavorites[entry.id].count > 0;
+                    }), query, 'all').sort(function (left, right) {
+                        var leftRecord = resourceFavorites[left.id];
+                        var rightRecord = resourceFavorites[right.id];
+                        return rightRecord.count - leftRecord.count
+                            || rightRecord.lastUsedAt - leftRecord.lastUsedAt
+                            || left.id.localeCompare(right.id);
+                    }).slice(0, 12);
+                }
 
                 function setResourceLibraryEntryState(isActive) {
                     openButton.classList.toggle('active', isActive);
@@ -3098,12 +3142,13 @@
                     return button;
                 }
 
-                function copyText(value, successMessage) {
+                function copyText(value, successMessage, entryId) {
                     if (!value) {
                         showToast('没有可复制的内容', true);
                         return;
                     }
                     var finish = function (copied) {
+                        if (copied) recordResourceFavorite(entryId);
                         showToast(copied ? successMessage : '复制失败，请手动复制', !copied);
                     };
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -3172,7 +3217,7 @@
                                 window.open(entry.url, '_blank', 'noopener,noreferrer');
                             }, !validUrl);
                             addAction(urlActions, '复制网址', function () {
-                                copyText(entry.url, '已复制网址');
+                                copyText(entry.url, '已复制网址', entry.id);
                             });
                             detailElement.appendChild(urlActions);
                             if (!validUrl) addMissingMessage(detailElement, '网址格式无效，无法在浏览器中打开。');
@@ -3194,7 +3239,7 @@
                         detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.relativePath || '未提供'));
                         var pathActions = makeElement('div', 'resource-detail-actions');
                         addAction(pathActions, '复制完整路径', function () {
-                            copyText(fullPath, '已复制完整路径，可粘贴到文件资源管理器地址栏');
+                            copyText(fullPath, '已复制完整路径，可粘贴到文件资源管理器地址栏', entry.id);
                         }, !fullPath);
                         detailElement.appendChild(pathActions);
                         if (!fullPath) addMissingMessage(detailElement, '此资料缺少可复制的完整内网路径。');
@@ -3227,10 +3272,10 @@
                         detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.parts[selectedPartKey]));
                         var partsActions = makeElement('div', 'resource-detail-actions');
                         addAction(partsActions, '复制当前部分', function () {
-                            copyText(helpers.getCopyText(entry, selectedPartKey, data.pathBases), '已复制当前部分');
+                            copyText(helpers.getCopyText(entry, selectedPartKey, data.pathBases), '已复制当前部分', entry.id);
                         });
                         addAction(partsActions, '复制全部', function () {
-                            copyText(helpers.getCopyText(entry, 'all', data.pathBases), '已复制全部内容');
+                            copyText(helpers.getCopyText(entry, 'all', data.pathBases), '已复制全部内容', entry.id);
                         });
                         detailElement.appendChild(partsActions);
                         return;
@@ -3241,7 +3286,7 @@
                         detailElement.appendChild(makeElement('pre', 'resource-detail-content', entry.content));
                         var contentActions = makeElement('div', 'resource-detail-actions');
                         addAction(contentActions, entry.category === 'prompt' ? '复制提示词' : '复制代码', function () {
-                            copyText(helpers.getCopyText(entry, undefined, data.pathBases), entry.category === 'prompt' ? '已复制提示词' : '已复制代码');
+                            copyText(helpers.getCopyText(entry, undefined, data.pathBases), entry.category === 'prompt' ? '已复制提示词' : '已复制代码', entry.id);
                         });
                         detailElement.appendChild(contentActions);
                     } else {
@@ -3257,6 +3302,8 @@
                     resourceCategoryDefinitions.forEach(function (definition) {
                         var categoryCount = definition.category === 'all'
                             ? data.entries.length
+                            : definition.category === 'favorite'
+                                ? getFavoriteEntries('').length
                             : data.entries.filter(function (entry) { return entry.category === definition.category; }).length;
                         var button = makeElement('button', 'resource-category' + (definition.category === selectedCategory ? ' active' : ''));
                         button.type = 'button';
@@ -3305,7 +3352,9 @@
                 }
 
                 function render() {
-                    var entries = helpers.filterEntries(data.entries, search.value, selectedCategory);
+                    var entries = selectedCategory === 'favorite'
+                        ? getFavoriteEntries(search.value)
+                        : helpers.filterEntries(data.entries, search.value, selectedCategory);
                     if (selectedEntryId && !entries.some(function (entry) { return entry.id === selectedEntryId; })) {
                         selectedEntryId = '';
                         selectedPartKey = '';

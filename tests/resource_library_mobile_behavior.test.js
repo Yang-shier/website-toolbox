@@ -50,7 +50,17 @@ function findByText(element, text) {
   return null;
 }
 
-function mount(entries) {
+function createStorage(initial) {
+  const values = { ...(initial || {}) };
+  return {
+    getItem(key) { return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : null; },
+    setItem(key, value) { values[key] = String(value); },
+    raw(key) { return values[key]; },
+  };
+}
+
+function mount(entries, options) {
+  const settings = options || {};
   const page = new FakeElement('div');
   const search = new FakeElement('input');
   const count = new FakeElement('span');
@@ -73,7 +83,7 @@ function mount(entries) {
     getElementById(id) { return byId[id] || null; },
     querySelector(selector) { return bySelector[selector] || null; },
     createElement(tagName) { return new FakeElement(tagName); },
-    execCommand() { return true; },
+    execCommand() { return settings.copyResult === undefined ? true : settings.copyResult; },
   };
   const context = {
     window: {
@@ -92,6 +102,7 @@ function mount(entries) {
         isValidHttpUrl() { return false; },
       },
       open() {},
+      localStorage: settings.storage,
     },
     document,
     navigator: {},
@@ -99,7 +110,11 @@ function mount(entries) {
     switchTab() {},
   };
   vm.runInNewContext(bindingMatch[0], context);
-  return { page, search, list, detail, open };
+  return { page, search, categories, list, detail, open };
+}
+
+function categoryButton(state, label) {
+  return state.categories.children.find((button) => button.children.some((child) => child.textContent === label));
 }
 
 const selected = { id: 'selected', title: 'Selected entry', category: 'html', content: '<p>selected</p>' };
@@ -127,5 +142,41 @@ assert.ok(bannerState.detail.children.some((child) => child.tagName === 'img' &&
 const entryState = mount([selected]);
 entryState.open.dispatch('click');
 assert.strictEqual(entryState.open['aria-pressed'], 'true', 'opening the resource library presses the entry control');
+
+const successfulCopyStorage = createStorage();
+const successfulCopyState = mount([selected, other], { storage: successfulCopyStorage });
+assert.ok(categoryButton(successfulCopyState, '常用'), 'resource categories include 常用 immediately after 全部');
+assert.strictEqual(successfulCopyState.categories.children[1], categoryButton(successfulCopyState, '常用'), '常用 follows 全部 in category order');
+assert.strictEqual(categoryButton(successfulCopyState, '常用').children[1].textContent, '0', '常用 starts at zero before any successful copy');
+successfulCopyState.list.children[0].dispatch('click');
+findByText(successfulCopyState.detail, '复制代码').dispatch('click');
+assert.deepStrictEqual(JSON.parse(successfulCopyStorage.raw('site_toolbox_resource_favorites_v1')), {
+  selected: { count: 1, lastUsedAt: JSON.parse(successfulCopyStorage.raw('site_toolbox_resource_favorites_v1')).selected.lastUsedAt },
+}, 'only a successful copy records the entry locally');
+assert.strictEqual(categoryButton(successfulCopyState, '常用').children[1].textContent, '1', 'a successful copy immediately refreshes the 常用 category count');
+categoryButton(successfulCopyState, '常用').dispatch('click');
+assert.strictEqual(successfulCopyState.list.children.length, 1, '常用 only shows successfully copied resources');
+assert.strictEqual(successfulCopyState.list.children[0].children[0].textContent, 'Selected entry', '常用 shows the copied resource');
+findByText(successfulCopyState.detail, '复制代码').dispatch('click');
+assert.strictEqual(successfulCopyState.list.children[0].children[0].textContent, 'Selected entry', 'a successful copy while viewing 常用 keeps the visible ranked entry');
+
+const failedCopyStorage = createStorage();
+const failedCopyState = mount([selected], { storage: failedCopyStorage, copyResult: false });
+failedCopyState.list.children[0].dispatch('click');
+findByText(failedCopyState.detail, '复制代码').dispatch('click');
+assert.strictEqual(failedCopyStorage.raw('site_toolbox_resource_favorites_v1'), undefined, 'failed copies do not update 常用 storage');
+assert.strictEqual(categoryButton(failedCopyState, '常用').children[1].textContent, '0', 'failed copies do not refresh the 常用 count');
+
+const rankedEntries = Array.from({ length: 13 }, (_, index) => ({ id: `rank-${index}`, title: `Rank ${index}`, category: 'html', content: String(index) }));
+const rankedStorage = createStorage({
+  site_toolbox_resource_favorites_v1: JSON.stringify(Object.fromEntries(rankedEntries.map((entry, index) => [entry.id, { count: index < 2 ? 9 : 1, lastUsedAt: index }])))
+});
+const rankedState = mount(rankedEntries, { storage: rankedStorage });
+categoryButton(rankedState, '常用').dispatch('click');
+assert.strictEqual(rankedState.list.children.length, 12, '常用 limits the ranked list to 12 entries');
+assert.strictEqual(rankedState.list.children[0].children[0].textContent, 'Rank 1', '常用 breaks equal copy-count ties by most recent success');
+
+const corruptStorageState = mount([selected], { storage: createStorage({ site_toolbox_resource_favorites_v1: '{broken' }) });
+assert.doesNotThrow(() => categoryButton(corruptStorageState, '常用').dispatch('click'), 'corrupt local usage data degrades to an empty 常用 list');
 
 console.log('resource library mobile behavior checks passed');
