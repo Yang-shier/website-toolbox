@@ -16,6 +16,7 @@ mustInclude(html, '>资料库<', 'resource-library entry has visible text');
 });
 mustInclude(html, '搜索网址、路径、代码、提示词……', 'search placeholder remains exact');
 mustInclude(html, '@media (max-width: 760px)', 'resource-library has the required mobile breakpoint');
+assert.ok(/\.resource-library-shell\s*\{\s*width:\s*100%;/.test(html), 'resource-library shell fills the available desktop width without a max-width cap');
 ['all', 'url', 'internal', 'html', 'css', 'javascript', 'mixed', 'quick-fix', 'prompt', 'banner'].forEach((category) => {
   mustInclude(html, `category: '${category}'`, `category ${category} is declared in UI order`);
 });
