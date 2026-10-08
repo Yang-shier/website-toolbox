@@ -463,6 +463,15 @@
             .btn-secondary:hover {
                 background: rgba(0, 0, 0, 0.06);
             }
+            [data-open-resource-library].active {
+                background: #2563eb;
+                border-color: #2563eb;
+                color: #fff;
+            }
+            [data-open-resource-library].active:hover {
+                background: #1d4ed8;
+                border-color: #1d4ed8;
+            }
             #includeLeafNavParentsToggle[aria-pressed='true'] {
                 background: #2563eb;
                 border-color: #2563eb;
@@ -1700,6 +1709,17 @@
                 white-space: pre-wrap;
                 word-break: break-word;
             }
+            .resource-banner-thumbnail {
+                display: block;
+                width: 100%;
+                max-width: 640px;
+                max-height: 240px;
+                margin: 0 0 16px;
+                object-fit: contain;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: #f8fafc;
+            }
             .resource-detail-actions,
             .resource-part-tabs {
                 display: flex;
@@ -1776,6 +1796,7 @@
                 }
                 .resource-library-layout {
                     grid-template-columns: minmax(0, 1fr);
+                    grid-template-rows: auto minmax(0, 1fr);
                 }
                 .resource-library-categories {
                     display: flex;
@@ -2085,7 +2106,7 @@
             <div class="header-meta">
                 <a class="update-summary" href="./docs/updates.html">版本更新说明</a>
                 <div class="header-tools">
-                    <button class="btn btn-secondary" type="button" data-open-resource-library>资料库</button>
+                    <button class="btn btn-secondary" type="button" data-open-resource-library aria-pressed="false">资料库</button>
                     <button class="btn btn-secondary" onclick="exportWorkspaceDrafts()">导出工作区</button>
                     <button class="btn btn-secondary" onclick="document.getElementById('workspaceImportFile').click()">导入工作区</button>
                     <input type="file" id="workspaceImportFile" accept=".json" style="display: none" onchange="importWorkspaceDrafts(event)" />
@@ -3047,6 +3068,11 @@
                 var selectedEntryId = '';
                 var selectedPartKey = '';
 
+                function setResourceLibraryEntryState(isActive) {
+                    openButton.classList.toggle('active', isActive);
+                    openButton.setAttribute('aria-pressed', String(!!isActive));
+                }
+
                 function makeElement(tagName, className, text) {
                     var element = document.createElement(tagName);
                     if (className) element.className = className;
@@ -3126,6 +3152,15 @@
                     if (entry.variantLabel) metadata.push(entry.variantLabel);
                     if (entry.description) metadata.push(entry.description);
                     detailElement.appendChild(makeElement('p', 'resource-detail-meta', metadata.join(' · ')));
+
+                    if (typeof entry.imageSrc === 'string' && /^\.\/assets\/resource-banners\/banner-\d{2}\.png$/.test(entry.imageSrc)) {
+                        var thumbnail = document.createElement('img');
+                        thumbnail.className = 'resource-banner-thumbnail';
+                        thumbnail.src = entry.imageSrc;
+                        thumbnail.alt = entry.title + ' 原图缩略图';
+                        thumbnail.loading = 'lazy';
+                        detailElement.appendChild(thumbnail);
+                    }
 
                     if (entry.url !== undefined) {
                         detailElement.appendChild(makeElement('span', 'resource-detail-label', '完整网址'));
@@ -3255,7 +3290,10 @@
                         var item = makeElement('button', 'resource-list-item' + (entry.id === selectedEntryId ? ' active' : ''));
                         item.type = 'button';
                         item.appendChild(makeElement('span', 'resource-list-item-title', entry.title));
-                        item.appendChild(makeElement('span', 'resource-list-item-meta', categoryLabel(entry.category) + (entry.description ? ' · ' + entry.description : '')));
+                        var listMetadata = [categoryLabel(entry.category)];
+                        if (entry.variantLabel) listMetadata.push(entry.variantLabel);
+                        if (entry.description) listMetadata.push(entry.description);
+                        item.appendChild(makeElement('span', 'resource-list-item-meta', listMetadata.join(' · ')));
                         item.addEventListener('click', function () {
                             selectedEntryId = entry.id;
                             selectedPartKey = '';
@@ -3284,10 +3322,12 @@
                     page.classList.remove('resource-detail-open');
                 });
                 openButton.addEventListener('click', function () {
+                    setResourceLibraryEntryState(true);
                     switchTab('resourceLibrary');
                     render();
                     search.focus();
                 });
+                setResourceLibraryEntryState(false);
                 render();
             }
 
@@ -4788,6 +4828,12 @@
                     page.classList.remove('active');
                 });
                 document.getElementById(tabName + 'Page').classList.add('active');
+                var resourceLibraryControl = document.querySelector('[data-open-resource-library]');
+                if (resourceLibraryControl) {
+                    var resourceLibraryIsActive = tabName === 'resourceLibrary';
+                    resourceLibraryControl.classList.toggle('active', resourceLibraryIsActive);
+                    resourceLibraryControl.setAttribute('aria-pressed', String(resourceLibraryIsActive));
+                }
             }
 
             function toggleSection(header) {

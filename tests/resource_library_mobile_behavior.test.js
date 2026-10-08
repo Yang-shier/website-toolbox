@@ -6,6 +6,9 @@ const vm = require('vm');
 const html = fs.readFileSync(path.join(__dirname, '..', '建站工具箱.html'), 'utf8');
 const bindingMatch = html.match(/function bindResourceLibrary\(\) \{[\s\S]*?\n            \}\n\n            bindResourceLibrary\(\);/);
 assert.ok(bindingMatch, 'resource-library binding is present for interaction regression coverage');
+const mobileCss = html.match(/@media \(max-width: 760px\) \{([\s\S]*?)\n            \}\n            @media \(max-width: 520px\)/);
+assert.ok(mobileCss, 'resource-library has a dedicated 760px mobile CSS section');
+assert.ok(mobileCss[1].includes('grid-template-rows: auto minmax(0, 1fr);'), 'mobile resource-library keeps category navigation compact instead of stretching its grid row');
 
 class FakeClassList {
   constructor() { this.values = new Set(); }
@@ -32,7 +35,7 @@ class FakeElement {
   replaceChildren(...children) { this.children = children; }
   addEventListener(type, handler) { this.listeners[type] = handler; }
   dispatch(type) { this.listeners[type]({}); }
-  setAttribute() {}
+  setAttribute(name, value) { this[name] = value; }
   focus() {}
   remove() {}
   select() {}
@@ -96,7 +99,7 @@ function mount(entries) {
     switchTab() {},
   };
   vm.runInNewContext(bindingMatch[0], context);
-  return { page, search, list, detail };
+  return { page, search, list, detail, open };
 }
 
 const selected = { id: 'selected', title: 'Selected entry', category: 'html', content: '<p>selected</p>' };
@@ -116,5 +119,13 @@ const copyAll = findByText(emptyPartsState.detail, '复制全部');
 assert.ok(copyCurrent && copyCurrent.disabled, 'empty parts keep a disabled current-part copy action');
 assert.ok(copyAll && copyAll.disabled, 'empty parts keep a disabled copy-all action');
 assert.ok(findByText(emptyPartsState.detail, '此资料没有可用的代码部分。'), 'empty parts explain the missing content');
+
+const bannerState = mount([{ id: 'banner-preview', title: 'Banner preview', category: 'banner', imageSrc: './assets/resource-banners/banner-01.png', parts: { CSS: '.hero{}' } }]);
+bannerState.list.children[0].dispatch('click');
+assert.ok(bannerState.detail.children.some((child) => child.tagName === 'img' && child.src === './assets/resource-banners/banner-01.png'), 'banner detail creates an image from its fixed mapped static asset');
+
+const entryState = mount([selected]);
+entryState.open.dispatch('click');
+assert.strictEqual(entryState.open['aria-pressed'], 'true', 'opening the resource library presses the entry control');
 
 console.log('resource library mobile behavior checks passed');

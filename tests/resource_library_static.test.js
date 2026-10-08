@@ -34,6 +34,11 @@ mustInclude(html, '复制当前部分', 'mixed detail exposes per-part copy acti
 mustInclude(html, '复制全部', 'mixed detail exposes all-parts copy action');
 mustInclude(html, 'navigator.clipboard', 'copy action tries Clipboard API');
 mustInclude(html, "execCommand('copy')", 'copy action has compatible fallback');
+mustInclude(html, 'variantLabel', 'list metadata displays a distinguishable variant label');
+mustInclude(html, 'resource-banner-thumbnail', 'banner details render a static PNG thumbnail');
+mustInclude(html, 'imageSrc', 'banner details read only mapped static image sources');
+mustInclude(html, 'aria-pressed', 'resource-library entry exposes its pressed state');
+mustInclude(html, '[data-open-resource-library].active', 'resource-library entry has a visible active style');
 
 const dataScript = html.indexOf('./src/toolbox-resource-data.js');
 const helperScript = html.indexOf('./src/toolbox-resources.js');
