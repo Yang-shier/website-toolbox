@@ -3585,6 +3585,23 @@
                     }
                 }
 
+                // 兼容 ul/ol > li > a + ul/ol > li > a 的两级导航模板：
+                // 子级列表在一级 li 内通常只有一个，不能依赖“同级重复元素”识别。
+                if (childItems.length === 0) {
+                    const nestedList = Array.from(block.children).find(function (child) {
+                        return child.nodeType === 1 && (child.tagName === 'UL' || child.tagName === 'OL');
+                    });
+                    if (nestedList) {
+                        childItems = Array.from(nestedList.children).filter(function (child) {
+                            return (
+                                child.nodeType === 1 &&
+                                child.tagName === 'LI' &&
+                                child.querySelector(':scope > a[href]')
+                            );
+                        });
+                    }
+                }
+
                 const childSet = new Set(childItems);
                 let titleLink = null;
                 let titleEl = null;
