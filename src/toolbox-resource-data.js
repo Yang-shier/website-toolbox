@@ -660,6 +660,12 @@
       "content": "\n    .mb_pattern .layout_column:has(.basic_classification) {\n        display: none;\n    }"
     },
     {
+      "id": "code-100",
+      "title": "去除整站插件代码",
+      "category": "quick-fix",
+      "content": "?basic_plugin_code=close"
+    },
+    {
       "id": "path-002",
       "title": "新人视频",
       "category": "internal",
