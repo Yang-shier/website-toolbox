@@ -6586,6 +6586,7 @@ Hello World`;
 
             function buildTitleContexts(blocks, bulletRe, indentRe) {
                 blocks = Array.from(blocks);
+                var numberedClauseRe = /^\d{1,3}[.．、]\s*.+[，,；;]/;
                 var contexts = blocks.map(function (block) {
                     var rawText = block.textContent;
                     var text = rawText.trim();
@@ -6616,6 +6617,11 @@ Hello World`;
                             context.nextText = contexts[j].text;
                             break;
                         }
+                    }
+                    if (numberedClauseRe.test(context.titleText)) {
+                        context.isCandidate = context.isCandidate
+                            && context.nextText.length >= context.textLength * 1.8
+                            && !/^\d{1,3}[.．、]/.test(context.nextText);
                     }
                 });
 
@@ -6700,7 +6706,6 @@ Hello World`;
                 if (!text) return false;
                 if (!titleText || titleText.length < 2) return false;
                 if (indentRe.test(rawText)) return false;
-                if (/^\d{1,3}[.．、]\s*.+[，,；;]/.test(titleText)) return false;
                 if (/[。！？!?]$/.test(titleText)) return false;
                 if (/^(https?:\/\/|www\.)/i.test(titleText)) return false;
                 return true;
